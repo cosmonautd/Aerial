@@ -1,1 +1,1 @@
-TerrainClass
+Ground Traversal Difficulty Estimation
