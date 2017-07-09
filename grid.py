@@ -1,5 +1,12 @@
 import cv2
 import numpy
+from matplotlib import pyplot
+from skimage.segmentation import slic
+from skimage.util import img_as_float
+from skimage.segmentation import mark_boundaries
+from skimage import io
+import matplotlib.pyplot as plt
+import argparse
 
 # load an image
 def loadimage(path):
@@ -33,11 +40,14 @@ def dsq(image, squaregrid, marks=None):
 
 def get_regions(image, squaregrid):
     k = 0
-    N = int(numpy.sqrt(len(squaregrid)))
-    R = [None]*N
-    for i in range(N):
-        R[i] = [None]*N
-        for j in range(N):
+    height, width, channels = image.shape
+    sqsize = squaregrid[k][2]
+    rows = int(height/sqsize)
+    cols = int(width/sqsize)
+    R = [None]*rows
+    for i in range(rows):
+        R[i] = [None]*cols
+        for j in range(cols):
             square = squaregrid[k]
             tlx, tly, sqsize = square[0], square[1], square[2]
             region = image[tly:tly+sqsize, tlx:tlx+sqsize]
@@ -46,14 +56,16 @@ def get_regions(image, squaregrid):
     return R
 
 # assign traversal difficulty to every region
-def gtd(regions):
-    td_order = len(regions)
-    td = numpy.ndarray((td_order,td_order), dtype=int)
-    for i in range(td_order):
-        for j in range(td_order):
+def gtd(regions, diff):
+    td_rows = len(regions)
+    td_columns = len(regions[0])
+    td = numpy.ndarray((td_rows, td_columns), dtype=float)
+    for i in range(td_rows):
+        for j in range(td_columns):
             region = regions[i][j]
-            difficulty = numpy.random.randint(256)
+            difficulty = diff(region)
             td[i][j] = difficulty
+    td *= 255/td.max()
     return td
 
 def get_coord(i, c):
@@ -65,13 +77,71 @@ def ddi(image, squaregrid, td):
         tlx, tly, sqsize = square[0], square[1], square[2]
         for i in range(sqsize):
             for j in range(sqsize):
-                r, c = get_coord(k, len(td))
+                r, c = get_coord(k, len(td[0]))
                 diffimage[tly+i][tlx+j] = td[r][c]
     return diffimage
 
+def random(region):
+    return numpy.random.randint(256)
+
+def grayhistogram(region):
+    region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+    # hist, bins = numpy.histogram(region.flatten(), 32, [0,256])
+    # fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
+    # ax0.imshow(region, cmap = 'gray', interpolation = 'bicubic')
+    # ax1.hist(region.flatten(), 32, [0,256], facecolor='g', alpha=0.75, histtype='stepfilled')
+    # ax1.legend(('Histogram', 'histogram'), loc = 'upper left')
+    # fig.tight_layout()
+    # pyplot.show()
+    return numpy.std(region.flatten())
+
+def colorhistogram(region):
+    r, g, b = cv2.split(region)
+    # hist_r, bins = numpy.histogram(r.flatten(), 32, [0,256])
+    # hist_g, bins = numpy.histogram(g.flatten(), 32, [0,256])
+    # hist_b, bins = numpy.histogram(b.flatten(), 32, [0,256])
+    # fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
+    # ax0.imshow(region, interpolation = 'bicubic')
+    # ax1.hist(r.flatten(), 32, [0,256], facecolor='r', alpha=0.75, histtype='stepfilled', label='R')
+    # ax1.hist(g.flatten(), 32, [0,256], facecolor='g', alpha=0.75, histtype='stepfilled', label='G')
+    # ax1.hist(b.flatten(), 32, [0,256], facecolor='b', alpha=0.75, histtype='stepfilled', label='B')
+    # ax1.legend(loc = 'upper left')
+    # fig.tight_layout()
+    # pyplot.show()
+    # return numpy.std(r.flatten())**2 + numpy.std(g.flatten())**2 + numpy.std(b.flatten())**2
+    return numpy.std(r.flatten()) * numpy.std(g.flatten()) * numpy.std(b.flatten())
+
+def cannyedge(region):
+    region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+    edges  = cv2.Canny(region, 80, 220)
+    # fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
+    # ax0.imshow(region, cmap='gray', interpolation = 'bicubic')
+    # ax1.imshow(edges, cmap='gray', interpolation = 'bicubic')
+    # fig.tight_layout()
+    # pyplot.show()
+    return numpy.mean(edges.flatten())
+
+def superpixels(region):
+    segments = slic(img_as_float(region), n_segments = 8, sigma = 5)
+    superpxs = []
+    stats = []
+    for i in numpy.unique(segments):
+        superpxs.append([])
+    for i in range(len(segments)):
+        for j in range(len(segments[0])):
+            superpxs[segments[i][j]].append(region[i][j])
+    for pixels in superpxs:
+        stats.append(numpy.array(pixels).mean())
+    # fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
+    # ax0.imshow(region, interpolation = 'bicubic')
+    # ax1.imshow(mark_boundaries(img_as_float(region), segments), interpolation = 'bicubic')
+    # fig.tight_layout()
+    # pyplot.show()
+    return numpy.std(numpy.array(stats))
+
 # example methods
 def showsquaregrid():
-    image = loadimage('aerial.jpg')
+    image = loadimage('aerial1.jpg')
     squaregrid = sgl(image, 16)
     imagegrid = dsq(image, squaregrid, [(i,i) for i in range(int(640/16))])
     cv2.imshow('Image Grid', imagegrid)
@@ -79,7 +149,7 @@ def showsquaregrid():
     cv2.destroyAllWindows()
 
 def showdiffmatrix():
-    image = loadimage('aerial.jpg')
+    image = loadimage('aerial1.jpg')
     squaregrid = sgl(image, 16)
     regions = get_regions(image, squaregrid)
     diffmatrix = gtd(regions)
@@ -87,14 +157,22 @@ def showdiffmatrix():
     print(diffmatrix)
 
 def showdiffimage():
-    image = loadimage('aerial.jpg')
-    squaregrid = sgl(image, 16)
+    image = loadimage('aerial3.jpg')
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    squaregrid = sgl(image, 128)
     regions = get_regions(image, squaregrid)
-    diffmatrix = gtd(regions)
+    diffmatrix = gtd(regions, superpixels)
     diffimage = ddi(image, squaregrid, diffmatrix)
-    cv2.imshow('Difficulty Image', diffimage)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    ret,thresh = cv2.threshold(diffimage, 80, 255, cv2.THRESH_BINARY)
+    fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
+    ax0.imshow(image, interpolation = 'bicubic')
+    ax0.axes.get_xaxis().set_visible(False)
+    ax0.axes.get_yaxis().set_visible(False)
+    ax1.imshow(thresh, cmap = 'gray', interpolation = 'bicubic')
+    ax1.axes.get_xaxis().set_visible(False)
+    ax1.axes.get_yaxis().set_visible(False)
+    fig.tight_layout()
+    pyplot.show()
 
 # main program
 showdiffimage()
