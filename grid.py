@@ -89,8 +89,10 @@ def grayhistogram(region):
     # hist, bins = numpy.histogram(region.flatten(), 32, [0,256])
     # fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
     # ax0.imshow(region, cmap = 'gray', interpolation = 'bicubic')
-    # ax1.hist(region.flatten(), 32, [0,256], facecolor='g', alpha=0.75, histtype='stepfilled')
-    # ax1.legend(('Histogram', 'histogram'), loc = 'upper left')
+    # ax0.axes.get_xaxis().set_visible(False)
+    # ax0.axes.get_yaxis().set_visible(False)
+    # ax1.hist(region.flatten(), 32, [0,256], facecolor='black', alpha=0.75, histtype='stepfilled')
+    # ax1.axes.get_yaxis().set_visible(False)
     # fig.tight_layout()
     # pyplot.show()
     return numpy.std(region.flatten())
@@ -102,29 +104,39 @@ def colorhistogram(region):
     # hist_b, bins = numpy.histogram(b.flatten(), 32, [0,256])
     # fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
     # ax0.imshow(region, interpolation = 'bicubic')
+    # ax0.axes.get_xaxis().set_visible(False)
+    # ax0.axes.get_yaxis().set_visible(False)
     # ax1.hist(r.flatten(), 32, [0,256], facecolor='r', alpha=0.75, histtype='stepfilled', label='R')
     # ax1.hist(g.flatten(), 32, [0,256], facecolor='g', alpha=0.75, histtype='stepfilled', label='G')
     # ax1.hist(b.flatten(), 32, [0,256], facecolor='b', alpha=0.75, histtype='stepfilled', label='B')
+    # ax1.axes.get_yaxis().set_visible(False)
     # ax1.legend(loc = 'upper left')
     # fig.tight_layout()
     # pyplot.show()
-    # return numpy.std(r.flatten())**2 + numpy.std(g.flatten())**2 + numpy.std(b.flatten())**2
-    return numpy.std(r.flatten()) * numpy.std(g.flatten()) * numpy.std(b.flatten())
+    return numpy.std(r)**2 + numpy.std(g)**2 + numpy.std(b)**2
 
 def cannyedge(region):
     region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
-    edges  = cv2.Canny(region, 80, 220)
+    edges  = cv2.Canny(region, 100, 200)
     # fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
     # ax0.imshow(region, cmap='gray', interpolation = 'bicubic')
+    # ax0.axes.get_xaxis().set_visible(False)
+    # ax0.axes.get_yaxis().set_visible(False)
     # ax1.imshow(edges, cmap='gray', interpolation = 'bicubic')
+    # ax1.axes.get_xaxis().set_visible(False)
+    # ax1.axes.get_yaxis().set_visible(False)
     # fig.tight_layout()
     # pyplot.show()
     return numpy.mean(edges.flatten())
 
 def superpixels(region):
-    segments = slic(img_as_float(region), n_segments = 8, sigma = 5)
+    segments = slic(img_as_float(region), n_segments = 32, sigma = 5)
     superpxs = []
     stats = []
+    region_superpixels = region.copy()
+    stats_r = []
+    stats_g = []
+    stats_b = []
     for i in numpy.unique(segments):
         superpxs.append([])
     for i in range(len(segments)):
@@ -132,12 +144,25 @@ def superpixels(region):
             superpxs[segments[i][j]].append(region[i][j])
     for pixels in superpxs:
         stats.append(numpy.array(pixels).mean())
+        stats_r.append(numpy.array([pixel[0] for pixel in pixels]).mean())
+        stats_g.append(numpy.array([pixel[1] for pixel in pixels]).mean())
+        stats_b.append(numpy.array([pixel[2] for pixel in pixels]).mean())
+    # for i in range(len(segments)):
+    #     for j in range(len(segments[0])):
+    #         region_superpixels[i][j] = numpy.array([stats_r[segments[i][j]], stats_g[segments[i][j]], stats_b[segments[i][j]]])
     # fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
     # ax0.imshow(region, interpolation = 'bicubic')
-    # ax1.imshow(mark_boundaries(img_as_float(region), segments), interpolation = 'bicubic')
+    # ax0.axes.get_xaxis().set_visible(False)
+    # ax0.axes.get_yaxis().set_visible(False)
+    # '''ax1.imshow(mark_boundaries(img_as_float(region), segments, color=(0,0,1)), interpolation = 'bicubic')'''
+    # ax1.imshow(region_superpixels, interpolation = 'bicubic')
+    # ax1.axes.get_xaxis().set_visible(False)
+    # ax1.axes.get_yaxis().set_visible(False)
     # fig.tight_layout()
     # pyplot.show()
-    return numpy.std(numpy.array(stats))
+    #return numpy.std(numpy.array(stats))
+    #return numpy.std(numpy.array(stats_r)) * numpy.std(numpy.array(stats_g)) * numpy.std(numpy.array(stats_b))
+    return numpy.std(numpy.array(stats_r))**2 + numpy.std(numpy.array(stats_g))**2 + numpy.std(numpy.array(stats_b))**2
 
 # example methods
 def showsquaregrid():
@@ -157,20 +182,25 @@ def showdiffmatrix():
     print(diffmatrix)
 
 def showdiffimage():
-    image = loadimage('aerial3.jpg')
+    image = loadimage('aerial2.jpg')
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    squaregrid = sgl(image, 128)
+    squaregrid = sgl(image, 32)
     regions = get_regions(image, squaregrid)
     diffmatrix = gtd(regions, superpixels)
     diffimage = ddi(image, squaregrid, diffmatrix)
-    ret,thresh = cv2.threshold(diffimage, 80, 255, cv2.THRESH_BINARY)
-    fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
+    ret,thresh = cv2.threshold(diffimage, 10, 255, cv2.THRESH_BINARY)
+    # fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
+    # ax0.imshow(image, interpolation = 'bicubic')
+    # ax0.axes.get_xaxis().set_visible(False)
+    # ax0.axes.get_yaxis().set_visible(False)
+    # ax1.imshow(diffimage, cmap = 'gray', interpolation = 'bicubic')
+    # ax1.axes.get_xaxis().set_visible(False)
+    # ax1.axes.get_yaxis().set_visible(False)
+
+    fig, (ax0) = pyplot.subplots(ncols=1)
     ax0.imshow(image, interpolation = 'bicubic')
     ax0.axes.get_xaxis().set_visible(False)
     ax0.axes.get_yaxis().set_visible(False)
-    ax1.imshow(thresh, cmap = 'gray', interpolation = 'bicubic')
-    ax1.axes.get_xaxis().set_visible(False)
-    ax1.axes.get_yaxis().set_visible(False)
     fig.tight_layout()
     pyplot.show()
 
