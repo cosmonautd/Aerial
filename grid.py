@@ -5,12 +5,11 @@ from skimage.segmentation import slic
 from skimage.util import img_as_float
 from skimage.segmentation import mark_boundaries
 from skimage import io
-import matplotlib.pyplot as plt
 import argparse
 
 # load an image
 def loadimage(path):
-    return cv2.imread(path)
+    return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 # get square grid list
 def sgl(image, sqsize):
@@ -169,34 +168,16 @@ def showsquaregrid():
     image = loadimage('aerial1.jpg')
     squaregrid = sgl(image, 16)
     imagegrid = dsq(image, squaregrid, [(i,i) for i in range(int(640/16))])
-    cv2.imshow('Image Grid', imagegrid)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
 
-def showdiffmatrix():
-    image = loadimage('aerial1.jpg')
-    squaregrid = sgl(image, 16)
-    regions = get_regions(image, squaregrid)
-    diffmatrix = gtd(regions)
-    print(diffmatrix.shape)
-    print(diffmatrix)
+    fig, (ax0) = pyplot.subplots(ncols=1)
+    ax0.imshow(imagegrid, interpolation = 'bicubic')
+    ax0.axes.get_xaxis().set_visible(False)
+    ax0.axes.get_yaxis().set_visible(False)
+    fig.tight_layout()
+    pyplot.show()
 
-def showdiffimage():
-    image = loadimage('aerial2.jpg')
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    squaregrid = sgl(image, 32)
-    regions = get_regions(image, squaregrid)
-    diffmatrix = gtd(regions, superpixels)
-    diffimage = ddi(image, squaregrid, diffmatrix)
-    ret,thresh = cv2.threshold(diffimage, 10, 255, cv2.THRESH_BINARY)
-    # fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
-    # ax0.imshow(image, interpolation = 'bicubic')
-    # ax0.axes.get_xaxis().set_visible(False)
-    # ax0.axes.get_yaxis().set_visible(False)
-    # ax1.imshow(diffimage, cmap = 'gray', interpolation = 'bicubic')
-    # ax1.axes.get_xaxis().set_visible(False)
-    # ax1.axes.get_yaxis().set_visible(False)
 
+def showimage(image):
     fig, (ax0) = pyplot.subplots(ncols=1)
     ax0.imshow(image, interpolation = 'bicubic')
     ax0.axes.get_xaxis().set_visible(False)
@@ -204,5 +185,43 @@ def showdiffimage():
     fig.tight_layout()
     pyplot.show()
 
+def show2image(image1, image2):
+    fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
+    ax0.imshow(image1, interpolation = 'bicubic')
+    ax0.axes.get_xaxis().set_visible(False)
+    ax0.axes.get_yaxis().set_visible(False)
+    ax1.imshow(image2, cmap = 'gray', interpolation = 'bicubic')
+    ax1.axes.get_xaxis().set_visible(False)
+    ax1.axes.get_yaxis().set_visible(False)
+    pyplot.show()
+
+class GroundTraversalDifficultyEstimator():
+
+    def __init__(self, function=superpixels, binary=False, threshold = 127):
+        self.function = function
+        self.binary = binary
+        self.threshold = threshold
+    
+    def computematrix(self, image):
+        squaregrid = sgl(image, 256)
+        regions = get_regions(image, squaregrid)
+        diffmatrix = gtd(regions, self.function)
+        if self.binary:
+            ret, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
+        return diffmatrix
+    
+    def computeimage(self, image):
+        squaregrid = sgl(image, 256)
+        regions = get_regions(image, squaregrid)
+        diffmatrix = gtd(regions, self.function)
+        if self.binary:
+            ret, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
+        diffimage = ddi(image, squaregrid, diffmatrix)
+        return diffimage
+
+
 # main program
-showdiffimage()
+image = loadimage('aerial2.jpg')
+estimator = GroundTraversalDifficultyEstimator(binary=True, threshold=80)
+diffimage = estimator.computeimage(image)
+show2image(image, diffimage)
