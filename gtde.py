@@ -11,13 +11,13 @@ from skimage import io
 import argparse
 
 def loadimage(path):
-    """ Load image from path
+    """ Loads image from path
     """
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 def gridlist(image, sqsize):
-    """ Return a list of square coordinates representing a grid over image
-        Every square with length and height sqsize
+    """ Returns a list of square coordinates representing a grid over image
+        Every square has length and height equals to sqsize
     """
     height, width, _ = image.shape
     # assertions that guarantee the square grid contains all pixels
@@ -31,7 +31,7 @@ def gridlist(image, sqsize):
     return gridlist
 
 def drawgrid(image, squaregrid, marks=None):
-    """ Draw squaregrid over image, optionally marking some squares
+    """ Draws squaregrid over image, optionally marking some squares
     """
     _, width, _ = image.shape
     for i, square in enumerate(squaregrid):
@@ -45,7 +45,7 @@ def drawgrid(image, squaregrid, marks=None):
     return image
 
 def regionlist(image, squaregrid):
-    """ Return a list of regions from image, according to squaregrid
+    """ Returns a list of regions from image, according to squaregrid
     """
     k = 0
     height, width, channels = image.shape
@@ -64,7 +64,7 @@ def regionlist(image, squaregrid):
     return R
 
 def traversaldiff(regions, function, view=False):
-    """ Assign traversal difficulty estimates to every region
+    """ Assigns traversal difficulty estimates to every region
     """
     td_rows = len(regions)
     td_columns = len(regions[0])
@@ -78,11 +78,13 @@ def traversaldiff(regions, function, view=False):
     return td
 
 def coord(i, c):
-    """ Convert one-dimensional index to square matrix coordinates with order c
+    """ Converts one-dimensional index to square matrix coordinates with order c
     """
     return (int(i/c), int(i%c))
 
 def tdi(image, squaregrid, diffmatrix):
+    """ Returns traversal difficulty image from image, squaregrid and difficulty matrix
+    """
     diffimage = image.copy()
     for k, square in enumerate(squaregrid):
         tlx, tly, sqsize = square[0], square[1], square[2]
@@ -93,9 +95,13 @@ def tdi(image, squaregrid, diffmatrix):
     return diffimage
 
 def random(region, view=False):
+    """ Returns a random difficulty value
+    """
     return numpy.random.randint(256)
 
 def grayhistogram(region, view=False):
+    """ Returns a difficulty value based on grayscale histogram dispersion
+    """
     region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
     diff = numpy.std(region.flatten())
     if view:
@@ -111,6 +117,8 @@ def grayhistogram(region, view=False):
     return diff
 
 def colorhistogram(region, view=False):
+    """ Returns a difficulty value based on RGB histogram dispersion
+    """
     r, g, b = cv2.split(region)
     diff = numpy.std(r)**2 + numpy.std(g)**2 + numpy.std(b)**2
     if view:
@@ -131,6 +139,8 @@ def colorhistogram(region, view=False):
     return diff
 
 def cannyedge(region, view=False):
+    """ Returns a difficulty value based on edge density
+    """
     region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
     edges  = cv2.Canny(region, 100, 200)
     diff = numpy.mean(edges.flatten())
@@ -147,6 +157,8 @@ def cannyedge(region, view=False):
     return  diff
 
 def superpixels(region, view=False):
+    """ Returns a difficulty value based on superpixels dispersion
+    """
     segments = slic(img_as_float(region), n_segments = 32, sigma = 5)
     region_superpixels = region.copy()
     superpxs = []
@@ -176,6 +188,8 @@ def superpixels(region, view=False):
     return diff
 
 def showimage(image):
+    """ Displays an image on screen
+    """
     fig, (ax0) = pyplot.subplots(ncols=1)
     ax0.imshow(image, interpolation = 'bicubic')
     ax0.axes.get_xaxis().set_visible(False)
@@ -184,6 +198,8 @@ def showimage(image):
     pyplot.show()
 
 def show2image(image1, image2):
+    """ Displays two images on screen, side by side
+    """
     fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
     ax0.imshow(image1, interpolation = 'bicubic')
     ax0.axes.get_xaxis().set_visible(False)
@@ -193,20 +209,28 @@ def show2image(image1, image2):
     ax1.axes.get_yaxis().set_visible(False)
     pyplot.show()
 
-def showsquaregrid(image):
-    squaregrid = gridlist(image, 128)
-    imagegrid = drawgrid(image, squaregrid, [''' (i,i) for i in range(int(640/16)) '''])
+def showsquaregrid(image, grid):
+    """ Displays an image on screen with grid overlay
+    """
+    imagegrid = drawgrid(image, grid, [''' (i,i) for i in range(int(640/16)) '''])
     showimage(imagegrid)
 
 class GroundTraversalDifficultyEstimator():
+    """ Defines a ground traversal difficulty estimator
+    """
 
     def __init__(self, function=superpixels, granularity=128, binary=False, threshold=127):
+        """ Ground traversal difficulty estimator constructor
+            Sets all initial estimator parameters
+        """
         self.function = function
         self.granularity = granularity
         self.binary = binary
         self.threshold = threshold
     
     def computematrix(self, image):
+        """ Returns a difficulty matrix for image based on estimator parameters
+        """
         squaregrid = gridlist(image, self.granularity)
         regions = regionlist(image, squaregrid)
         diffmatrix = traversaldiff(regions, self.function)
@@ -215,6 +239,8 @@ class GroundTraversalDifficultyEstimator():
         return diffmatrix
     
     def computeimage(self, image):
+        """ Returns a traversal difficulty image based on estimator parameters
+        """
         squaregrid = gridlist(image, self.granularity)
         regions = regionlist(image, squaregrid)
         diffmatrix = traversaldiff(regions, self.function)
@@ -222,10 +248,3 @@ class GroundTraversalDifficultyEstimator():
             ret, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         diffimage = tdi(image, squaregrid, diffmatrix)
         return diffimage
-
-
-# main program
-frame = loadimage('aerial3.jpg')
-estimator = GroundTraversalDifficultyEstimator(binary=True, granularity=128, threshold=50)
-diffimage = estimator.computeimage(frame)
-show2image(frame, diffimage)
