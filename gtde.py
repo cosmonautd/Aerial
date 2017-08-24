@@ -10,14 +10,12 @@ from skimage.segmentation import mark_boundaries
 from skimage import io
 import argparse
 
-# load an image
 def loadimage(path):
     """ Load image from path
     """
     return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
-# get square grid list
-def sgl(image, sqsize):
+def gridlist(image, sqsize):
     """ Return a list of square coordinates representing a grid over image
         Every square with length and height sqsize
     """
@@ -32,7 +30,7 @@ def sgl(image, sqsize):
             gridlist.append((topleftx, toplefty, sqsize))
     return gridlist
 
-def dsq(image, squaregrid, marks=None):
+def drawgrid(image, squaregrid, marks=None):
     """ Draw squaregrid over image, optionally marking some squares
     """
     _, width, _ = image.shape
@@ -46,7 +44,7 @@ def dsq(image, squaregrid, marks=None):
                 cv2.rectangle(image, topleft, bottomright, (255, 0, 0), -1)
     return image
 
-def gr(image, squaregrid):
+def regionlist(image, squaregrid):
     """ Return a list of regions from image, according to squaregrid
     """
     k = 0
@@ -65,7 +63,7 @@ def gr(image, squaregrid):
             k += 1
     return R
 
-def td(regions, function, view=False):
+def traversaldiff(regions, function, view=False):
     """ Assign traversal difficulty estimates to every region
     """
     td_rows = len(regions)
@@ -79,18 +77,18 @@ def td(regions, function, view=False):
     td *= 255/td.max()
     return td
 
-def get_coord(i, c):
+def coord(i, c):
     """ Convert one-dimensional index to square matrix coordinates with order c
     """
     return (int(i/c), int(i%c))
 
-def ddi(image, squaregrid, diffmatrix):
+def tdi(image, squaregrid, diffmatrix):
     diffimage = image.copy()
     for k, square in enumerate(squaregrid):
         tlx, tly, sqsize = square[0], square[1], square[2]
         for i in range(sqsize):
             for j in range(sqsize):
-                r, c = get_coord(k, len(diffmatrix[0]))
+                r, c = coord(k, len(diffmatrix[0]))
                 diffimage[tly+i][tlx+j] = diffmatrix[r][c]
     return diffimage
 
@@ -196,8 +194,8 @@ def show2image(image1, image2):
     pyplot.show()
 
 def showsquaregrid(image):
-    squaregrid = sgl(image, 128)
-    imagegrid = dsq(image, squaregrid, [''' (i,i) for i in range(int(640/16)) '''])
+    squaregrid = gridlist(image, 128)
+    imagegrid = drawgrid(image, squaregrid, [''' (i,i) for i in range(int(640/16)) '''])
     showimage(imagegrid)
 
 class GroundTraversalDifficultyEstimator():
@@ -209,20 +207,20 @@ class GroundTraversalDifficultyEstimator():
         self.threshold = threshold
     
     def computematrix(self, image):
-        squaregrid = sgl(image, self.granularity)
-        regions = gr(image, squaregrid)
-        diffmatrix = td(regions, self.function)
+        squaregrid = gridlist(image, self.granularity)
+        regions = regionlist(image, squaregrid)
+        diffmatrix = traversaldiff(regions, self.function)
         if self.binary:
             ret, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         return diffmatrix
     
     def computeimage(self, image):
-        squaregrid = sgl(image, self.granularity)
-        regions = gr(image, squaregrid)
-        diffmatrix = td(regions, self.function)
+        squaregrid = gridlist(image, self.granularity)
+        regions = regionlist(image, squaregrid)
+        diffmatrix = traversaldiff(regions, self.function)
         if self.binary:
             ret, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
-        diffimage = ddi(image, squaregrid, diffmatrix)
+        diffimage = tdi(image, squaregrid, diffmatrix)
         return diffimage
 
 
