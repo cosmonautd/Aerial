@@ -5,9 +5,12 @@ import gtde
 def one():
     """ Test
     """
-    frame = gtde.loadimage('aerial2.jpg')
-    estimator = gtde.GroundTraversalDifficultyEstimator(binary=True, granularity=128, threshold=50)
+    estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=400)
+
+    frame = gtde.loadimage('aerial4.JPG')
     diffimage = estimator.computeimage(frame)
-    gtde.show2image(frame, diffimage)
+    grid = gtde.gridlist(frame, estimator.granularity)
+    gtde.show2image(gtde.drawgrid(frame, grid), diffimage)
 
 one()

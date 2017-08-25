@@ -19,13 +19,26 @@ def gridlist(image, sqsize):
     height, width, _ = image.shape
     # assertions that guarantee the square grid contains all pixels
     assert sqsize > 0, "Parameter sqsize must be larger than zero"
-    assert (height/sqsize).is_integer(), "Image height not a multiple of sqsize"
-    assert (width/sqsize).is_integer(), "Image width not a multiple of sqsize"
-    glist = []
-    for toplefty in range(0, height, sqsize):
-        for topleftx in range(0, width, sqsize):
-            glist.append((topleftx, toplefty, sqsize))
-    return glist
+    if (height/sqsize).is_integer() and (width/sqsize).is_integer():
+        glist = []
+        for toplefty in range(0, height, sqsize):
+            for topleftx in range(0, width, sqsize):
+                glist.append((topleftx, toplefty, sqsize))
+        return glist
+    else:
+        new_height = int(sqsize*numpy.floor(height/sqsize))
+        new_width = int(sqsize*numpy.floor(width/sqsize))
+        if new_height > 0 and new_width > 0:
+            y_edge = int((height - new_height)/2)
+            x_edge = int((width - new_width)/2)
+            glist = []
+            for toplefty in range(y_edge, y_edge+new_height, sqsize):
+                for topleftx in range(x_edge, x_edge+new_width, sqsize):
+                    glist.append((topleftx, toplefty, sqsize))
+            return glist
+        else:
+            raise ValueError("Granularity probably larger than image dimensions")
+
 
 def drawgrid(image, squaregrid, marks=None):
     """ Draws squaregrid over image, optionally marking some squares
@@ -82,7 +95,7 @@ def coord(i, columns):
 def tdi(image, squaregrid, diffmatrix):
     """ Returns traversal difficulty image from image, squaregrid and difficulty matrix
     """
-    diffimage = image.copy()
+    diffimage = 0*image.copy()+255
     for k, square in enumerate(squaregrid):
         tlx, tly, sqsize = square[0], square[1], square[2]
         for i in range(sqsize):
@@ -209,7 +222,7 @@ def show2image(image1, image2):
     ax1.axes.get_yaxis().set_visible(False)
     pyplot.show()
 
-def showsquaregrid(image, grid):
+def showgrid(image, grid):
     """ Displays an image on screen with grid overlay
     """
     imagegrid = drawgrid(image, grid, [''' (i,i) for i in range(int(640/16)) '''])
