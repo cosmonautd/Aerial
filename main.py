@@ -6,11 +6,20 @@ def one():
     """ Test
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=400)
+                    granularity=128)
 
-    frame = gtde.loadimage('aerial4.JPG')
+    frame = gtde.loadimage('aerial3.jpg')
     diffimage = estimator.computeimage(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
     gtde.show2image(gtde.drawgrid(frame, grid), diffimage)
 
-one()
+def two():
+    """ Test
+    """
+    estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=128)
+
+    frame = gtde.loadimage('aerial1.jpg')
+    diffmatrix = estimator.computematrix(frame)
+
+two()

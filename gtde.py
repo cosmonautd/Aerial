@@ -3,6 +3,7 @@
 
 import cv2
 import numpy
+import multiprocessing
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
@@ -54,7 +55,7 @@ def drawgrid(image, squaregrid, marks=None):
                 cv2.rectangle(image, topleft, bottomright, (255, 0, 0), -1)
     return image
 
-def regionlist(image, squaregrid):
+def regionmatrix(image, squaregrid):
     """ Returns a list of regions from image, according to squaregrid
     """
     k = 0
@@ -62,28 +63,33 @@ def regionlist(image, squaregrid):
     sqsize = squaregrid[k][2]
     rows = int(height/sqsize)
     cols = int(width/sqsize)
-    rlist = [None]*rows
+    rmatrix = [None]*rows
     for i in range(rows):
-        rlist[i] = [None]*cols
+        rmatrix[i] = [None]*cols
         for j in range(cols):
             square = squaregrid[k]
             tlx, tly, sqsize = square[0], square[1], square[2]
             region = image[tly:tly+sqsize, tlx:tlx+sqsize]
-            rlist[i][j] = region
+            rmatrix[i][j] = region
             k += 1
-    return rlist
+    return rmatrix
 
-def traversaldiff(regions, function, view=False):
+def traversaldiff(regions, function, parallel=True, view=False):
     """ Assigns traversal difficulty estimates to every region
     """
     td_rows = len(regions)
     td_columns = len(regions[0])
     tdiff = numpy.ndarray((td_rows, td_columns), dtype=float)
-    for i in range(td_rows):
-        for j in range(td_columns):
-            region = regions[i][j]
-            difficulty = function(region, view=view)
-            tdiff[i][j] = difficulty
+
+    if not parallel:
+        for i in range(td_rows):
+            for j in range(td_columns):
+                tdiff[i][j] = function(regions[i][j], view=view)
+    else:
+        with multiprocessing.Pool() as p:
+            for i in range(td_rows):
+                tdiff[i] = p.map(function, regions[i])
+
     tdiff *= 255/tdiff.max()
     return tdiff
 
@@ -245,7 +251,7 @@ class GroundTraversalDifficultyEstimator():
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
-        regions = regionlist(image, squaregrid)
+        regions = regionmatrix(image, squaregrid)
         diffmatrix = traversaldiff(regions, self.function)
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
@@ -255,7 +261,7 @@ class GroundTraversalDifficultyEstimator():
         """ Returns a traversal difficulty image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
-        regions = regionlist(image, squaregrid)
+        regions = regionmatrix(image, squaregrid)
         diffmatrix = traversaldiff(regions, self.function)
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
