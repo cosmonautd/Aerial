@@ -98,16 +98,17 @@ def coord(i, columns):
     """
     return (int(i/columns), int(i%columns))
 
-def tdi(image, squaregrid, diffmatrix):
-    """ Returns traversal difficulty image from image, squaregrid and difficulty matrix
+def tdi(image, grid, diffmatrix):
+    """ Returns traversal difficulty image from image, grid and difficulty matrix
     """
-    diffimage = 0*image.copy()+255
-    for k, square in enumerate(squaregrid):
-        tlx, tly, sqsize = square[0], square[1], square[2]
-        for i in range(sqsize):
-            for j in range(sqsize):
-                row, column = coord(k, len(diffmatrix[0]))
-                diffimage[tly+i][tlx+j] = diffmatrix[row][column]
+    height, width, _ = image.shape
+    diffimage = 255*numpy.ones((height, width))
+    for k, element in enumerate(grid):
+        tlx, tly, size = element[0], element[1], element[2]
+        row, column = coord(k, diffmatrix.shape[1])
+        diff = diffmatrix[row][column]
+        region = diff*numpy.ones((size, size))
+        diffimage[tly:tly+region.shape[0], tlx:tlx+region.shape[1]] = region
     return diffimage
 
 def random(region, view=False):

@@ -22,4 +22,4 @@ def two():
     frame = gtde.loadimage('aerial1.jpg')
     diffmatrix = estimator.computematrix(frame)
 
-two()
+one()
