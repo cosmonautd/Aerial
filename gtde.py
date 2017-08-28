@@ -179,9 +179,9 @@ def superpixels(region, view=False):
     stats_r, stats_g, stats_b = [], [], []
 
     for i in numpy.unique(segments): superpxs.append([])
-    for i in range(len(segments)):
-        for j in range(len(segments[0])):
-            superpxs[segments[i][j]].append(region[i][j])
+    for i, row in enumerate(segments):
+        for j, pixel in enumerate(row):
+            superpxs[pixel].append(region[i][j])
     for pixels in superpxs:
         stats_r.append(numpy.array([pixel[0] for pixel in pixels]).mean())
         stats_g.append(numpy.array([pixel[1] for pixel in pixels]).mean())
@@ -191,11 +191,11 @@ def superpixels(region, view=False):
             + numpy.std(numpy.array(stats_g))**2 \
             + numpy.std(numpy.array(stats_b))**2
     if view:
-        for i in range(len(segments)):
-            for j in range(len(segments[0])):
-                region_superpixels[i][j] = numpy.array([stats_r[segments[i][j]], \
-                                                        stats_g[segments[i][j]], \
-                                                        stats_b[segments[i][j]]])
+        for i, row in enumerate(segments):
+            for j, pixel in enumerate(row):
+                region_superpixels[i][j] = numpy.array([stats_r[pixel], \
+                                                        stats_g[pixel], \
+                                                        stats_b[pixel]])
         fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
         ax0.imshow(region, interpolation='bicubic')
         ax0.axes.get_xaxis().set_visible(False)
