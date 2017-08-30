@@ -23,4 +23,16 @@ def two():
     diffmatrix = estimator.computematrix(frame)
     print(diffmatrix)
 
-two()
+def three():
+    """ Test
+    """
+    estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=256)
+
+    frame = gtde.loadimage('img/aerial4.jpg')
+    truth = gtde.loadimage('labels/aerial4.jpg')
+    framediff = estimator.computeimage(frame)
+    truthdiff = estimator.groundtruth(truth)
+    gtde.show2image(framediff, truthdiff)
+
+three()

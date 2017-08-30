@@ -207,6 +207,23 @@ def superpixels(region, view=False):
         pyplot.show()
     return diff
 
+def density(region, view=False):
+    """ Returns a difficulty value based on white pixel density (for labels)
+    """
+    region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+    diff = numpy.mean(region.flatten())
+    if view:
+        fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
+        ax0.imshow(region, cmap='gray', interpolation='bicubic')
+        ax0.axes.get_xaxis().set_visible(False)
+        ax0.axes.get_yaxis().set_visible(False)
+        ax1.imshow(edges, cmap='gray', interpolation='bicubic')
+        ax1.axes.get_xaxis().set_visible(False)
+        ax1.axes.get_yaxis().set_visible(False)
+        fig.tight_layout()
+        pyplot.show()
+    return  diff
+
 def showimage(image):
     """ Displays an image on screen
     """
@@ -221,7 +238,7 @@ def show2image(image1, image2):
     """ Displays two images on screen, side by side
     """
     _, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
-    ax0.imshow(image1, interpolation='bicubic')
+    ax0.imshow(image1, cmap='gray', interpolation='bicubic')
     ax0.axes.get_xaxis().set_visible(False)
     ax0.axes.get_yaxis().set_visible(False)
     ax1.imshow(image2, cmap='gray', interpolation='bicubic')
@@ -267,4 +284,13 @@ class GroundTraversalDifficultyEstimator():
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         diffimage = tdi(image, squaregrid, diffmatrix)
+        return diffimage
+    
+    def groundtruth(self, label):
+        """ Compares traversal difficulty image with a provided labeled ground truth
+        """
+        squaregrid = gridlist(label, self.granularity)
+        regions = regionmatrix(label, squaregrid)
+        diffmatrix = traversaldiff(regions, density)
+        diffimage = tdi(label, squaregrid, diffmatrix)
         return diffimage
