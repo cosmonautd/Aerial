@@ -1,6 +1,7 @@
 """ Test file
 """
 import gtde
+import numpy
 
 def one():
     """ Test
@@ -27,12 +28,13 @@ def three():
     """ Test
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=256)
+                    granularity=128)
 
-    frame = gtde.loadimage('img/aerial4.jpg')
-    truth = gtde.loadimage('labels/aerial4.jpg')
+    frame = gtde.loadimage('img/aerial3.jpg')
+    truth = gtde.loadimage('labels/aerial3.jpg')
     framediff = estimator.computeimage(frame)
     truthdiff = estimator.groundtruth(truth)
+    print("Mean Squared Error:", numpy.sqrt(((framediff - truthdiff)**2).mean()))
     gtde.show2image(framediff, truthdiff)
 
 three()
