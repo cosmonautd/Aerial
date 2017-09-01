@@ -275,7 +275,7 @@ class GroundTraversalDifficultyEstimator():
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         return diffmatrix
 
-    def computeimage(self, image):
+    def computetdi(self, image):
         """ Returns a traversal difficulty image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
@@ -287,10 +287,16 @@ class GroundTraversalDifficultyEstimator():
         return diffimage
     
     def groundtruth(self, label):
-        """ Compares traversal difficulty image with a provided labeled ground truth
+        """ Returns the ground truth based on a labeled binary image
         """
         squaregrid = gridlist(label, self.granularity)
         regions = regionmatrix(label, squaregrid)
         diffmatrix = traversaldiff(regions, density)
         diffimage = tdi(label, squaregrid, diffmatrix)
         return diffimage
+    
+    def error(self, tdi, gt):
+        """ Returns the RMSE between a traversal difficulty image and 
+            with a provided ground truth
+        """
+        return numpy.sqrt(((tdi - gt)**2).mean())

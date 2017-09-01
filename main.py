@@ -10,7 +10,7 @@ def one():
                     granularity=128)
 
     frame = gtde.loadimage('img/aerial2.jpg')
-    diffimage = estimator.computeimage(frame)
+    diffimage = estimator.computetdi(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
     gtde.show2image(gtde.drawgrid(frame, grid), diffimage)
 
@@ -30,11 +30,11 @@ def three():
     estimator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128)
 
-    frame = gtde.loadimage('img/aerial3.jpg')
-    truth = gtde.loadimage('labels/aerial3.jpg')
-    framediff = estimator.computeimage(frame)
+    frame = gtde.loadimage('img/aerial2.jpg')
+    truth = gtde.loadimage('labels/aerial2.jpg')
+    framediff = estimator.computetdi(frame)
     truthdiff = estimator.groundtruth(truth)
-    print("Mean Squared Error:", numpy.sqrt(((framediff - truthdiff)**2).mean()))
+    print("Mean Squared Error:", estimator.error(framediff, truthdiff))
     gtde.show2image(framediff, truthdiff)
 
 three()
