@@ -7,6 +7,8 @@ import multiprocessing
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
+from skimage import exposure
+from skimage.morphology import dilation, square
 
 def loadimage(path):
     """ Loads image from path
@@ -102,7 +104,7 @@ def tdi(image, grid, diffmatrix):
     """ Returns traversal difficulty image from image, grid and difficulty matrix
     """
     height, width, _ = image.shape
-    diffimage = 255*numpy.ones((height, width))
+    diffimage = 255*numpy.ones((height, width), dtype=numpy.uint8)
     for k, element in enumerate(grid):
         tlx, tly, size = element[0], element[1], element[2]
         row, column = coord(k, diffmatrix.shape[1])
@@ -275,15 +277,18 @@ class GroundTraversalDifficultyEstimator():
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         return diffmatrix
 
-    def computetdi(self, image):
+    def computetdi(self, image, contrast=True):
         """ Returns a traversal difficulty image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
         regions = regionmatrix(image, squaregrid)
         diffmatrix = traversaldiff(regions, self.function)
-        if self.binary:
-            _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         diffimage = tdi(image, squaregrid, diffmatrix)
+        if contrast:
+            pi, pf = numpy.percentile(diffimage, (20, 80))
+            diffimage = exposure.rescale_intensity(diffimage, in_range=(pi, pf))
+        if self.binary:
+            _, diffimage = cv2.threshold(diffimage, self.threshold, 255, cv2.THRESH_BINARY)
         return diffimage
     
     def groundtruth(self, label):
