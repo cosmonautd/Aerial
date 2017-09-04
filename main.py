@@ -1,6 +1,7 @@
 """ Test file
 """
 import gtde
+import numpy
 
 def one():
     """ Test
@@ -10,8 +11,8 @@ def one():
                     binary=True,
                     threshold=25)
 
-    frame = gtde.loadimage('img/aerial1.jpg')
-    diffimage = estimator.computeimage(frame)
+    frame = gtde.loadimage('img/aerial2.jpg')
+    diffimage = estimator.computetdi(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
     gtde.show2image(gtde.drawgrid(frame, grid), diffimage)
 
@@ -25,4 +26,18 @@ def two():
     diffmatrix = estimator.computematrix(frame)
     print(diffmatrix)
 
-one()
+def three():
+    """ Test
+    """
+    estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=64,
+                    function=gtde.colorhistogram)
+
+    frame = gtde.loadimage('img/aerial2.jpg')
+    truth = gtde.loadimage('labels/aerial2.jpg')
+    framediff = estimator.computetdi(frame)
+    truthdiff = estimator.groundtruth(truth)
+    print("Mean Squared Error:", estimator.error(framediff, truthdiff))
+    gtde.show2image(framediff, truthdiff)
+
+three()

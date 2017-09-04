@@ -7,6 +7,8 @@ import multiprocessing
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
+from skimage import exposure
+from skimage.morphology import dilation, square
 
 def loadimage(path):
     """ Loads image from path
@@ -102,7 +104,7 @@ def tdi(image, grid, diffmatrix):
     """ Returns traversal difficulty image from image, grid and difficulty matrix
     """
     height, width, _ = image.shape
-    diffimage = 255*numpy.ones((height, width))
+    diffimage = 255*numpy.ones((height, width), dtype=numpy.uint8)
     for k, element in enumerate(grid):
         tlx, tly, size = element[0], element[1], element[2]
         row, column = coord(k, diffmatrix.shape[1])
@@ -207,6 +209,23 @@ def superpixels(region, view=False):
         pyplot.show()
     return diff
 
+def density(region, view=False):
+    """ Returns a difficulty value based on white pixel density (for labels)
+    """
+    region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+    diff = numpy.mean(region.flatten())
+    if view:
+        fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
+        ax0.imshow(region, cmap='gray', interpolation='bicubic')
+        ax0.axes.get_xaxis().set_visible(False)
+        ax0.axes.get_yaxis().set_visible(False)
+        ax1.imshow(edges, cmap='gray', interpolation='bicubic')
+        ax1.axes.get_xaxis().set_visible(False)
+        ax1.axes.get_yaxis().set_visible(False)
+        fig.tight_layout()
+        pyplot.show()
+    return  diff
+
 def showimage(image):
     """ Displays an image on screen
     """
@@ -221,7 +240,7 @@ def show2image(image1, image2):
     """ Displays two images on screen, side by side
     """
     _, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
-    ax0.imshow(image1, interpolation='bicubic')
+    ax0.imshow(image1, cmap='gray', interpolation='bicubic')
     ax0.axes.get_xaxis().set_visible(False)
     ax0.axes.get_yaxis().set_visible(False)
     ax1.imshow(image2, cmap='gray', interpolation='bicubic')
@@ -258,13 +277,31 @@ class GroundTraversalDifficultyEstimator():
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         return diffmatrix
 
-    def computeimage(self, image):
+    def computetdi(self, image, contrast=True):
         """ Returns a traversal difficulty image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
         regions = regionmatrix(image, squaregrid)
         diffmatrix = traversaldiff(regions, self.function)
-        if self.binary:
-            _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         diffimage = tdi(image, squaregrid, diffmatrix)
+        if contrast:
+            pi, pf = numpy.percentile(diffimage, (20, 80))
+            diffimage = exposure.rescale_intensity(diffimage, in_range=(pi, pf))
+        if self.binary:
+            _, diffimage = cv2.threshold(diffimage, self.threshold, 255, cv2.THRESH_BINARY)
         return diffimage
+    
+    def groundtruth(self, label):
+        """ Returns the ground truth based on a labeled binary image
+        """
+        squaregrid = gridlist(label, self.granularity)
+        regions = regionmatrix(label, squaregrid)
+        diffmatrix = traversaldiff(regions, density)
+        diffimage = tdi(label, squaregrid, diffmatrix)
+        return diffimage
+    
+    def error(self, tdi, gt):
+        """ Returns the RMSE between a traversal difficulty image and 
+            with a provided ground truth
+        """
+        return numpy.sqrt(((tdi - gt)**2).mean())
