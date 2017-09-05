@@ -17,13 +17,15 @@ print(framematrix.shape)
 
 G = graphtool.Graph(directed=False)
 pos = G.new_vertex_property("vector<double>")
-diff = G.new_vertex_property("vector<double>")
+pos2 = G.new_vertex_property("vector<double>")
+diff = G.new_vertex_property("double")
 weight = G.new_edge_property("double")
 
 for i, row in enumerate(framematrix):
     for j, element in enumerate(row):
         v = G.add_vertex()
         pos[v] = [i, j]
+        pos2[v] = [j, i]
         diff[v] = framematrix[i][j]
 
 for v in G.vertices():
@@ -46,4 +48,5 @@ for v in G.vertices():
             e = G.add_edge(v, G.vertex(coord2(right, framematrix.shape[1])))
             weight[e] = abs(diff[v] - diff[G.vertex(coord2(right, framematrix.shape[1]))])
 
-draw.graph_draw(G, pos=pos, output_size=(1000, 1000), output="tdg.png")
+draw.graph_draw(G, pos=pos2, output_size=(1000, 1000), output="tdg.png",\
+                edge_pen_width=weight)
