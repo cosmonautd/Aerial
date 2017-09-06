@@ -30,8 +30,8 @@ def three():
     """ Test
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=64,
-                    function=gtde.colorhistogram)
+                    granularity=128,
+                    function=gtde.superpixels)
 
     frame = gtde.loadimage('img/aerial2.jpg')
     truth = gtde.loadimage('labels/aerial2.jpg')
