@@ -34,19 +34,19 @@ for v in G.vertices():
     if i-1 > -1:
         if G.edge(coord2(top, framematrix.shape[1]), v) == None:
             e = G.add_edge(v, G.vertex(coord2(top, framematrix.shape[1])))
-            weight[e] = abs(diff[v] - diff[G.vertex(coord2(top, framematrix.shape[1]))])
+            weight[e] = (diff[v] + diff[G.vertex(coord2(top, framematrix.shape[1]))])/16
     if i+1 < framematrix.shape[0]:
         if G.edge(coord2(bottom, framematrix.shape[1]), v) == None:
             e = G.add_edge(v, G.vertex(coord2(bottom, framematrix.shape[1])))
-            weight[e] = abs(diff[v] - diff[G.vertex(coord2(bottom, framematrix.shape[1]))])
+            weight[e] = (diff[v] + diff[G.vertex(coord2(bottom, framematrix.shape[1]))])/16
     if j-1 > -1:
         if G.edge(coord2(left, framematrix.shape[1]), v) == None:
             e = G.add_edge(v, G.vertex(coord2(left, framematrix.shape[1])))
-            weight[e] = abs(diff[v] - diff[G.vertex(coord2(left, framematrix.shape[1]))])
+            weight[e] = (diff[v] + diff[G.vertex(coord2(left, framematrix.shape[1]))])/16
     if j+1 < framematrix.shape[1]:
         if G.edge(coord2(right, framematrix.shape[1]), v) == None:
             e = G.add_edge(v, G.vertex(coord2(right, framematrix.shape[1])))
-            weight[e] = abs(diff[v] - diff[G.vertex(coord2(right, framematrix.shape[1]))])
+            weight[e] = (diff[v] + diff[G.vertex(coord2(right, framematrix.shape[1]))])/16
 
-draw.graph_draw(G, pos=pos2, output_size=(1000, 1000), output="tdg.png",\
-                edge_pen_width=weight)
+draw.graph_draw(G, pos=pos2, output_size=(1200, 1200), output="tdg.png",\
+                vertex_size=25, edge_pen_width=weight)
