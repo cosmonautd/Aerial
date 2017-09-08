@@ -29,7 +29,6 @@ estimator = gtde.GroundTraversalDifficultyEstimator( \
 
 frame = gtde.loadimage('img/aerial2.jpg')
 framematrix = estimator.computematrix(frame)
-print(framematrix.shape)
 
 G = graphtool.Graph(directed=False)
 pos = G.new_vertex_property("vector<double>")
@@ -83,16 +82,6 @@ for v in G.vertices():
             e = G.add_edge(v, G.vertex(coord2(bottomright, framematrix.shape[1])))
             weight[e] = (diff[v] + diff[G.vertex(coord2(bottomright, framematrix.shape[1]))])
 
-weight.a = weight.a/16 + 1
-draw.graph_draw(G, pos=pos2, output_size=(1200, 1200), output="tdg.png",\
-                vertex_size=25, edge_pen_width=weight)
-weight.a = 16*(weight.a - 1)
-
-source = G.vertex(coord2((12, 1), framematrix.shape[1]))
-target = G.vertex(coord2((4, 14), framematrix.shape[1]))
-
-dist, pred = search.dijkstra_search(G, weight, source, VisitorExample())
-
 vfcolor = G.new_vertex_property("vector<double>")
 ecolor = G.new_edge_property("vector<double>")
 ewidth = G.new_edge_property("int")
@@ -101,6 +90,14 @@ for v in G.vertices():
 for e in G.edges():
     ewidth[e] = weight[e]/16 + 1
     ecolor[e] = [0.179, 0.203, 0.210, 0.8]
+
+draw.graph_draw(G, pos=pos2, output_size=(1200, 1200), vertex_fill_color=vfcolor,\
+                edge_color=ecolor, edge_pen_width=ewidth, output="tdg.png")
+
+source = G.vertex(coord2((12, 1), framematrix.shape[1]))
+target = G.vertex(coord2((4, 14), framematrix.shape[1]))
+
+dist, pred = search.dijkstra_search(G, weight, source, VisitorExample())
 
 v = target
 vfcolor[v] = [0.640625, 0, 0, 0.9]
