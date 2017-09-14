@@ -248,6 +248,19 @@ def show2image(image1, image2):
     ax1.axes.get_yaxis().set_visible(False)
     pyplot.show()
 
+def save2image(image1, image2):
+    """ Saves two images to disk, side by side
+    """
+    fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
+    ax0.imshow(image1, cmap='gray', interpolation='bicubic')
+    ax0.axes.get_xaxis().set_visible(False)
+    ax0.axes.get_yaxis().set_visible(False)
+    ax1.imshow(image2, cmap='gray', interpolation='bicubic')
+    ax1.axes.get_xaxis().set_visible(False)
+    ax1.axes.get_yaxis().set_visible(False)
+    fig.savefig('figure.png')
+    pyplot.close(fig)
+
 def showgrid(image, grid):
     """ Displays an image on screen with grid overlay
     """
