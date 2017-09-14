@@ -4,6 +4,15 @@ import graph_tool as graphtool
 import graph_tool.draw as draw
 import graph_tool.search as search
 
+""" The graphmap module provides methods to generate 
+    traversal difficulty graphs from traversal difficulty images.
+    Tools for path computation must also be provided.
+    Class RouteEstimator: defines a route estimator and its configuration.
+    Method tdi2graph: builds a graph from a TDI source matrix
+    Method route: returns the best route between two regions
+    Method drawgraph: saves a graph as an image (optionally, draws paths)
+"""
+
 def coord2(position, columns):
     """ Converts two-dimensional indexes to one-dimension coordinate
     """
