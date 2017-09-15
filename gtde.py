@@ -248,7 +248,7 @@ def show2image(image1, image2):
     ax1.axes.get_yaxis().set_visible(False)
     pyplot.show()
 
-def save2image(image1, image2):
+def save2image(path, image1, image2):
     """ Saves two images to disk, side by side
     """
     fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
@@ -258,7 +258,7 @@ def save2image(image1, image2):
     ax1.imshow(image2, cmap='gray', interpolation='bicubic')
     ax1.axes.get_xaxis().set_visible(False)
     ax1.axes.get_yaxis().set_visible(False)
-    fig.savefig('figure.png')
+    fig.savefig(path, dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
 def showgrid(image, grid):
