@@ -4,6 +4,7 @@ import os
 import time
 import numpy
 import gtde
+import progressbar
 
 def one():
     """ Test
@@ -48,27 +49,47 @@ def four():
     tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_TDI/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
 
-    for g in [32, 64, 128, 256, 512]:
-
-        estimator = gtde.GroundTraversalDifficultyEstimator( \
-                        granularity=g,
-                        function=gtde.superpixels)
+    for g in [512, 256, 128, 64, 32]:
 
         outputpath = os.path.join(tdipath, 'R%03d' % g)
 
         if not os.path.exists(outputpath):
-            os.makedirs(outputpath)
-        
-        dataset = []
-        for (dirpath, dirnames, filenames) in os.walk(datasetpath):
-            dataset.extend(filenames)
-            break
-        
-        dataset.sort(key=str.lower)
+                os.makedirs(outputpath)
 
-        for i, imagename in enumerate(dataset):
-            img = gtde.loadimage(os.path.join(datasetpath, imagename))
-            tdi = estimator.computetdi(img)
-            gtde.save2image(os.path.join(outputpath, imagename),img, tdi)
+        with open(os.path.join(outputpath, 'time.log'), 'w') as timelog:
+
+            estimator = gtde.GroundTraversalDifficultyEstimator( \
+                            granularity=g,
+                            function=gtde.superpixels)
+            
+            dataset = list()
+            for (dirpath, dirnames, filenames) in os.walk(datasetpath):
+                dataset.extend(filenames)
+                break
+            
+            dataset.sort(key=str.lower)
+
+            times = list()
+
+            widgets = [progressbar.Percentage(), ' Progress',
+                        progressbar.Bar(), ' ', progressbar.ETA()]
+
+            bar = progressbar.ProgressBar(widgets=widgets, maxval=len(dataset))
+
+            print("Generating TDI with %dx%d regions" % (g, g))
+            bar.start()
+
+            for i, imagename in enumerate(dataset):
+                img = gtde.loadimage(os.path.join(datasetpath, imagename))
+                start = time.time()
+                tdi = estimator.computetdi(img)
+                times.append(time.time() - start)
+                gtde.save2image(os.path.join(outputpath, imagename),img, tdi)
+                timelog.write("%s: %.3f s\n" % (imagename, times[-1]))
+                bar.update(i)
+            
+            bar.finish()
+            
+            timelog.write("Average: %.3f s" % (numpy.mean(times)))
 
 four()
