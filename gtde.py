@@ -4,6 +4,8 @@
 import cv2
 import numpy
 import multiprocessing
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
