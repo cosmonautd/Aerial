@@ -86,6 +86,7 @@ def four():
                 times.append(time.time() - start)
                 gtde.save2image(os.path.join(outputpath, imagename),img, tdi)
                 timelog.write("%s: %.3f s\n" % (imagename, times[-1]))
+                timelog.flush()
                 bar.update(i)
             
             bar.finish()
