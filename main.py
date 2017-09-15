@@ -1,8 +1,9 @@
 """ Test file
 """
 import os
-import gtde
+import time
 import numpy
+import gtde
 
 def one():
     """ Test
@@ -69,6 +70,5 @@ def four():
             img = gtde.loadimage(os.path.join(datasetpath, imagename))
             tdi = estimator.computetdi(img)
             gtde.save2image(os.path.join(outputpath, imagename),img, tdi)
-            break
 
 four()
