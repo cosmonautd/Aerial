@@ -18,7 +18,10 @@ def coord2(position, columns):
     """
     return position[0]*columns + position[1]
 
-class VisitorExample(search.DijkstraVisitor):
+def drawgraph():
+    pass
+
+class Visitor(search.DijkstraVisitor):
 
     def __init__(self):
         pass
@@ -32,12 +35,23 @@ class VisitorExample(search.DijkstraVisitor):
     def edge_relaxed(self, e):
         pass
 
-estimator = gtde.GroundTraversalDifficultyEstimator( \
+class RouteEstimator:
+
+    def __init__(self):
+        pass
+    
+    def tdi2graph(self):
+        pass
+    
+    def route(self):
+        pass
+
+tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128,
                     function=gtde.superpixels)
 
 frame = gtde.loadimage('img/aerial2.jpg')
-framematrix = estimator.computematrix(frame)
+framematrix = tdigenerator.computematrix(frame)
 
 G = graphtool.Graph(directed=False)
 pos = G.new_vertex_property("vector<double>")
@@ -106,7 +120,7 @@ draw.graph_draw(G, pos=pos2, output_size=(1200, 1200), vertex_fill_color=vfcolor
 source = G.vertex(coord2((12, 1), framematrix.shape[1]))
 target = G.vertex(coord2((4, 14), framematrix.shape[1]))
 
-dist, pred = search.dijkstra_search(G, weight, source, VisitorExample())
+dist, pred = search.dijkstra_search(G, weight, source, Visitor())
 
 v = target
 vfcolor[v] = [0.640625, 0, 0, 0.9]
