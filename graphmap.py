@@ -18,8 +18,17 @@ def coord2(position, columns):
     """
     return position[0]*columns + position[1]
 
-def drawgraph():
-    pass
+def drawgraph(G, path=[], filename="tdg.png"):
+    for i, v in enumerate(path):
+        G.vp.vfcolor[v] = [0.640625, 0, 0, 0.9]
+        if i < len(path) - 1:
+            for e in v.out_edges():
+                if e.target() == path[i+1]:
+                    G.ep.ecolor[e] = [0.640625, 0, 0, 0.9]
+                    G.ep.ewidth[e] = 16
+
+    draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_fill_color=G.vp.vfcolor,\
+                    edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output=filename)
 
 class Visitor(search.DijkstraVisitor):
 
@@ -106,8 +115,20 @@ class RouteEstimator:
         
         return G
     
-    def route(self):
-        pass
+    def route(self, G, source, target):
+
+        dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor())
+
+        path = list()
+        path.append(target)
+
+        v = target
+        while v != source:
+            v = G.vertex(pred[v])
+            path.append(v)
+        
+        return path[::-1]
+
 
 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128,
@@ -119,26 +140,8 @@ tdmatrix = tdigenerator.computematrix(frame)
 router = RouteEstimator()
 G = router.tdm2graph(tdmatrix)
 
-draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_fill_color=G.vp.vfcolor,\
-                edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output="tdg.png")
-
-quit()
-
 source = G.vertex(coord2((12, 1), tdmatrix.shape[1]))
 target = G.vertex(coord2((4, 14), tdmatrix.shape[1]))
 
-dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor())
-
-v = target
-G.vp.vfcolor[v] = [0.640625, 0, 0, 0.9]
-while v != source:
-    p = G.vertex(pred[v])
-    for e in v.out_edges():
-        if e.target() == p:
-            G.ep.ecolor[e] = [0.640625, 0, 0, 0.9]
-            G.ep.ewidth[e] = 16
-    v = p
-    G.vp.vfcolor[v] = [0.640625, 0, 0, 0.9]
-
-draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_fill_color=G.vp.vfcolor,\
-                edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output="dijkstra.png")
+path = router.route(G, source, target)
+drawgraph(G, path, 'tdg.png')
