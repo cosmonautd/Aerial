@@ -40,7 +40,7 @@ class RouteEstimator:
     def __init__(self):
         pass
     
-    def tdi2graph(self):
+    def tdi2graph(self, tdmatrix):
         pass
     
     def route(self):
@@ -51,7 +51,7 @@ tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     function=gtde.superpixels)
 
 frame = gtde.loadimage('img/aerial2.jpg')
-framematrix = tdigenerator.computematrix(frame)
+tdmatrix = tdigenerator.computematrix(frame)
 
 G = graphtool.Graph(directed=False)
 pos = G.new_vertex_property("vector<double>")
@@ -59,51 +59,51 @@ pos2 = G.new_vertex_property("vector<double>")
 diff = G.new_vertex_property("double")
 weight = G.new_edge_property("double")
 
-for i, row in enumerate(framematrix):
+for i, row in enumerate(tdmatrix):
     for j, element in enumerate(row):
         v = G.add_vertex()
         pos[v] = [i, j]
         pos2[v] = [j, i]
-        diff[v] = framematrix[i][j]
+        diff[v] = tdmatrix[i][j]
 
 for v in G.vertices():
     (i, j) = pos[v][0], pos[v][1]
 
     top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
     if i-1 > -1:
-        if G.edge(coord2(top, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(top, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(top, framematrix.shape[1]))])
-    if i+1 < framematrix.shape[0]:
-        if G.edge(coord2(bottom, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(bottom, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(bottom, framematrix.shape[1]))])
+        if G.edge(coord2(top, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(top, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(top, tdmatrix.shape[1]))])
+    if i+1 < tdmatrix.shape[0]:
+        if G.edge(coord2(bottom, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(bottom, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(bottom, tdmatrix.shape[1]))])
     if j-1 > -1:
-        if G.edge(coord2(left, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(left, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(left, framematrix.shape[1]))])
-    if j+1 < framematrix.shape[1]:
-        if G.edge(coord2(right, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(right, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(right, framematrix.shape[1]))])
+        if G.edge(coord2(left, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(left, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(left, tdmatrix.shape[1]))])
+    if j+1 < tdmatrix.shape[1]:
+        if G.edge(coord2(right, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(right, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(right, tdmatrix.shape[1]))])
     
     topleft, topright, bottomleft, bottomright = (i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)
     if i-1 > -1 and j-1 > -1:
-        if G.edge(coord2(topleft, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(topleft, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(topleft, framematrix.shape[1]))])
-    if i-1 > -1 and j+1 < framematrix.shape[1]:
-        if G.edge(coord2(topright, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(topright, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(topright, framematrix.shape[1]))])
-    if i+1 < framematrix.shape[0] and j-1 > -1:
-        if G.edge(coord2(bottomleft, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(bottomleft, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(bottomleft, framematrix.shape[1]))])
-    if i+1 < framematrix.shape[0] and j+1 < framematrix.shape[1]:
-        if G.edge(coord2(bottomright, framematrix.shape[1]), v) == None:
-            e = G.add_edge(v, G.vertex(coord2(bottomright, framematrix.shape[1])))
-            weight[e] = (diff[v] + diff[G.vertex(coord2(bottomright, framematrix.shape[1]))])
+        if G.edge(coord2(topleft, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(topleft, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(topleft, tdmatrix.shape[1]))])
+    if i-1 > -1 and j+1 < tdmatrix.shape[1]:
+        if G.edge(coord2(topright, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(topright, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(topright, tdmatrix.shape[1]))])
+    if i+1 < tdmatrix.shape[0] and j-1 > -1:
+        if G.edge(coord2(bottomleft, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(bottomleft, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(bottomleft, tdmatrix.shape[1]))])
+    if i+1 < tdmatrix.shape[0] and j+1 < tdmatrix.shape[1]:
+        if G.edge(coord2(bottomright, tdmatrix.shape[1]), v) == None:
+            e = G.add_edge(v, G.vertex(coord2(bottomright, tdmatrix.shape[1])))
+            weight[e] = (diff[v] + diff[G.vertex(coord2(bottomright, tdmatrix.shape[1]))])
 
 vfcolor = G.new_vertex_property("vector<double>")
 ecolor = G.new_edge_property("vector<double>")
@@ -117,8 +117,8 @@ for e in G.edges():
 draw.graph_draw(G, pos=pos2, output_size=(1200, 1200), vertex_fill_color=vfcolor,\
                 edge_color=ecolor, edge_pen_width=ewidth, output="tdg.png")
 
-source = G.vertex(coord2((12, 1), framematrix.shape[1]))
-target = G.vertex(coord2((4, 14), framematrix.shape[1]))
+source = G.vertex(coord2((12, 1), tdmatrix.shape[1]))
+target = G.vertex(coord2((4, 14), tdmatrix.shape[1]))
 
 dist, pred = search.dijkstra_search(G, weight, source, Visitor())
 
