@@ -128,20 +128,3 @@ class RouteEstimator:
             path.append(v)
         
         return path[::-1]
-
-
-tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128,
-                    function=gtde.superpixels)
-
-image = gtde.loadimage('img/aerial2.jpg')
-tdmatrix = tdigenerator.computematrix(image)
-
-router = RouteEstimator()
-G = router.tdm2graph(tdmatrix)
-
-source = G.vertex(coord2((12, 1), tdmatrix.shape[1]))
-target = G.vertex(coord2((4, 14), tdmatrix.shape[1]))
-
-path = router.route(G, source, target)
-drawgraph(G, path, 'tdg.png')

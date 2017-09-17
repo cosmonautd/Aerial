@@ -5,6 +5,7 @@ import time
 import numpy
 import gtde
 import progressbar
+import graphmap
 
 def one():
     """ Test
@@ -93,4 +94,23 @@ def four():
             
             timelog.write("Average: %.3f s" % (numpy.mean(times)))
 
-four()
+def five():
+    """ Test
+    """
+    tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=128,
+                    function=gtde.superpixels)
+
+    image = gtde.loadimage('img/aerial2.jpg')
+    tdmatrix = tdigenerator.computematrix(image)
+
+    router = graphmap.RouteEstimator()
+    G = router.tdm2graph(tdmatrix)
+
+    source = G.vertex(graphmap.coord2((12, 1), tdmatrix.shape[1]))
+    target = G.vertex(graphmap.coord2((4, 14), tdmatrix.shape[1]))
+
+    path = router.route(G, source, target)
+    graphmap.drawgraph(G, path, 'tdg.png')
+
+five()
