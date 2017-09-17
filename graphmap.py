@@ -134,8 +134,8 @@ tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128,
                     function=gtde.superpixels)
 
-frame = gtde.loadimage('img/aerial2.jpg')
-tdmatrix = tdigenerator.computematrix(frame)
+image = gtde.loadimage('img/aerial2.jpg')
+tdmatrix = tdigenerator.computematrix(image)
 
 router = RouteEstimator()
 G = router.tdm2graph(tdmatrix)
