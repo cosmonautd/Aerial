@@ -50,7 +50,7 @@ def four():
     tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_TDI/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
 
-    for g in [512, 256, 128, 64, 32]:
+    for g in [1024, 512, 256, 128, 64, 32, 16]:
 
         outputpath = os.path.join(tdipath, 'R%03d' % g)
 
@@ -113,4 +113,32 @@ def five():
     path = router.route(G, source, target)
     graphmap.drawgraph(G, path, 'tdg.png')
 
-five()
+def six():
+    """ Test
+    """
+    gray_estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=16,
+                    function=gtde.grayhistogram)
+    
+    rgb_estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=16,
+                    function=gtde.colorhistogram)
+    
+    edge_estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=16,
+                    function=gtde.cannyedge)
+    
+    superpixels_estimator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=16,
+                    function=gtde.superpixels)
+
+    frame = gtde.loadimage('img/aerial1.jpg')
+
+    graydiffimage = gray_estimator.computetdi(frame, contrast=True)
+    rgbdiffimage = rgb_estimator.computetdi(frame, contrast=True)
+    edgediffimage = edge_estimator.computetdi(frame, contrast=True)
+    superpixelsdiffimage = superpixels_estimator.computetdi(frame, contrast=True)
+
+    gtde.show5image(frame, graydiffimage, rgbdiffimage, edgediffimage, superpixelsdiffimage)
+
+six()
