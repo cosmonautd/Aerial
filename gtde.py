@@ -9,11 +9,11 @@ import matplotlib
 
 try: 
     if len(os.environ['DISPLAY']) > 0:
-        pass
+        matplotlib.use('cairo')
     else:
-        matplotlib.use('Agg')
+        matplotlib.use('agg')
 except:
-    matplotlib.use('Agg')
+    matplotlib.use('agg')
 
 from matplotlib import pyplot
 from skimage.segmentation import slic
