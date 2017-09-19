@@ -8,20 +8,20 @@ import progressbar
 import graphmap
 
 def one():
-    """ Test
+    """ Example 1: Computes a binary TDI and shows on screen
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=128,
                     binary=True,
-                    threshold=25)
+                    threshold=30)
 
     frame = gtde.loadimage('img/aerial2.jpg')
-    diffimage = estimator.computetdi(frame)
+    diffimage = estimator.computetdi(frame, contrast=False)
     grid = gtde.gridlist(frame, estimator.granularity)
     gtde.show2image(gtde.drawgrid(frame, grid), diffimage)
 
 def two():
-    """ Test
+    """ Example 2: Computes a TDM and writes to stdout
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128)
@@ -31,7 +31,8 @@ def two():
     print(diffmatrix)
 
 def three():
-    """ Test
+    """ Example 3: Computes a TDI and compares to its ground truth
+        Computes root mean squared error and saves image file on disk
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128,
@@ -41,11 +42,11 @@ def three():
     truth = gtde.loadimage('labels/aerial2.jpg')
     framediff = estimator.computetdi(frame)
     truthdiff = estimator.groundtruth(truth)
-    print("Mean Squared Error:", estimator.error(framediff, truthdiff))
-    gtde.save2image(framediff, truthdiff)
+    print("Root Mean Squared Error:", estimator.error(framediff, truthdiff))
+    gtde.save2image('truth.png', framediff, truthdiff)
 
 def four():
-    """ Test
+    """ Example 4: Computes TDIs for all files in datasetpath and saves to tdipath
     """
     tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_TDI/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
@@ -95,7 +96,8 @@ def four():
             timelog.write("Average: %.3f s" % (numpy.mean(times)))
 
 def five():
-    """ Test
+    """ Example 5: Computes a route between two regions pictured in an input image
+        Saves image to disk
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128,
@@ -114,25 +116,26 @@ def five():
     graphmap.drawgraph(G, path, 'tdg.png')
 
 def six():
-    """ Test
+    """ Example 6: Computes one TDI for each defined function
+        Shows on screen a concatenation of input image and its TDIs
     """
     gray_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=128,
                     function=gtde.grayhistogram)
     
     rgb_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=128,
                     function=gtde.colorhistogram)
     
     edge_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=128,
                     function=gtde.cannyedge)
     
     superpixels_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=128,
                     function=gtde.superpixels)
 
-    frame = gtde.loadimage('img/aerial1.jpg')
+    frame = gtde.loadimage('img/aerial2.jpg')
 
     graydiffimage = gray_estimator.computetdi(frame, contrast=True)
     rgbdiffimage = rgb_estimator.computetdi(frame, contrast=True)
