@@ -1,11 +1,20 @@
 """ Ground traversal difficulty estimatation package
 """
 
+import os
 import cv2
 import numpy
 import multiprocessing
 import matplotlib
-matplotlib.use('Agg')
+
+try: 
+    if len(os.environ['DISPLAY']) > 0:
+        pass
+    else:
+        matplotlib.use('Agg')
+except:
+    matplotlib.use('Agg')
+
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
@@ -241,13 +250,46 @@ def showimage(image):
 def show2image(image1, image2):
     """ Displays two images on screen, side by side
     """
-    _, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
+    fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
     ax0.imshow(image1, cmap='gray', interpolation='bicubic')
     ax0.axes.get_xaxis().set_visible(False)
     ax0.axes.get_yaxis().set_visible(False)
     ax1.imshow(image2, cmap='gray', interpolation='bicubic')
     ax1.axes.get_xaxis().set_visible(False)
     ax1.axes.get_yaxis().set_visible(False)
+    fig.tight_layout()
+    pyplot.show()
+
+def show5image(image1, image2, image3, image4, image5):
+    """ Displays two images on screen, side by side
+    """
+    font = {'family' : 'DejaVu Sans',
+        'weight' : 'normal',
+        'size'   : 16}
+    matplotlib.rc('font', **font)
+    fig, (ax0, ax1, ax2, ax3, ax4) = pyplot.subplots(ncols=5, figsize=(15, 3))
+    ax0.imshow(image1, cmap='gray', interpolation='bicubic')
+    #ax0.set_xlabel("(a)")
+    ax0.axes.get_xaxis().set_ticks([])
+    ax0.axes.get_yaxis().set_visible(False)
+    ax1.imshow(image2, cmap='gray', interpolation='bicubic')
+    #ax1.set_xlabel("(b)")
+    ax1.axes.get_xaxis().set_ticks([])
+    ax1.axes.get_yaxis().set_visible(False)
+    ax2.imshow(image3, cmap='gray', interpolation='bicubic')
+    #ax2.set_xlabel("(c)")
+    ax2.axes.get_xaxis().set_ticks([])
+    ax2.axes.get_yaxis().set_visible(False)
+    ax3.imshow(image4, cmap='gray', interpolation='bicubic')
+    #ax3.set_xlabel("(d)")
+    ax3.axes.get_xaxis().set_ticks([])
+    ax3.axes.get_yaxis().set_visible(False)
+    ax4.imshow(image5, cmap='gray', interpolation='bicubic')
+    #ax4.set_xlabel("(e)")
+    ax4.axes.get_xaxis().set_ticks([])
+    ax4.axes.get_yaxis().set_visible(False)
+    fig.tight_layout()
+    fig.subplots_adjust(hspace=0.01)
     pyplot.show()
 
 def save2image(path, image1, image2):
