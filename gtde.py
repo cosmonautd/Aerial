@@ -6,6 +6,7 @@ import cv2
 import numpy
 import multiprocessing
 import matplotlib
+import random
 
 try: 
     if len(os.environ['DISPLAY']) > 0:
@@ -124,10 +125,11 @@ def tdi(image, grid, diffmatrix):
         diffimage[tly:tly+region.shape[0], tlx:tlx+region.shape[1]] = region
     return diffimage
 
-def random(region, view=False):
+def randomftd(region, view=False):
     """ Returns a random difficulty value
     """
-    return numpy.random.randint(256)
+    #return numpy.random.randint(256)
+    return random.randint(0, 255)
 
 def grayhistogram(region, view=False):
     """ Returns a difficulty value based on grayscale histogram dispersion
