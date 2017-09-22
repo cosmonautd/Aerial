@@ -147,57 +147,74 @@ def six():
 def seven():
     """ Example 7
     """
-    tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_SUPERPIXELS/'
     labelpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_LABELS/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
 
-    for g in [768, 512, 256, 128, 64, 32, 16]:
+    for ftd in [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]:
 
-        outputpath = os.path.join(tdipath, 'R%03d' % g)
+        if ftd == gtde.randomftd:
+            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_RANDOM/'
+            print("Traversal Difficulty Function: Random")
+        elif ftd == gtde.grayhistogram:
+            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_GRAYHIST/'
+            print("Traversal Difficulty Function: Grayscale Histogram")
+        elif ftd == gtde.colorhistogram:
+            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_COLORHIST/'
+            print("Traversal Difficulty Function: Color Histogram")
+        elif ftd == gtde.cannyedge:
+            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_CANNYEDGE/'
+            print("Traversal Difficulty Function: Canny Edge")
+        elif ftd == gtde.superpixels:
+            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_SUPERPIXELS/'
+            print("Traversal Difficulty Function: Superpixels")
 
-        if not os.path.exists(outputpath):
-                os.makedirs(outputpath)
+        for g in [768, 512, 256, 128, 64, 32, 16]:
 
-        with open(os.path.join(outputpath, 'time.log'), 'w') as timelog:
+            outputpath = os.path.join(tdipath, 'R%03d' % g)
 
-            estimator = gtde.GroundTraversalDifficultyEstimator( \
-                            granularity=g,
-                            function=gtde.superpixels)
-            
-            labeldataset = list()
-            for (dirpath, dirnames, filenames) in os.walk(labelpath):
-                labeldataset.extend(filenames)
-                break
-            
-            labeldataset.sort(key=str.lower)
+            if not os.path.exists(outputpath):
+                    os.makedirs(outputpath)
 
-            widgets = [progressbar.Percentage(), ' Progress',
-                        progressbar.Bar(), ' ', progressbar.ETA()]
+            with open(os.path.join(outputpath, 'time.log'), 'w') as timelog:
 
-            bar = progressbar.ProgressBar(widgets=widgets, maxval=len(labeldataset))
+                estimator = gtde.GroundTraversalDifficultyEstimator( \
+                                granularity=g,
+                                function=ftd)
+                
+                labeldataset = list()
+                for (dirpath, dirnames, filenames) in os.walk(labelpath):
+                    labeldataset.extend(filenames)
+                    break
+                
+                labeldataset.sort(key=str.lower)
 
-            print("Generating TDI with %dx%d regions" % (g, g))
-            bar.start()
+                widgets = [progressbar.Percentage(), ' Progress',
+                            progressbar.Bar(), ' ', progressbar.ETA()]
 
-            times = list()
-            errors = list()
+                bar = progressbar.ProgressBar(widgets=widgets, maxval=len(labeldataset))
 
-            for i, imagename in enumerate(labeldataset):
-                lbl = gtde.loadimage(os.path.join(labelpath, imagename))
-                img = gtde.loadimage(os.path.join(datasetpath, imagename))
-                gnd = estimator.groundtruth(lbl)
-                start = time.time()
-                tdi = estimator.computetdi(img)
-                times.append(time.time() - start)
-                errors.append(estimator.error(tdi, gnd))
-                gtde.save2image(os.path.join(outputpath, imagename), gnd, tdi)
-                timelog.write("%s: %.3f s     Error: %.3f\n" % (imagename, times[-1], errors[-1]))
-                timelog.flush()
-                bar.update(i+1)
-            
-            bar.finish()
-            
-            timelog.write("Average: %.3f s\n" % (numpy.mean(times)))
-            timelog.write("Average Error: %.3f s" % (numpy.mean(errors)))
+                print("Generating TDI with %dx%d regions" % (g, g))
+                bar.start()
+
+                times = list()
+                errors = list()
+
+                for i, imagename in enumerate(labeldataset):
+                    lbl = gtde.loadimage(os.path.join(labelpath, imagename))
+                    img = gtde.loadimage(os.path.join(datasetpath, imagename))
+                    gnd = estimator.groundtruth(lbl)
+                    start = time.time()
+                    tdi = estimator.computetdi(img)
+                    times.append(time.time() - start)
+                    errors.append(estimator.error(tdi, gnd))
+                    gtde.save2image(os.path.join(outputpath, imagename), gnd, tdi)
+                    timelog.write("%s: %.3f s     Error: %.3f\n" % (imagename, times[-1], errors[-1]))
+                    timelog.flush()
+                    bar.update(i+1)
+                
+                bar.finish()
+                
+                timelog.write("Average: %.3f s\n" % (numpy.mean(times)))
+                timelog.write("Average Error: %.3f s" % (numpy.mean(errors)))
 
 seven()
