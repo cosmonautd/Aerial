@@ -42,7 +42,7 @@ def three():
     truth = gtde.loadimage('labels/aerial2.jpg')
     framediff = estimator.computetdi(frame)
     truthdiff = estimator.groundtruth(truth)
-    print("Root Mean Squared Error:", estimator.error(framediff, truthdiff))
+    print("Root Mean Squared Error:", estimator.error(framediff, truthdiff, 'rmse'))
     gtde.save2image('truth.png', truthdiff, framediff)
 
 def four():
@@ -51,7 +51,7 @@ def four():
     tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_TDI/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
 
-    for g in [768, 512, 256, 128, 64, 32, 16]:
+    for g in [512, 256, 128, 64, 32]:
 
         outputpath = os.path.join(tdipath, 'R%03d' % g)
 
@@ -168,7 +168,7 @@ def seven():
             tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_SUPERPIXELS/'
             print("Traversal Difficulty Function: Superpixels")
 
-        for g in [768, 512, 256, 128, 64, 32, 16]:
+        for g in [512, 256, 128, 64, 32]:
 
             outputpath = os.path.join(tdipath, 'R%03d' % g)
 
@@ -197,7 +197,12 @@ def seven():
                 bar.start()
 
                 times = list()
-                errors = list()
+                corr = list()
+                jacc = list()
+                mse = list()
+                nrmse = list()
+                psnr = list()
+                ssim = list()
 
                 for i, imagename in enumerate(labeldataset):
                     lbl = gtde.loadimage(os.path.join(labelpath, imagename))
@@ -206,15 +211,26 @@ def seven():
                     start = time.time()
                     tdi = estimator.computetdi(img)
                     times.append(time.time() - start)
-                    errors.append(estimator.error(tdi, gnd))
+                    corr.append(estimator.error(tdi, gnd, 'corr'))
+                    jacc.append(estimator.error(tdi, gnd, 'jaccard'))
+                    mse.append(estimator.error(tdi, gnd, 'mse'))
+                    nrmse.append(estimator.error(tdi, gnd, 'nrmse'))
+                    psnr.append(estimator.error(tdi, gnd, 'psnr'))
+                    ssim.append(estimator.error(tdi, gnd, 'ssim'))
                     gtde.save2image(os.path.join(outputpath, imagename), gnd, tdi)
-                    timelog.write("%s: %.3f s     Error: %.3f\n" % (imagename, times[-1], errors[-1]))
+                    timelog.write("%s: %.3f s  CORR: %.3f  JACC: %.3f  MSE: %.3f  NRMSE: %.3f  PSNR: %.3f  SSIM: %.3f\n" \
+                                    % (imagename, times[-1], corr[-1], jacc[-1], mse[-1], nrmse[-1], psnr[-1], ssim[-1]))
                     timelog.flush()
                     bar.update(i+1)
                 
                 bar.finish()
                 
                 timelog.write("Average: %.3f s\n" % (numpy.mean(times)))
-                timelog.write("Average Error: %.3f s" % (numpy.mean(errors)))
+                timelog.write("Average CORR : %.3f\n" % (numpy.mean(corr)))
+                timelog.write("Average JACC : %.3f\n" % (numpy.mean(jacc)))
+                timelog.write("Average MSE  : %.3f\n" % (numpy.mean(mse)))
+                timelog.write("Average NRMSE: %.3f\n" % (numpy.mean(nrmse)))
+                timelog.write("Average PSNR: %.3f\n" % (numpy.mean(psnr)))
+                timelog.write("Average SSIM: %.3f" % (numpy.mean(ssim)))
 
 seven()

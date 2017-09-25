@@ -389,4 +389,3 @@ class GroundTraversalDifficultyEstimator():
             """ Structural similarity index
             """
             return compare_ssim(gt, tdi)
-
