@@ -6,6 +6,7 @@ import numpy
 import gtde
 import progressbar
 import graphmap
+import matplotlib.pyplot as plt
 
 def one():
     """ Example 1: Computes a binary TDI and shows on screen
@@ -147,90 +148,79 @@ def six():
 def seven():
     """ Example 7
     """
+    rootpath = '/home/dave/Datasets/DroneMapper/' 
     labelpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_LABELS/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
 
-    for ftd in [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]:
+    labeldataset = list()
+    for (dirpath, dirnames, filenames) in os.walk(labelpath):
+        labeldataset.extend(filenames)
+        break
+    
+    labeldataset.sort(key=str.lower)
 
-        if ftd == gtde.randomftd:
-            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_RANDOM/'
-            print("Traversal Difficulty Function: Random")
-        elif ftd == gtde.grayhistogram:
-            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_GRAYHIST/'
-            print("Traversal Difficulty Function: Grayscale Histogram")
-        elif ftd == gtde.colorhistogram:
-            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_COLORHIST/'
-            print("Traversal Difficulty Function: Color Histogram")
-        elif ftd == gtde.cannyedge:
-            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_CANNYEDGE/'
-            print("Traversal Difficulty Function: Canny Edge")
-        elif ftd == gtde.superpixels:
-            tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_SUPERPIXELS/'
-            print("Traversal Difficulty Function: Superpixels")
+    data = dict()
 
-        for g in [512, 256, 128, 64, 32]:
-
-            outputpath = os.path.join(tdipath, 'R%03d' % g)
-
-            if not os.path.exists(outputpath):
-                    os.makedirs(outputpath)
-
-            with open(os.path.join(outputpath, 'time.log'), 'w') as timelog:
-
-                estimator = gtde.GroundTraversalDifficultyEstimator( \
-                                granularity=g,
-                                function=ftd)
-                
-                labeldataset = list()
-                for (dirpath, dirnames, filenames) in os.walk(labelpath):
-                    labeldataset.extend(filenames)
-                    break
-                
-                labeldataset.sort(key=str.lower)
-
-                widgets = [progressbar.Percentage(), ' Progress',
+    widgets = [progressbar.Percentage(), ' Progress',
                             progressbar.Bar(), ' ', progressbar.ETA()]
 
-                bar = progressbar.ProgressBar(widgets=widgets, maxval=len(labeldataset))
+    bar = progressbar.ProgressBar(widgets=widgets, maxval=len(labeldataset))
 
-                print("Generating TDI with %dx%d regions" % (g, g))
-                bar.start()
+    print("Generating TDIs")
+    bar.start()
 
-                times = list()
-                corr = list()
-                jacc = list()
-                mse = list()
-                nrmse = list()
-                psnr = list()
-                ssim = list()
+    with open(os.path.join(rootpath, 'tdi.log'), 'w') as tdilog:
 
-                for i, imagename in enumerate(labeldataset):
-                    lbl = gtde.loadimage(os.path.join(labelpath, imagename))
-                    img = gtde.loadimage(os.path.join(datasetpath, imagename))
-                    gnd = estimator.groundtruth(lbl)
-                    start = time.time()
-                    tdi = estimator.computetdi(img)
-                    times.append(time.time() - start)
-                    corr.append(estimator.error(tdi, gnd, 'corr'))
-                    jacc.append(estimator.error(tdi, gnd, 'jaccard'))
-                    mse.append(estimator.error(tdi, gnd, 'mse'))
-                    nrmse.append(estimator.error(tdi, gnd, 'nrmse'))
-                    psnr.append(estimator.error(tdi, gnd, 'psnr'))
-                    ssim.append(estimator.error(tdi, gnd, 'ssim'))
-                    gtde.save2image(os.path.join(outputpath, imagename), gnd, tdi)
-                    timelog.write("%s: %.3f s  CORR: %.3f  JACC: %.3f  MSE: %.3f  NRMSE: %.3f  PSNR: %.3f  SSIM: %.3f\n" \
-                                    % (imagename, times[-1], corr[-1], jacc[-1], mse[-1], nrmse[-1], psnr[-1], ssim[-1]))
-                    timelog.flush()
-                    bar.update(i+1)
-                
-                bar.finish()
-                
-                timelog.write("Average: %.3f s\n" % (numpy.mean(times)))
-                timelog.write("Average CORR : %.3f\n" % (numpy.mean(corr)))
-                timelog.write("Average JACC : %.3f\n" % (numpy.mean(jacc)))
-                timelog.write("Average MSE  : %.3f\n" % (numpy.mean(mse)))
-                timelog.write("Average NRMSE: %.3f\n" % (numpy.mean(nrmse)))
-                timelog.write("Average PSNR: %.3f\n" % (numpy.mean(psnr)))
-                timelog.write("Average SSIM: %.3f" % (numpy.mean(ssim)))
+        for i, imagename in enumerate(labeldataset):
+
+            lbl = gtde.loadimage(os.path.join(labelpath, imagename))
+            img = gtde.loadimage(os.path.join(datasetpath, imagename))
+
+            for measure in ['corr', 'jaccard', 'mse', 'nrmse', 'psnr', 'ssim']:
+
+                data[measure] = dict()
+
+                for ftd in [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]:
+
+                    data[measure][ftd.__name__] = dict()
+
+                    tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_' + ftd.__name__
+
+                    for g in [512, 256, 128, 64, 32]:
+                        
+                        data[measure][ftd.__name__][str(g)] = list()
+
+                        outputpath = os.path.join(tdipath, 'R%03d' % g)
+                        if not os.path.exists(outputpath):
+                            os.makedirs(outputpath)
+
+                        estimator = gtde.GroundTraversalDifficultyEstimator( \
+                                        granularity=g,
+                                        function=ftd)
+                        
+                        gt = estimator.groundtruth(lbl)
+                        start = time.time()
+                        tdi = estimator.computetdi(img)
+                        data[measure][ftd.__name__][str(g)].append(estimator.error(tdi, gt, measure))
+                        gtde.save2image(os.path.join(outputpath, imagename), gt, tdi)
+                        tdilog.write("%s\n" % (imagename))
+                        tdilog.write("    %s %s %3d %.3f\n" % (measure, ftd.__name__, g, data[measure][ftd.__name__][str(g)][-1]))
+                        tdilog.flush()
+
+            bar.update(i+1)
+
+            break
+        
+        bar.finish()
+    
+    for measure in ['corr', 'jaccard', 'mse', 'nrmse', 'psnr', 'ssim']:
+        for ftd in [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]:
+            X = [512, 256, 128, 64, 32]
+            Y = []
+            for x in X:
+                Y.append(numpy.mean(data[measure][ftd.__name__][str(x)]))
+            plt.plot(X, Y)
+        plt.title(measure)
+        plt.show()
 
 seven()
