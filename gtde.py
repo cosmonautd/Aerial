@@ -21,6 +21,7 @@ from skimage.segmentation import slic
 from skimage.util import img_as_float
 from skimage import exposure
 from skimage.morphology import dilation, square
+from skimage.measure import compare_mse, compare_nrmse, compare_psnr, compare_ssim
 
 def loadimage(path):
     """ Loads image from path
@@ -359,8 +360,33 @@ class GroundTraversalDifficultyEstimator():
         diffimage = tdi(label, squaregrid, diffmatrix)
         return diffimage
     
-    def error(self, tdi, gt):
-        """ Returns the RMSE between a traversal difficulty image and 
-            with a provided ground truth
+    def error(self, tdi, gt, function='corr'):
+        """ Returns an similarity or error measurement between a traversal 
+            difficulty image and a provided ground truth
         """
-        return numpy.sqrt(((tdi - gt)**2).mean())
+        if function == 'corr':
+            """ Pearson's correlation coefficient
+            """
+            return numpy.corrcoef(tdi.flatten(), gt.flatten())[0][1]
+        elif function == 'jaccard':
+            """ Generalized Jaccard similarity index
+            """
+            return numpy.sum(numpy.minimum(tdi.flatten(), gt.flatten())) \
+                    / numpy.sum(numpy.maximum(tdi.flatten(), gt.flatten()))
+        elif function == 'mse':
+            """ Root mean squared error
+            """
+            return numpy.sqrt(compare_mse(gt, tdi))
+        elif function == 'nrmse':
+            """ Normalized root mean squared error
+            """
+            return compare_nrmse(gt, tdi)
+        elif function == 'psnr':
+            """ Peak signal to noise ratio
+            """
+            return compare_psnr(gt, tdi)
+        elif function == 'ssim':
+            """ Structural similarity index
+            """
+            return compare_ssim(gt, tdi)
+
