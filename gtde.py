@@ -5,17 +5,8 @@ import os
 import cv2
 import numpy
 import multiprocessing
-import matplotlib
 import random
-
-try: 
-    if len(os.environ['DISPLAY']) > 0:
-        matplotlib.use('cairo')
-    else:
-        matplotlib.use('agg')
-except:
-    matplotlib.use('agg')
-
+import matplotlib
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
@@ -373,12 +364,12 @@ class GroundTraversalDifficultyEstimator():
             """
             return numpy.sum(numpy.minimum(tdi.flatten(), gt.flatten())) \
                     / numpy.sum(numpy.maximum(tdi.flatten(), gt.flatten()))
-        elif function == 'mse':
-            """ Root mean squared error
+        elif function == 'rmse':
+            """ Root mean square error
             """
             return numpy.sqrt(compare_mse(gt, tdi))
         elif function == 'nrmse':
-            """ Normalized root mean squared error
+            """ Normalized root mean square error
             """
             return compare_nrmse(gt, tdi)
         elif function == 'psnr':
