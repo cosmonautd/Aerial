@@ -126,7 +126,7 @@ def six():
     
     rgb_estimator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128,
-                    function=gtde.colorhistogram)
+                    function=gtde.rgbhistogram)
     
     edge_estimator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128,
@@ -153,7 +153,7 @@ def seven():
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
 
     measures = ['corr', 'jaccard', 'rmse', 'nrmse', 'psnr', 'ssim']
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]
+    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
     resolutions = [512, 256, 128, 64, 32]
 
     labeldataset = list()
@@ -166,9 +166,9 @@ def seven():
     data = dict()
 
     widgets = [progressbar.Percentage(), ' Progress',
-                            progressbar.Bar(), ' ', progressbar.ETA()]
+               progressbar.Bar(), ' ', progressbar.ETA()]
 
-    bar = progressbar.ProgressBar(widgets=widgets, maxval=len(labeldataset))
+    bar = progressbar.ProgressBar(widgets=widgets, maxval=len(labeldataset)*len(measures)*len(functions)*len(resolutions))
 
     print("Generating TDIs")
     bar.start()
@@ -206,21 +206,45 @@ def seven():
                         tdilog.write("%s\n" % (imagename))
                         tdilog.write("    %s %s %3d %.3f\n" % (measure, ftd.__name__, g, data[measure][ftd.__name__][str(g)][-1]))
                         tdilog.flush()
+                        bar.update(i+1)
 
-            bar.update(i+1)
+            break
         
         bar.finish()
+    
+    plot_title = {  
+        "corr" : "Pearson's correlation coefficient", 
+        "jaccard" : "Generalized Jaccard similarity index", 
+        "rmse" : "Root mean square error", 
+        "nrmse" : "Normalized root mean square error", 
+        "psnr" : "Peak signal to noise ratio", 
+        "ssim" : "Structural similarity index" 
+    }
+    
+    ftd_curve = {   
+        "randomftd" : "Random",
+        "grayhistogram" : "Gray Histogram",
+        "rgbhistogram" : "RGB Histogram",
+        "cannyedge" : "Edge Density",
+        "superpixels" : "Superpixels"
+    }
     
     for measure in measures:
         fig, (ax0) = pyplot.subplots(ncols=1)
         for ftd in functions:
             x = numpy.array(resolutions)
             y = numpy.array([numpy.mean(data[measure][ftd.__name__][str(element)]) for element in x])
-            ax0.plot(x, y, label=ftd.__name__)
-        pyplot.title(measure)
+            ax0.plot(x, y, '-o', markevery=range(5), label=ftd_curve[ftd.__name__])
+        pyplot.title(plot_title[measure])
         ax0.legend(loc='upper left')
+        ax0.set_xlabel("Region size")
+        ax0.set_xscale('log')
+        ax0.tick_params(axis='x', which='minor', bottom='off')
+        ax0.set_xticks(resolutions)
+        ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
+        ax0.set_ylabel(plot_title[measure].split(" ")[-1].title())
         fig.tight_layout()
         pyplot.show(block=False)
     pyplot.show()
 
-five()
+seven()
