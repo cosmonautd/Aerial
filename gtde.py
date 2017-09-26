@@ -139,7 +139,7 @@ def grayhistogram(region, view=False):
         pyplot.show()
     return diff
 
-def colorhistogram(region, view=False):
+def rgbhistogram(region, view=False):
     """ Returns a difficulty value based on RGB histogram dispersion
     """
     red, green, blue = cv2.split(region)
