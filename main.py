@@ -3,10 +3,10 @@
 import os
 import time
 import numpy
-import gtde
 import progressbar
+import matplotlib.pyplot as pyplot
+import gtde
 import graphmap
-import matplotlib.pyplot as plt
 
 def one():
     """ Example 1: Computes a binary TDI and shows on screen
@@ -146,11 +146,15 @@ def six():
     gtde.show5image(frame, graydiffimage, rgbdiffimage, edgediffimage, superpixelsdiffimage)
 
 def seven():
-    """ Example 7
+    """ Example 7: Generate graphs for all similarity measures available in gtde
     """
-    rootpath = '/home/dave/Datasets/DroneMapper/' 
+    rootpath = '/home/dave/Datasets/DroneMapper/MeasuresEvaluation'
     labelpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_LABELS/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
+
+    measures = ['corr', 'jaccard', 'rmse', 'nrmse', 'psnr', 'ssim']
+    functions = [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]
+    resolutions = [512, 256, 128, 64, 32]
 
     labeldataset = list()
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
@@ -169,6 +173,9 @@ def seven():
     print("Generating TDIs")
     bar.start()
 
+    if not os.path.exists(rootpath):
+        os.makedirs(rootpath)
+
     with open(os.path.join(rootpath, 'tdi.log'), 'w') as tdilog:
 
         for i, imagename in enumerate(labeldataset):
@@ -176,23 +183,17 @@ def seven():
             lbl = gtde.loadimage(os.path.join(labelpath, imagename))
             img = gtde.loadimage(os.path.join(datasetpath, imagename))
 
-            for measure in ['corr', 'jaccard', 'mse', 'nrmse', 'psnr', 'ssim']:
+            for measure in measures:
 
                 data[measure] = dict()
 
-                for ftd in [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]:
+                for ftd in functions:
 
                     data[measure][ftd.__name__] = dict()
 
-                    tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_CPMGROUND_' + ftd.__name__
-
-                    for g in [512, 256, 128, 64, 32]:
+                    for g in resolutions:
                         
                         data[measure][ftd.__name__][str(g)] = list()
-
-                        outputpath = os.path.join(tdipath, 'R%03d' % g)
-                        if not os.path.exists(outputpath):
-                            os.makedirs(outputpath)
 
                         estimator = gtde.GroundTraversalDifficultyEstimator( \
                                         granularity=g,
@@ -202,25 +203,24 @@ def seven():
                         start = time.time()
                         tdi = estimator.computetdi(img)
                         data[measure][ftd.__name__][str(g)].append(estimator.error(tdi, gt, measure))
-                        gtde.save2image(os.path.join(outputpath, imagename), gt, tdi)
                         tdilog.write("%s\n" % (imagename))
                         tdilog.write("    %s %s %3d %.3f\n" % (measure, ftd.__name__, g, data[measure][ftd.__name__][str(g)][-1]))
                         tdilog.flush()
 
             bar.update(i+1)
-
-            break
         
         bar.finish()
     
-    for measure in ['corr', 'jaccard', 'mse', 'nrmse', 'psnr', 'ssim']:
-        for ftd in [gtde.randomftd, gtde.grayhistogram, gtde.colorhistogram, gtde.cannyedge, gtde.superpixels]:
-            X = [512, 256, 128, 64, 32]
-            Y = []
-            for x in X:
-                Y.append(numpy.mean(data[measure][ftd.__name__][str(x)]))
-            plt.plot(X, Y)
-        plt.title(measure)
-        plt.show()
+    for measure in measures:
+        fig, (ax0) = pyplot.subplots(ncols=1)
+        for ftd in functions:
+            x = numpy.array(resolutions)
+            y = numpy.array([numpy.mean(data[measure][ftd.__name__][str(element)]) for element in x])
+            ax0.plot(x, y, label=ftd.__name__)
+        pyplot.title(measure)
+        ax0.legend(loc='upper left')
+        fig.tight_layout()
+        pyplot.show(block=False)
+    pyplot.show()
 
-seven()
+five()
