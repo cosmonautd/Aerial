@@ -342,13 +342,13 @@ class GroundTraversalDifficultyEstimator():
             _, diffimage = cv2.threshold(diffimage, self.threshold, 255, cv2.THRESH_BINARY)
         return diffimage
     
-    def groundtruth(self, label):
+    def groundtruth(self, imagelabel):
         """ Returns the ground truth based on a labeled binary image
         """
-        squaregrid = gridlist(label, self.granularity)
-        regions = regionmatrix(label, squaregrid)
+        squaregrid = gridlist(imagelabel, self.granularity)
+        regions = regionmatrix(imagelabel, squaregrid)
         diffmatrix = traversaldiff(regions, density)
-        diffimage = tdi(label, squaregrid, diffmatrix)
+        diffimage = tdi(imagelabel, squaregrid, diffmatrix)
         return diffimage
     
     def error(self, tdi, gt, function='corr'):
