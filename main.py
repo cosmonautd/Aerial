@@ -250,4 +250,29 @@ def seven():
         pyplot.show(block=False)
     pyplot.show()
 
-seven()
+def eight():
+    """ Example 8: Computes a route between two regions pictured in an input image
+        Saves image to disk
+    """
+    tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=64,
+                    function=gtde.superpixels)
+
+    image = gtde.loadimage('img/aerial2.jpg')
+    tdmatrix = tdigenerator.computematrix(image)
+
+    router = graphmap.RouteEstimator()
+    G = router.tdm2graph(tdmatrix)
+
+    source = G.vertex(graphmap.coord2((31-9, 18), tdmatrix.shape[1]))
+    target = G.vertex(graphmap.coord2((8, 28), tdmatrix.shape[1]))
+
+    path = router.route(G, source, target)
+    graphmap.drawgraph(G, path, 'tdg.png')
+
+    ipath = [int(v) for v in path]
+    grid = gtde.gridlist(image, 64)
+    pathtdi = gtde.imagepath(image, ipath, grid)
+    gtde.showimage(pathtdi)
+
+eight()
