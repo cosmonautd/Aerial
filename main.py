@@ -152,7 +152,11 @@ def seven():
     labelpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_LABELS/'
     datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
 
-    measures = ['corr', 'jaccard', 'rmse', 'nrmse', 'psnr', 'ssim']
+    # measures = ['corr', 'jaccard', 'rmse', 'nrmse', 'psnr', 'ssim']
+    # functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
+    # resolutions = [512, 256, 128, 64, 32]
+
+    measures = ['nmae', 'nrmse']
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
     resolutions = [512, 256, 128, 64, 32]
 
@@ -170,7 +174,7 @@ def seven():
 
     bar = progressbar.ProgressBar(widgets=widgets, maxval=len(labeldataset)*len(measures)*len(functions)*len(resolutions))
 
-    print("Generating TDIs")
+    print("Running TDI performance tests")
     bar.start()
 
     if not os.path.exists(rootpath):
@@ -207,8 +211,6 @@ def seven():
                         tdilog.write("    %s %s %3d %.3f\n" % (measure, ftd.__name__, g, data[measure][ftd.__name__][str(g)][-1]))
                         tdilog.flush()
                         bar.update(i+1)
-
-            break
         
         bar.finish()
     
@@ -218,7 +220,8 @@ def seven():
         "rmse" : "Root mean square error", 
         "nrmse" : "Normalized root mean square error", 
         "psnr" : "Peak signal to noise ratio", 
-        "ssim" : "Structural similarity index" 
+        "ssim" : "Structural similarity index",
+        "nmae" : "Normalized mean absolute error"
     }
     
     ftd_curve = {   

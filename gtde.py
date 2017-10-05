@@ -371,7 +371,7 @@ class GroundTraversalDifficultyEstimator():
         elif function == 'nrmse':
             """ Normalized root mean square error
             """
-            return compare_nrmse(gt, tdi)
+            return compare_nrmse(gt, tdi, norm_type='mean')
         elif function == 'psnr':
             """ Peak signal to noise ratio
             """
@@ -380,3 +380,7 @@ class GroundTraversalDifficultyEstimator():
             """ Structural similarity index
             """
             return compare_ssim(gt, tdi)
+        elif function == 'nmae':
+            """ Normalized mean absolute error
+            """
+            return numpy.mean(numpy.abs(tdi.flatten() - gt.flatten()))/255
