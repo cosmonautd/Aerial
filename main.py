@@ -255,7 +255,7 @@ def eight():
         Saves image to disk
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=64,
+                    granularity=32,
                     function=gtde.superpixels)
 
     image = gtde.loadimage('img/aerial2.jpg')
@@ -264,14 +264,14 @@ def eight():
     router = graphmap.RouteEstimator()
     G = router.tdm2graph(tdmatrix)
 
-    source = G.vertex(graphmap.coord2((31-9, 18), tdmatrix.shape[1]))
-    target = G.vertex(graphmap.coord2((8, 28), tdmatrix.shape[1]))
+    source = G.vertex(graphmap.coord2((44, 36), tdmatrix.shape[1]))
+    target = G.vertex(graphmap.coord2((38, 20), tdmatrix.shape[1]))
 
     path = router.route(G, source, target)
     graphmap.drawgraph(G, path, 'tdg.png')
 
     ipath = [int(v) for v in path]
-    grid = gtde.gridlist(image, 64)
+    grid = gtde.gridlist(image, 32)
     pathtdi = gtde.imagepath(image, ipath, grid)
     gtde.showimage(pathtdi)
 

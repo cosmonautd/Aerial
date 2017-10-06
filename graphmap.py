@@ -1,3 +1,4 @@
+import numpy
 import gtde
 import matplotlib
 import graph_tool as graphtool
@@ -63,7 +64,8 @@ class RouteEstimator:
                 v = G.add_vertex()
                 G.vp.pos[v] = [i, j]
                 G.vp.pos2[v] = [j, i]
-                G.vp.diff[v] = tdmatrix[i][j]
+                #G.vp.diff[v] = tdmatrix[i][j] if tdmatrix[i][j] < 48 else tdmatrix[i][j]**2
+                G.vp.diff[v] = tdmatrix[i][j]**2
 
         for v in G.vertices():
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
@@ -110,7 +112,7 @@ class RouteEstimator:
         for v in G.vertices():
             G.vp.vfcolor[v] = [0, 0.0, 0.0, 1.0]
         for e in G.edges():
-            G.ep.ewidth[e] = G.ep.weight[e]/16 + 1
+            G.ep.ewidth[e] = numpy.sqrt(G.ep.weight[e]/16 + 1)
             G.ep.ecolor[e] = [0.179, 0.203, 0.210, 0.8]
         
         return G
