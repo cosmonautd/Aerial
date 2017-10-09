@@ -2,12 +2,12 @@
 """
 import os
 import time
+import random
 import numpy
 import progressbar
 import matplotlib.pyplot as pyplot
 import gtde
 import graphmap
-import cv2
 
 def one():
     """ Example 1: Computes a binary TDI and shows on screen
@@ -256,21 +256,20 @@ def eight():
         Shows the route over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=32,
+                    granularity=16,
                     function=gtde.rgbhistogram)
 
     image = gtde.loadimage('img/aerial2.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     labelpoints = gtde.loadimage('points/aerial2.jpg')
-    grid = gtde.gridlist(image, 32)
+    grid = gtde.gridlist(image, 16)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
     G = router.tdm2graph(tdmatrix)
 
-    source = G.vertex(keypoints[0])
-    target = G.vertex(keypoints[1])
+    [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
 
     path = router.route(G, source, target)
     graphmap.drawgraph(G, path, 'tdg.png')
