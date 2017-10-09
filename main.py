@@ -252,8 +252,8 @@ def seven():
     pyplot.show()
 
 def eight():
-    """ Example 8: Computes a route between two regions pictured in an input image
-        Saves image to disk
+    """ Example 8: Computes a route between two labeled keypoints
+        Shows the route over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=32,
@@ -262,55 +262,15 @@ def eight():
     image = gtde.loadimage('img/aerial2.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
+    labelpoints = gtde.loadimage('points/aerial2.jpg')
     grid = gtde.gridlist(image, 32)
-    points = gtde.loadimage('points/aerial2.jpg')
-    points = cv2.cvtColor(points, cv2.COLOR_BGR2GRAY)
-
-    # Set up the SimpleBlobdetector with default parameters.
-    params = cv2.SimpleBlobDetector_Params()
-     
-    # Change thresholds
-    params.minThreshold = 0
-    params.maxThreshold = 256
-     
-    # Filter by Area.
-    params.filterByArea = True
-    params.minArea = 20
-     
-    # Filter by Circularity
-    params.filterByCircularity = True
-    params.minCircularity = 0.1
-     
-    # Filter by Convexity
-    params.filterByConvexity = True
-    params.minConvexity = 0.5
-     
-    # Filter by Inertia
-    params.filterByInertia =True
-    params.minInertiaRatio = 0.5
-     
-    detector = cv2.SimpleBlobDetector_create(params)
- 
-    # Detect blobs.
-    reversemask=255-points
-    keypoints = detector.detect(reversemask)
-
-    indexes = list()
-
-    for keypoint in keypoints:
-        x = int(keypoint.pt[0])
-        y = int(keypoint.pt[1])
-        size = int(keypoint.size)
-        for i, (tlx, tly,sqsize) in enumerate(grid):
-            if tlx <= x and x < tlx + sqsize:
-                if tly <= y and y < tly + sqsize:
-                    indexes.append(i)
+    keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
     G = router.tdm2graph(tdmatrix)
 
-    source = G.vertex(indexes[0])
-    target = G.vertex(indexes[1])
+    source = G.vertex(keypoints[0])
+    target = G.vertex(keypoints[1])
 
     path = router.route(G, source, target)
     graphmap.drawgraph(G, path, 'tdg.png')
