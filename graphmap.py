@@ -107,9 +107,8 @@ class RouteEstimator:
                 v = G.add_vertex()
                 G.vp.pos[v] = [i, j]
                 G.vp.pos2[v] = [j, i]
-                #G.vp.diff[v] = tdmatrix[i][j] if tdmatrix[i][j] < 48 else tdmatrix[i][j]**2
                 G.vp.diff[v] = tdmatrix[i][j]**2
-
+                
         for v in G.vertices():
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
 
