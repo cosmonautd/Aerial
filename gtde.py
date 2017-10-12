@@ -251,7 +251,7 @@ def showimage(image):
     ax0.axes.get_xaxis().set_visible(False)
     ax0.axes.get_yaxis().set_visible(False)
     fig.tight_layout()
-    pyplot.show()
+    pyplot.show(block=False)
 
 def show2image(image1, image2):
     """ Displays two images on screen, side by side
