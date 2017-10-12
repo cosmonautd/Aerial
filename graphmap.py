@@ -81,8 +81,8 @@ def drawgraph(G, path=[], filename="tdg.png"):
 
 class Visitor(search.DijkstraVisitor):
 
-    def __init__(self):
-        pass
+    def __init__(self, target):
+        self.target = target
 
     def discover_vertex(self, u):
         pass
@@ -91,7 +91,8 @@ class Visitor(search.DijkstraVisitor):
         pass
 
     def edge_relaxed(self, e):
-        pass
+        if e.target() == self.target:
+            raise graphtool.search.StopSearch()
 
 class RouteEstimator:
 
@@ -165,9 +166,16 @@ class RouteEstimator:
         
         return G
     
-    def route(self, G, source, target):
-
+    def routeall(self, G, source):
         dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor())
+        return dist, pred
+    
+    def route(self, G, source, target, dist=None, pred=None):
+
+        if dist and pred:
+            pass
+        else:
+            dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor(target))
 
         path = list()
         path.append(target)
@@ -178,3 +186,4 @@ class RouteEstimator:
             path.append(v)
         
         return path[::-1]
+        
