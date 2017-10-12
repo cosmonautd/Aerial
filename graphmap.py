@@ -84,14 +84,8 @@ class Visitor(search.DijkstraVisitor):
     def __init__(self, target):
         self.target = target
 
-    def discover_vertex(self, u):
-        pass
-
-    def examine_edge(self, e):
-        pass
-
-    def edge_relaxed(self, e):
-        if e.target() == self.target:
+    def finish_vertex(self, v):
+        if v == self.target:
             raise graphtool.search.StopSearch()
 
 class RouteEstimator:
@@ -186,4 +180,3 @@ class RouteEstimator:
             path.append(v)
         
         return path[::-1]
-        
