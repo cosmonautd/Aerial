@@ -286,14 +286,14 @@ def nine():
         Shows the routes over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
-                    function=gtde.rgbhistogram)
+                    granularity=64,
+                    function=gtde.superpixels)
 
     image = gtde.loadimage('img/aerial2.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     labelpoints = gtde.loadimage('points/aerial2.jpg')
-    grid = gtde.gridlist(image, 16)
+    grid = gtde.gridlist(image, 64)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
