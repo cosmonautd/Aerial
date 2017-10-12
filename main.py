@@ -5,6 +5,7 @@ import time
 import random
 import numpy
 import progressbar
+import itertools
 import matplotlib.pyplot as pyplot
 import gtde
 import graphmap
@@ -256,14 +257,14 @@ def eight():
         Shows the route over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=64,
                     function=gtde.rgbhistogram)
 
     image = gtde.loadimage('img/aerial2.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     labelpoints = gtde.loadimage('points/aerial2.jpg')
-    grid = gtde.gridlist(image, 16)
+    grid = gtde.gridlist(image, 64)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -278,4 +279,37 @@ def eight():
     pathtdi = gtde.imagepath(image, ipath, grid)
     gtde.showimage(pathtdi)
 
-eight()
+def nine():
+    """
+    """
+    """ Example 9: Computes a route between all labeled keypoints
+        Shows the routes over image on screen
+    """
+    tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
+                    granularity=16,
+                    function=gtde.rgbhistogram)
+
+    image = gtde.loadimage('img/aerial2.jpg')
+    tdmatrix = tdigenerator.computematrix(image)
+
+    labelpoints = gtde.loadimage('points/aerial2.jpg')
+    grid = gtde.gridlist(image, 16)
+    keypoints = graphmap.label2keypoints(labelpoints, grid)
+
+    router = graphmap.RouteEstimator()
+    G = router.tdm2graph(tdmatrix)
+
+    for s, t in itertools.combinations(keypoints, 2):
+
+        source = G.vertex(s)
+        target = G.vertex(t)
+
+        path = router.route(G, source, target)
+
+        ipath = [int(v) for v in path]
+        pathtdi = gtde.imagepath(image.copy(), ipath, grid)
+        gtde.showimage(pathtdi)
+    
+    pyplot.show()
+
+nine()
