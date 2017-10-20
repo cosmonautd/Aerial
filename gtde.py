@@ -98,6 +98,7 @@ def traversaldiff(regions, function, parallel=True, view=False):
                 tdiff[i] = p.map(function, regions[i])
 
     tdiff *= 255/tdiff.max()
+    tdiff = cv2.dilate(tdiff, numpy.ones((2, 2), numpy.uint8), iterations = 1)
     return tdiff
 
 def coord(i, columns):
@@ -118,7 +119,9 @@ def tdi(image, grid, diffmatrix):
         diffimage[tly:tly+region.shape[0], tlx:tlx+region.shape[1]] = region
     return diffimage
 
-def imagepath(image, ipath, grid):
+def imagepath(image, ipath, grid, pathcolor=(0,255,0)):
+    if len(image.shape) < 3:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     centers = []
     for k in ipath:
         tly, tlx, size = grid[k]
@@ -126,7 +129,7 @@ def imagepath(image, ipath, grid):
     for k in range(len(centers)-1):
         r0, c0 = centers[k]
         r1, c1 = centers[k+1]
-        cv2.line(image, (c0, r0), (c1, r1), (255, 0, 0), 5)
+        cv2.line(image, (c0, r0), (c1, r1), pathcolor, 5)
     return image
 
 def randomftd(region, view=False):
@@ -354,14 +357,17 @@ class GroundTraversalDifficultyEstimator():
             _, diffimage = cv2.threshold(diffimage, self.threshold, 255, cv2.THRESH_BINARY)
         return diffimage
     
-    def groundtruth(self, imagelabel):
+    def groundtruth(self, imagelabel, matrix=False):
         """ Returns the ground truth based on a labeled binary image
         """
         squaregrid = gridlist(imagelabel, self.granularity)
         regions = regionmatrix(imagelabel, squaregrid)
         diffmatrix = traversaldiff(regions, density)
-        diffimage = tdi(imagelabel, squaregrid, diffmatrix)
-        return diffimage
+        if matrix:
+            return diffmatrix
+        else:
+            diffimage = tdi(imagelabel, squaregrid, diffmatrix)
+            return diffimage
     
     def error(self, tdi, gt, function='corr'):
         """ Returns an similarity or error measurement between a traversal 
