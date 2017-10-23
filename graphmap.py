@@ -110,6 +110,10 @@ class RouteEstimator:
                 G.vp.diff[v] = tdmatrix[i][j]**2
                 
         for v in G.vertices():
+
+            if G.vp.diff[v] > 220**2:
+                continue
+
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
 
             top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
@@ -174,8 +178,9 @@ class RouteEstimator:
         path.append(target)
 
         v = target
-        while v != source:
-            v = G.vertex(pred[v])
-            path.append(v)
-        
+        if G.vertex(pred[v]):
+            while v != source:
+                v = G.vertex(pred[v])
+                path.append(v)
+
         return path[::-1]

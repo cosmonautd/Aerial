@@ -81,13 +81,12 @@ def regionmatrix(image, squaregrid):
             k += 1
     return rmatrix
 
-def traversaldiff(regions, function, parallel=True, view=False):
+def traversaldiff(regions, function, parallel=True, view=False, rmask=numpy.array([])):
     """ Assigns traversal difficulty estimates to every region
     """
     td_rows = len(regions)
     td_columns = len(regions[0])
     tdiff = numpy.ndarray((td_rows, td_columns), dtype=float)
-
     if not parallel:
         for i in range(td_rows):
             for j in range(td_columns):
@@ -98,7 +97,8 @@ def traversaldiff(regions, function, parallel=True, view=False):
                 tdiff[i] = p.map(function, regions[i])
 
     tdiff *= 255/tdiff.max()
-    tdiff = cv2.dilate(tdiff, numpy.ones((2, 2), numpy.uint8), iterations = 1)
+    if len(rmask) > 0:
+        tdiff[rmask < 127] = 255
     return tdiff
 
 def coord(i, columns):
@@ -129,7 +129,7 @@ def imagepath(image, ipath, grid, pathcolor=(0,255,0)):
     for k in range(len(centers)-1):
         r0, c0 = centers[k]
         r1, c1 = centers[k+1]
-        cv2.line(image, (c0, r0), (c1, r1), pathcolor, 5)
+        cv2.line(image, (c0, r0), (c1, r1), pathcolor, 3)
     return image
 
 def randomftd(region, view=False):
@@ -333,22 +333,33 @@ class GroundTraversalDifficultyEstimator():
         self.binary = binary
         self.threshold = threshold
     
-    def computematrix(self, image):
+    def computematrix(self, image, contrast=True, mask=numpy.array([])):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
         regions = regionmatrix(image, squaregrid)
-        diffmatrix = traversaldiff(regions, self.function)
+        if len(mask) > 0:
+            rmask = self.groundtruth(mask, matrix=True)
+            diffmatrix = traversaldiff(regions, self.function, rmask=rmask)
+        else:
+            diffmatrix = traversaldiff(regions, self.function)
+        if contrast:
+            pi, pf = numpy.percentile(diffmatrix, (20, 80))
+            diffmatrix = exposure.rescale_intensity(diffmatrix, in_range=(pi, pf))
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         return diffmatrix
 
-    def computetdi(self, image, contrast=True):
+    def computetdi(self, image, contrast=True, mask=numpy.array([])):
         """ Returns a traversal difficulty image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
         regions = regionmatrix(image, squaregrid)
-        diffmatrix = traversaldiff(regions, self.function)
+        if len(mask > 0):
+            rmask = self.groundtruth(mask, matrix=True)
+            diffmatrix = traversaldiff(regions, self.function, rmask=rmask)
+        else:
+            diffmatrix = traversaldiff(regions, self.function)
         diffimage = tdi(image, squaregrid, diffmatrix)
         if contrast:
             pi, pf = numpy.percentile(diffimage, (20, 80))

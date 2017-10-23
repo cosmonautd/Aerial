@@ -11,17 +11,15 @@ import gtde
 import graphmap
 
 def one():
-    """ Example 1: Computes a binary TDI and shows on screen
+    """ Example 1: Computes a TDI and shows on screen
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128,
-                    binary=True,
-                    threshold=30)
+                    granularity=64)
 
-    frame = gtde.loadimage('img/aerial2.jpg')
-    diffimage = estimator.computetdi(frame, contrast=False)
+    frame = gtde.loadimage('img/dronemapper2.jpg')
+    diffimage = estimator.computetdi(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
-    gtde.show2image(gtde.drawgrid(frame, grid), diffimage)
+    gtde.save2image('dronemapper2.jpg', gtde.drawgrid(frame, grid), diffimage)
 
 def two():
     """ Example 2: Computes a TDM and writes to stdout
@@ -286,25 +284,22 @@ def nine():
         Shows the routes over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=64,
+                    granularity=16,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/DJI_0009.JPG')
+    image = gtde.loadimage('img/aerial1.jpg')
+    # mask = gtde.loadimage('mask/dronemapper2.jpg')
     tdmatrix = tdigenerator.computematrix(image)
+    tdimage = tdigenerator.computetdi(image)
 
-    labelpoints = gtde.loadimage('/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_KEYPOINTS/DJI_0009.JPG')
-    grid = gtde.gridlist(image, 64)
+    labelpoints = gtde.loadimage('keypoints/aerial1.jpg')
+    grid = gtde.gridlist(image, 16)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
     G = router.tdm2graph(tdmatrix)
 
-    counter = 0
-
-    for s, t in itertools.combinations(keypoints, 2):
-
-        counter += 1
-        if counter > 10: break
+    for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
 
         source = G.vertex(s)
         target = G.vertex(t)
@@ -312,66 +307,65 @@ def nine():
         path = router.route(G, source, target)
 
         ipath = [int(v) for v in path]
-        pathtdi = gtde.imagepath(image.copy(), ipath, grid)
-        gtde.showimage(pathtdi)
-    
-    pyplot.show()
+        pathimg = gtde.imagepath(image.copy(), ipath, grid)
+        pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
+        gtde.save2image('%03d.png' % (counter + 1), pathimg, pathtdi)
 
 def ten():
     """ Example 10:
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=64,
-                    function=gtde.rgbhistogram)
+                    granularity=8,
+                    function=gtde.superpixels)
 
-    image = gtde.loadimage('/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/DJI_0009.JPG')
+    image = gtde.loadimage('img/aerial1.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
-    gt = gtde.loadimage('/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_LABELS/DJI_0009.JPG')
+    gt = gtde.loadimage('labels/aerial1.jpg')
     gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
     gtimage = tdigenerator.groundtruth(gt)
 
-    labelpoints = gtde.loadimage('/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_KEYPOINTS/DJI_0009.JPG')
-    grid = gtde.gridlist(image, 64)
+    labelpoints = gtde.loadimage('keypoints/aerial1.jpg')
+    grid = gtde.gridlist(image, 8)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
     G = router.tdm2graph(tdmatrix)
 
-    counter = 0
-
     results = list()
 
-    for s, t in itertools.combinations(keypoints, 2):
+    for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
 
-        counter += 1
-        if counter > 10: break
+        results.append(1.0)
 
         source = G.vertex(s)
         target = G.vertex(t)
 
         path = router.route(G, source, target)
 
-        success = True
         rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
         for row, column in rpath:
-            if gtmatrix[row][column] > 240:
-                success = False
-                break
-        
-        results.append(success)
+            if gtmatrix[row][column] > 220:
+                results[-1] = numpy.maximum(0, results[-1] - 0.1)
 
         ipath = [int(v) for v in path]
 
-        if success:
+        if results[-1] > 0.7:
             pathtdi = gtde.imagepath(image.copy(), ipath, grid)
             pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid)
         else:
             pathtdi = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
             pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
 
-        gtde.save2image('%s.png' % counter, pathtdi, pathlabel)
+        gtde.save2image('%03d.png' % (counter + 1), pathtdi, pathlabel)
     
-    print("Success rate: %.2f" % (numpy.sum([1.0 for success in results if success])/len(results)))
+    print("Success rate: %.2f" % (numpy.mean(results)))
+
+def eleven():
+    import gdal
+    image = gtde.loadimage('img/dronemapper2.jpg')
+    geotiff = gdal.Open('img/dronemapper2.tif')
+    dem = numpy.array(geotiff.ReadAsArray())
+    gtde.save2image("dem.jpg", image, dem)
 
 ten()
