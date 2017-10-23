@@ -301,6 +301,16 @@ def show5image(image1, image2, image3, image4, image5):
     fig.subplots_adjust(hspace=0.01)
     pyplot.show()
 
+def saveimage(path, images):
+    n = len(images)
+    fig, axes = pyplot.subplots(ncols=n, figsize=(n, 1))
+    for ax, image in zip(axes, images):
+        ax.imshow(image, cmap='gray', interpolation='bicubic')
+        ax.axes.get_xaxis().set_ticks([])
+        ax.axes.get_yaxis().set_visible(False)
+    fig.savefig(path, dpi=600, bbox_inches='tight')
+    pyplot.close(fig)
+
 def save2image(path, image1, image2):
     """ Saves two images to disk, side by side
     """

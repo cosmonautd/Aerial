@@ -315,18 +315,19 @@ def ten():
     """ Example 10:
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=8,
+                    granularity=10,
                     function=gtde.superpixels)
 
     image = gtde.loadimage('img/aerial1.jpg')
     tdmatrix = tdigenerator.computematrix(image)
+    tdimage = tdigenerator.computetdi(image)
 
     gt = gtde.loadimage('labels/aerial1.jpg')
     gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
     gtimage = tdigenerator.groundtruth(gt)
 
     labelpoints = gtde.loadimage('keypoints/aerial1.jpg')
-    grid = gtde.gridlist(image, 8)
+    grid = gtde.gridlist(image, 10)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -351,13 +352,15 @@ def ten():
         ipath = [int(v) for v in path]
 
         if results[-1] > 0.7:
-            pathtdi = gtde.imagepath(image.copy(), ipath, grid)
+            pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
             pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid)
+            pathimage = gtde.imagepath(image.copy(), ipath, grid)
         else:
-            pathtdi = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
+            pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
             pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
+            pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
 
-        gtde.save2image('%03d.png' % (counter + 1), pathtdi, pathlabel)
+        gtde.saveimage('%03d.jpg' % (counter + 1), [pathtdi, pathlabel, pathimage])
     
     print("Success rate: %.2f" % (numpy.mean(results)))
 
