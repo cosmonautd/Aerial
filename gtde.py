@@ -303,11 +303,17 @@ def show5image(image1, image2, image3, image4, image5):
 
 def saveimage(path, images):
     n = len(images)
-    fig, axes = pyplot.subplots(ncols=n, figsize=(n, 1))
-    for ax, image in zip(axes, images):
-        ax.imshow(image, cmap='gray', interpolation='bicubic')
-        ax.axes.get_xaxis().set_ticks([])
-        ax.axes.get_yaxis().set_visible(False)
+    if n == 1:
+        fig, (ax0) = pyplot.subplots(ncols=1)
+        ax0.imshow(images[0], cmap='gray', interpolation='bicubic')
+        ax0.axes.get_xaxis().set_ticks([])
+        ax0.axes.get_yaxis().set_visible(False)
+    else:
+        fig, axes = pyplot.subplots(ncols=n, figsize=(4*n, 4))
+        for ax, image in zip(axes, images):
+            ax.imshow(image, cmap='gray', interpolation='bicubic')
+            ax.axes.get_xaxis().set_ticks([])
+            ax.axes.get_yaxis().set_visible(False)
     fig.savefig(path, dpi=600, bbox_inches='tight')
     pyplot.close(fig)
 
