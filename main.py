@@ -14,12 +14,12 @@ def one():
     """ Example 1: Computes a TDI and shows on screen
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=64)
+                    granularity=16)
 
-    frame = gtde.loadimage('img/dronemapper2.jpg')
+    frame = gtde.loadimage('img/aerial1.jpg')
     diffimage = estimator.computetdi(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
-    gtde.save2image('dronemapper2.jpg', gtde.drawgrid(frame, grid), diffimage)
+    gtde.saveimage('aerial1.jpg', [frame, diffimage])
 
 def two():
     """ Example 2: Computes a TDM and writes to stdout
@@ -371,4 +371,4 @@ def eleven():
     dem = numpy.array(geotiff.ReadAsArray())
     gtde.save2image("dem.jpg", image, dem)
 
-ten()
+one()
