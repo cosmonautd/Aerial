@@ -364,6 +364,8 @@ class GroundTraversalDifficultyEstimator():
             diffmatrix = exposure.rescale_intensity(diffmatrix, in_range=(pi, pf))
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
+        kernel = numpy.ones((2, 2), numpy.uint8)
+        diffmatrix = cv2.morphologyEx(diffmatrix, cv2.MORPH_CLOSE, kernel)
         return diffmatrix
 
     def computetdi(self, image, contrast=True, mask=numpy.array([])):
