@@ -359,9 +359,9 @@ class GroundTraversalDifficultyEstimator():
             diffmatrix = traversaldiff(regions, self.function, rmask=rmask)
         else:
             diffmatrix = traversaldiff(regions, self.function)
-        if contrast:
-            pi, pf = numpy.percentile(diffmatrix, (20, 80))
-            diffmatrix = exposure.rescale_intensity(diffmatrix, in_range=(pi, pf))
+        # if contrast:
+        #     pi, pf = numpy.percentile(diffmatrix, (20, 80))
+        #     diffmatrix = exposure.rescale_intensity(diffmatrix, in_range=(pi, pf))
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         # kernel = numpy.ones((2, 2), numpy.uint8)
@@ -372,17 +372,7 @@ class GroundTraversalDifficultyEstimator():
         """ Returns a traversal difficulty image based on estimator parameters
         """
         squaregrid = gridlist(image, self.granularity)
-        regions = regionmatrix(image, squaregrid)
-        if len(mask > 0):
-            rmask = self.groundtruth(mask, matrix=True)
-            diffmatrix = traversaldiff(regions, self.function, rmask=rmask)
-        else:
-            diffmatrix = traversaldiff(regions, self.function)
-        # if contrast:
-        #     pi, pf = numpy.percentile(diffmatrix, (40, 60))
-        #     diffmatrix = exposure.rescale_intensity(diffmatrix, in_range=(pi, pf))
-        if self.binary:
-            _, diffimage = cv2.threshold(diffimage, self.threshold, 255, cv2.THRESH_BINARY)
+        diffmatrix = self.computematrix(image, contrast=contrast, mask=mask)
         diffimage = tdi(image, squaregrid, diffmatrix)
         return diffimage
     
