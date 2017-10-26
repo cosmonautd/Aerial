@@ -129,7 +129,7 @@ def imagepath(image, ipath, grid, pathcolor=(0,255,0)):
     for k in range(len(centers)-1):
         r0, c0 = centers[k]
         r1, c1 = centers[k+1]
-        cv2.line(image, (c0, r0), (c1, r1), pathcolor, 3)
+        cv2.line(image, (c0, r0), (c1, r1), pathcolor, 4)
     return image
 
 def randomftd(region, view=False):
@@ -364,8 +364,8 @@ class GroundTraversalDifficultyEstimator():
             diffmatrix = exposure.rescale_intensity(diffmatrix, in_range=(pi, pf))
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
-        kernel = numpy.ones((2, 2), numpy.uint8)
-        diffmatrix = cv2.morphologyEx(diffmatrix, cv2.MORPH_CLOSE, kernel)
+        # kernel = numpy.ones((2, 2), numpy.uint8)
+        # diffmatrix = cv2.morphologyEx(diffmatrix, cv2.MORPH_CLOSE, kernel)
         return diffmatrix
 
     def computetdi(self, image, contrast=True, mask=numpy.array([])):
@@ -378,12 +378,12 @@ class GroundTraversalDifficultyEstimator():
             diffmatrix = traversaldiff(regions, self.function, rmask=rmask)
         else:
             diffmatrix = traversaldiff(regions, self.function)
-        diffimage = tdi(image, squaregrid, diffmatrix)
-        if contrast:
-            pi, pf = numpy.percentile(diffimage, (20, 80))
-            diffimage = exposure.rescale_intensity(diffimage, in_range=(pi, pf))
+        # if contrast:
+        #     pi, pf = numpy.percentile(diffmatrix, (40, 60))
+        #     diffmatrix = exposure.rescale_intensity(diffmatrix, in_range=(pi, pf))
         if self.binary:
             _, diffimage = cv2.threshold(diffimage, self.threshold, 255, cv2.THRESH_BINARY)
+        diffimage = tdi(image, squaregrid, diffmatrix)
         return diffimage
     
     def groundtruth(self, imagelabel, matrix=False):

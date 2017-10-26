@@ -284,22 +284,23 @@ def nine():
         Shows the routes over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=64,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('img/dronemapper.jpg')
-    # mask = gtde.loadimage('mask/dronemapper2.jpg')
+    image = gtde.loadimage('img/aerial1.jpg')
     tdmatrix = tdigenerator.computematrix(image)
     tdimage = tdigenerator.computetdi(image)
 
-    labelpoints = gtde.loadimage('keypoints/dronemapper.jpg')
-    grid = gtde.gridlist(image, 16)
+    labelpoints = gtde.loadimage('keypoints/aerial1.jpg')
+    grid = gtde.gridlist(image, 64)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
     G = router.tdm2graph(tdmatrix)
 
     for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
+
+        if counter > 0: break
 
         source = G.vertex(s)
         target = G.vertex(t)
@@ -309,7 +310,7 @@ def nine():
         ipath = [int(v) for v in path]
         pathimg = gtde.imagepath(image.copy(), ipath, grid)
         pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
-        gtde.save2image('%03d.png' % (counter + 1), pathimg, pathtdi)
+        gtde.save2image('%03d.jpg' % (counter + 1), pathimg, pathtdi)
 
 def ten():
     """ Example 10:
