@@ -121,27 +121,27 @@ def six():
         Shows on screen a concatenation of input image and its TDIs
     """
     gray_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128,
+                    granularity=16,
                     function=gtde.grayhistogram)
     
     rgb_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128,
+                    granularity=16,
                     function=gtde.rgbhistogram)
     
     edge_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128,
+                    granularity=16,
                     function=gtde.cannyedge)
     
     superpixels_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128,
+                    granularity=16,
                     function=gtde.superpixels)
 
-    frame = gtde.loadimage('img/aerial2.jpg')
+    frame = gtde.loadimage('img/aerial1.jpg')
 
-    graydiffimage = gray_estimator.computetdi(frame, contrast=True)
-    rgbdiffimage = rgb_estimator.computetdi(frame, contrast=True)
-    edgediffimage = edge_estimator.computetdi(frame, contrast=True)
-    superpixelsdiffimage = superpixels_estimator.computetdi(frame, contrast=True)
+    graydiffimage = gray_estimator.computetdi(frame, contrast=False)
+    rgbdiffimage = rgb_estimator.computetdi(frame, contrast=False)
+    edgediffimage = edge_estimator.computetdi(frame, contrast=False)
+    superpixelsdiffimage = superpixels_estimator.computetdi(frame, contrast=False)
 
     gtde.show5image(frame, graydiffimage, rgbdiffimage, edgediffimage, superpixelsdiffimage)
 
@@ -288,11 +288,11 @@ def nine():
                     granularity=g,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('img/aerial3.jpg')
+    image = gtde.loadimage('img/aerial2.jpg')
     tdmatrix = tdigenerator.computematrix(image)
     tdimage = tdigenerator.computetdi(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial3.jpg')
+    labelpoints = gtde.loadimage('keypoints/aerial2.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -377,4 +377,4 @@ def eleven():
     dem = numpy.array(geotiff.ReadAsArray())
     gtde.save2image("dem.jpg", image, dem)
 
-nine()
+six()
