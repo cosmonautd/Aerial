@@ -322,15 +322,15 @@ def ten():
                     granularity=g,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('img/dronemapper.jpg')
+    image = gtde.loadimage('img/aerial1.jpg')
     tdmatrix = tdigenerator.computematrix(image)
     tdimage = tdigenerator.computetdi(image)
 
-    gt = gtde.loadimage('labels/dronemapper.jpg')
+    gt = gtde.loadimage('labels/aerial1.jpg')
     gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
     gtimage = tdigenerator.groundtruth(gt)
 
-    labelpoints = gtde.loadimage('keypoints/dronemapper.jpg')
+    labelpoints = gtde.loadimage('keypoints/aerial1.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -377,4 +377,4 @@ def eleven():
     dem = numpy.array(geotiff.ReadAsArray())
     gtde.save2image("dem.jpg", image, dem)
 
-six()
+ten()
