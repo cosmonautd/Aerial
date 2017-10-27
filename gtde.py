@@ -349,7 +349,7 @@ class GroundTraversalDifficultyEstimator():
         self.binary = binary
         self.threshold = threshold
     
-    def computematrix(self, image, mask=numpy.array([])):
+    def computematrix(self, image, contrast=True, mask=numpy.array([])):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         image = cv2.bilateralFilter(image, 9, 75, 75)
@@ -362,7 +362,9 @@ class GroundTraversalDifficultyEstimator():
             diffmatrix = traversaldiff(regions, self.function)
         if self.binary:
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
-        diffmatrix = diffmatrix**2
+        if contrast:
+            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(3,3))
+            diffmatrix = clahe.apply(diffmatrix.astype(numpy.uint8))
         return diffmatrix
 
     def computetdi(self, image, contrast=True, mask=numpy.array([])):
