@@ -314,7 +314,7 @@ def saveimage(path, images):
             ax.imshow(image, cmap='gray', interpolation='bicubic')
             ax.axes.get_xaxis().set_ticks([])
             ax.axes.get_yaxis().set_visible(False)
-    fig.savefig(path, dpi=600, bbox_inches='tight')
+    fig.savefig(path, dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
 def save2image(path, image1, image2):
