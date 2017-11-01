@@ -283,10 +283,10 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    g = 8
+    g = 10
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
-                    function=gtde.superpixels)
+                    function=gtde.rgbhistogram)
 
     image = gtde.loadimage('img/aerial4.jpg')
     tdmatrix = tdigenerator.computematrix(image)
