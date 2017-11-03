@@ -318,14 +318,14 @@ def ten():
     g = 8
     penalty = (g*0.2)/8
 
-    inputdata = "aerial02.jpg"
+    inputdata = "aerial01.jpg"
 
     if not os.path.exists("output"):
         os.makedirs("output")
 
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
-                    function=gtde.superpixels)
+                    function=gtde.grayhistogram)
 
     image = gtde.loadimage(os.path.join("image", inputdata))
     tdmatrix = tdigenerator.computematrix(image)
