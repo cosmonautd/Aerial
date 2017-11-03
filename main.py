@@ -283,16 +283,16 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    g = 8
+    g = 6
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('img/aerial4.jpg')
+    image = gtde.loadimage('img/aerial5.jpg')
     tdmatrix = tdigenerator.computematrix(image)
     tdimage = tdigenerator.computetdi(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial4.jpg')
+    labelpoints = gtde.loadimage('keypoints/aerial5.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
