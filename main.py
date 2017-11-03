@@ -283,7 +283,7 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    g = 6
+    g = 8
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
                     function=gtde.superpixels)
@@ -309,28 +309,33 @@ def nine():
         ipath = [int(v) for v in path]
         pathimg = gtde.imagepath(image.copy(), ipath, grid)
         pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
-        gtde.save2image('%03d.jpg' % (counter + 1), pathimg, pathtdi)
+        gtde.save2image('output/%03d.jpg' % (counter + 1), pathimg, pathtdi)
 
 
 def ten():
     """ Example 10:
     """
     g = 8
-    penalty = (g*0.03)/8
+    penalty = (g*0.2)/8
+
+    inputdata = "aerial02.jpg"
+
+    if not os.path.exists("output"):
+        os.makedirs("output")
 
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('image/aerial01.jpg')
+    image = gtde.loadimage(os.path.join("image", inputdata))
     tdmatrix = tdigenerator.computematrix(image)
     tdimage = tdigenerator.computetdi(image)
 
-    gt = gtde.loadimage('labels/aerial01.jpg')
+    gt = gtde.loadimage(os.path.join("labels", inputdata))
     gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
     gtimage = tdigenerator.groundtruth(gt)
 
-    labelpoints = gtde.loadimage('keypoints/aerial01.jpg')
+    labelpoints = gtde.loadimage(os.path.join("keypoints", inputdata))
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -366,8 +371,8 @@ def ten():
         
         print("Path %03d computed: %.2f" % (counter+1, results[-1]))
 
-        gtde.saveimage('%03d.jpg' % (counter + 1), [pathtdi, pathlabel, pathimage])
+        gtde.saveimage( os.path.join("output", "%s-%03d.jpg" % (inputdata, counter + 1)), [pathtdi, pathlabel, pathimage])
     
     print("Success rate: %.2f" % (numpy.mean(results)))
 
-nine()
+ten()
