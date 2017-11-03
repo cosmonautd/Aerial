@@ -16,10 +16,10 @@ def one():
     estimator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=16)
 
-    frame = gtde.loadimage('img/aerial1.jpg')
+    frame = gtde.loadimage('image/aerial01.jpg')
     diffimage = estimator.computetdi(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
-    gtde.saveimage('aerial1.jpg', [frame, diffimage])
+    gtde.saveimage('aerial01.jpg', [frame, diffimage])
 
 def two():
     """ Example 2: Computes a TDM and writes to stdout
@@ -27,7 +27,7 @@ def two():
     estimator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=128)
 
-    frame = gtde.loadimage('img/aerial2.jpg')
+    frame = gtde.loadimage('image/aerial01.jpg')
     diffmatrix = estimator.computematrix(frame)
     print(diffmatrix)
 
@@ -39,8 +39,8 @@ def three():
                     granularity=16,
                     function=gtde.superpixels)
 
-    frame = gtde.loadimage('img/aerial1.jpg')
-    truth = gtde.loadimage('labels/aerial1.jpg')
+    frame = gtde.loadimage('image/aerial01.jpg')
+    truth = gtde.loadimage('labels/aerial01.jpg')
     framediff = estimator.computetdi(frame)
     truthdiff = estimator.groundtruth(truth)
     print("Correlation:", estimator.error(framediff, truthdiff, 'corr'))
@@ -104,7 +104,7 @@ def five():
                     granularity=128,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('img/aerial2.jpg')
+    image = gtde.loadimage('image/aerial01.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     router = graphmap.RouteEstimator()
@@ -136,7 +136,7 @@ def six():
                     granularity=16,
                     function=gtde.superpixels)
 
-    frame = gtde.loadimage('img/aerial1.jpg')
+    frame = gtde.loadimage('image/aerial01.jpg')
 
     graydiffimage = gray_estimator.computetdi(frame, contrast=False)
     rgbdiffimage = rgb_estimator.computetdi(frame, contrast=False)
@@ -258,10 +258,10 @@ def eight():
                     granularity=64,
                     function=gtde.rgbhistogram)
 
-    image = gtde.loadimage('img/aerial2.jpg')
+    image = gtde.loadimage('image/aerial01.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
-    labelpoints = gtde.loadimage('points/aerial2.jpg')
+    labelpoints = gtde.loadimage('keypoints/aerial01.jpg')
     grid = gtde.gridlist(image, 64)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -288,11 +288,11 @@ def nine():
                     granularity=g,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('img/aerial5.jpg')
+    image = gtde.loadimage('image/aerial01.jpg')
     tdmatrix = tdigenerator.computematrix(image)
     tdimage = tdigenerator.computetdi(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial5.jpg')
+    labelpoints = gtde.loadimage('keypoints/aerial01.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -322,15 +322,15 @@ def ten():
                     granularity=g,
                     function=gtde.superpixels)
 
-    image = gtde.loadimage('img/aerial1.jpg')
+    image = gtde.loadimage('image/aerial01.jpg')
     tdmatrix = tdigenerator.computematrix(image)
     tdimage = tdigenerator.computetdi(image)
 
-    gt = gtde.loadimage('labels/aerial1.jpg')
+    gt = gtde.loadimage('labels/aerial01.jpg')
     gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
     gtimage = tdigenerator.groundtruth(gt)
 
-    labelpoints = gtde.loadimage('keypoints/aerial1.jpg')
+    labelpoints = gtde.loadimage('keypoints/aerial01.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -369,12 +369,5 @@ def ten():
         gtde.saveimage('%03d.jpg' % (counter + 1), [pathtdi, pathlabel, pathimage])
     
     print("Success rate: %.2f" % (numpy.mean(results)))
-
-def eleven():
-    import gdal
-    image = gtde.loadimage('img/dronemapper2.jpg')
-    geotiff = gdal.Open('img/dronemapper2.tif')
-    dem = numpy.array(geotiff.ReadAsArray())
-    gtde.save2image("dem.jpg", image, dem)
 
 nine()
