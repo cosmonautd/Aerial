@@ -315,64 +315,76 @@ def nine():
 def ten():
     """ Example 10:
     """
-    g = 8
-    penalty = (g*0.2)/8
+    labelpath = 'labels/'
+    datasetpath = 'image/'
+    keypointspath = 'keypoints/'
+    outputpath = 'output/'
 
-    inputdata = "aerial01.jpg"
-
-    if not os.path.exists("output"):
-        os.makedirs("output")
-
-    tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=g,
-                    function=gtde.grayhistogram)
-
-    image = gtde.loadimage(os.path.join("image", inputdata))
-    tdmatrix = tdigenerator.computematrix(image)
-    tdimage = tdigenerator.computetdi(image)
-
-    gt = gtde.loadimage(os.path.join("labels", inputdata))
-    gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
-    gtimage = tdigenerator.groundtruth(gt)
-
-    labelpoints = gtde.loadimage(os.path.join("keypoints", inputdata))
-    grid = gtde.gridlist(image, g)
-    keypoints = graphmap.label2keypoints(labelpoints, grid)
-
-    router = graphmap.RouteEstimator()
-    G = router.tdm2graph(tdmatrix)
-
-    results = list()
-
-    for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
-
-        results.append(1.0)
-
-        source = G.vertex(s)
-        target = G.vertex(t)
-
-        path = router.route(G, source, target)
-
-        rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
-        for row, column in rpath:
-            if gtmatrix[row][column] > 220:
-                results[-1] = numpy.maximum(0, results[-1] - penalty)
-
-        ipath = [int(v) for v in path]
-
-        if results[-1] > 0.65:
-            pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
-            pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid)
-            pathimage = gtde.imagepath(image.copy(), ipath, grid)
-        else:
-            pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
-            pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
-            pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
-        
-        print("Path %03d computed: %.2f" % (counter+1, results[-1]))
-
-        gtde.saveimage( os.path.join("output", "%s-%03d.jpg" % (inputdata, counter + 1)), [pathtdi, pathlabel, pathimage])
+    labeldataset = list()
+    for (dirpath, dirnames, filenames) in os.walk(labelpath):
+        labeldataset.extend(filenames)
+        break
     
-    print("Success rate: %.2f" % (numpy.mean(results)))
+    for i, imagename in enumerate(labeldataset):
+
+        g = 8
+        penalty = (g*0.2)/8
+
+        inputdata = imagename
+
+        if not os.path.exists(outputpath):
+            os.makedirs(outputpath)
+
+        tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
+                        granularity=g,
+                        function=gtde.grayhistogram)
+
+        image = gtde.loadimage(os.path.join(datasetpath, inputdata))
+        tdmatrix = tdigenerator.computematrix(image)
+        tdimage = tdigenerator.computetdi(image)
+
+        gt = gtde.loadimage(os.path.join(labelpath, inputdata))
+        gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
+        gtimage = tdigenerator.groundtruth(gt)
+
+        labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
+        grid = gtde.gridlist(image, g)
+        keypoints = graphmap.label2keypoints(labelpoints, grid)
+
+        router = graphmap.RouteEstimator()
+        G = router.tdm2graph(tdmatrix)
+
+        results = list()
+
+        for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
+
+            results.append(1.0)
+
+            source = G.vertex(s)
+            target = G.vertex(t)
+
+            path = router.route(G, source, target)
+
+            rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
+            for row, column in rpath:
+                if gtmatrix[row][column] > 220:
+                    results[-1] = numpy.maximum(0, results[-1] - penalty)
+
+            ipath = [int(v) for v in path]
+
+            if results[-1] > 0.65:
+                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
+                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid)
+                pathimage = gtde.imagepath(image.copy(), ipath, grid)
+            else:
+                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
+                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
+                pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
+            
+            print("Path %03d computed: %.2f" % (counter+1, results[-1]))
+
+            gtde.saveimage( os.path.join(outputpath, "%s-%03d.jpg" % (inputdata, counter + 1)), [pathtdi, pathlabel, pathimage])
+        
+        print("Success rate: %.2f" % (numpy.mean(results)))
 
 ten()
