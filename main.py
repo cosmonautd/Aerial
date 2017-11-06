@@ -9,6 +9,7 @@ import itertools
 import matplotlib.pyplot as pyplot
 import gtde
 import graphmap
+import tqdm
 
 def one():
     """ Example 1: Computes a TDI and shows on screen
@@ -320,6 +321,8 @@ def ten():
     keypointspath = 'keypoints/'
     outputpath = 'output/'
 
+    savepaths = True
+
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16]
 
@@ -330,19 +333,26 @@ def ten():
     
     data = dict()
     
-    for i, imagename in enumerate(labeldataset):
+    for i in tqdm.trange(len(labeldataset), desc="            Input image "):
 
-        for ftd in functions:
+        inputdata = labeldataset[i]
+        image = gtde.loadimage(os.path.join(datasetpath, inputdata))
+        gt = gtde.loadimage(os.path.join(labelpath, inputdata))
+        labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
+
+        for j in tqdm.trange(len(functions), desc="Traversability function "):
+
+            ftd = functions[j]
 
             data[ftd.__name__] = dict()
 
-            for g in resolutions:
+            for k in tqdm.trange(len(resolutions), desc="             Resolution "):
+
+                g = resolutions[k]
 
                 data[ftd.__name__][str(g)] = list()
 
                 penalty = (g*0.4)/8
-
-                inputdata = imagename
 
                 finaloutputpath = os.path.join(outputpath, ftd.__name__, str(g))
 
@@ -352,16 +362,15 @@ def ten():
                 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                                 granularity=g,
                                 function=ftd)
-
-                image = gtde.loadimage(os.path.join(datasetpath, inputdata))
+                
                 tdmatrix = tdigenerator.computematrix(image)
-                tdimage = tdigenerator.computetdi(image)
+                if savepaths:
+                    tdimage = tdigenerator.computetdi(image)
 
-                gt = gtde.loadimage(os.path.join(labelpath, inputdata))
                 gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
-                gtimage = tdigenerator.groundtruth(gt)
+                if savepaths:
+                    gtimage = tdigenerator.groundtruth(gt)
 
-                labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
                 grid = gtde.gridlist(image, g)
                 keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -370,7 +379,11 @@ def ten():
 
                 results = list()
 
-                for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
+                combinations = list(itertools.combinations(keypoints, 2))
+
+                for counter in tqdm.trange(len(combinations), desc="                   Path "):
+
+                    (s, t) = combinations[counter]
 
                     results.append(1.0)
 
@@ -386,106 +399,47 @@ def ten():
 
                     ipath = [int(v) for v in path]
 
-                    if results[-1] > 0.65:
-                        pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
-                        pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid)
-                        pathimage = gtde.imagepath(image.copy(), ipath, grid)
-                    else:
-                        pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
-                        pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
-                        pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
+                    if savepaths:
+
+                        if results[-1] > 0.6:
+                            pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
+                            pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid)
+                            pathimage = gtde.imagepath(image.copy(), ipath, grid)
+                        else:
+                            pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
+                            pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
+                            pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
                     
-                    print("Path %03d computed: %.2f" % (counter+1, results[-1]))
                     data[ftd.__name__][str(g)].append(results[-1])
-
-                    # gtde.saveimage( os.path.join(finaloutputpath, "%s-%03d.jpg" % (inputdata.split('.')[0], counter + 1)), [pathtdi, pathlabel, pathimage])
-                
-                print("Success rate: %.2f" % (numpy.mean(results)))
-    
-    ftd_curve = {
-        "randomftd" : "Random",
-        "grayhistogram" : "Gray Histogram",
-        "rgbhistogram" : "RGB Histogram",
-        "cannyedge" : "Edge Density",
-        "superpixels" : "Superpixels"
-    }
-    
-    fig, (ax0) = pyplot.subplots(ncols=1)
-    for ftd in functions:
-        x = numpy.array(resolutions)
-        y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]) for element in x])
-        ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
-    pyplot.title("Path planning performance")
-    ax0.legend(loc='upper left')
-    ax0.set_xlabel("Region size")
-    # ax0.set_xscale('log')
-    ax0.tick_params(axis='x', which='minor', bottom='off')
-    ax0.set_xticks(resolutions)
-    ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
-    ax0.set_ylabel("Score")
-    fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
-    pyplot.close(fig)
-
-def eleven():
-    """ Example 11:
-    """
-    datasetpath = 'image/'
-    keypointspath = 'keypoints/'
-    outputpath = 'output/'
-
-    # functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
-    functions = [gtde.randomftd, gtde.grayhistogram]
-    resolutions = [6, 8, 10, 12, 14, 16]
-
-    keypointsdataset = list()
-    for (dirpath, dirnames, filenames) in os.walk(keypointspath):
-        keypointsdataset.extend(filenames)
-        break
-    
-    for i, imagename in enumerate(keypointsdataset):
-
-        for ftd in functions:
-
-            for g in resolutions:
-
-                penalty = (g*0.4)/8
-
-                inputdata = imagename
-
-                finaloutputpath = os.path.join(outputpath, ftd.__name__, str(g))
-
-                if not os.path.exists(finaloutputpath):
-                    os.makedirs(finaloutputpath)
-
-                tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                                granularity=g,
-                                function=ftd)
-
-                image = gtde.loadimage(os.path.join(datasetpath, inputdata))
-                tdmatrix = tdigenerator.computematrix(image)
-                tdimage = tdigenerator.computetdi(image)
-
-                labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
-                grid = gtde.gridlist(image, g)
-                keypoints = graphmap.label2keypoints(labelpoints, grid)
-
-                router = graphmap.RouteEstimator()
-                G = router.tdm2graph(tdmatrix)
-
-                for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
-
-                    source = G.vertex(s)
-                    target = G.vertex(t)
-
-                    path = router.route(G, source, target)
-                    ipath = [int(v) for v in path]
-
-                    pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
-                    pathimage = gtde.imagepath(image.copy(), ipath, grid)
                     
-                    print("Path %03d computed" % (counter+1))
-
-                    gtde.saveimage( os.path.join(finaloutputpath, "%s-%03d.jpg" % (inputdata.split('.')[0], counter + 1)), [pathtdi, pathimage])
+                    if savepaths:
+                        gtde.saveimage( os.path.join(finaloutputpath, "%s-%03d.jpg" % (inputdata.split('.')[0], counter + 1)), [pathtdi, pathlabel, pathimage])
+    
+    if not savepaths:
+    
+        ftd_curve = {
+            "randomftd" : "Random",
+            "grayhistogram" : "Gray Histogram",
+            "rgbhistogram" : "RGB Histogram",
+            "cannyedge" : "Edge Density",
+            "superpixels" : "Superpixels"
+        }
+        
+        fig, (ax0) = pyplot.subplots(ncols=1)
+        for ftd in functions:
+            x = numpy.array(resolutions)
+            y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]) for element in x])
+            ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
+        pyplot.title("Path planning performance")
+        ax0.legend(loc='upper left')
+        ax0.set_xlabel("Region size")
+        # ax0.set_xscale('log')
+        ax0.tick_params(axis='x', which='minor', bottom='off')
+        ax0.set_xticks(resolutions)
+        ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
+        ax0.set_ylabel("Score")
+        fig.tight_layout()
+        fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
+        pyplot.close(fig)
 
 ten()
