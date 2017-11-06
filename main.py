@@ -320,10 +320,7 @@ def ten():
     keypointspath = 'keypoints/'
     outputpath = 'output/'
 
-    # functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
-    # resolutions = [6, 8, 10, 12, 14, 16]
-
-    functions = [gtde.grayhistogram]
+    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16]
 
     labeldataset = list()
@@ -401,7 +398,7 @@ def ten():
                     print("Path %03d computed: %.2f" % (counter+1, results[-1]))
                     data[ftd.__name__][str(g)].append(results[-1])
 
-                    gtde.saveimage( os.path.join(finaloutputpath, "%s-%03d.jpg" % (inputdata.split('.')[0], counter + 1)), [pathtdi, pathlabel, pathimage])
+                    # gtde.saveimage( os.path.join(finaloutputpath, "%s-%03d.jpg" % (inputdata.split('.')[0], counter + 1)), [pathtdi, pathlabel, pathimage])
                 
                 print("Success rate: %.2f" % (numpy.mean(results)))
     
@@ -429,5 +426,66 @@ def ten():
     fig.tight_layout()
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
+
+def eleven():
+    """ Example 11:
+    """
+    datasetpath = 'image/'
+    keypointspath = 'keypoints/'
+    outputpath = 'output/'
+
+    # functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
+    functions = [gtde.randomftd, gtde.grayhistogram]
+    resolutions = [6, 8, 10, 12, 14, 16]
+
+    keypointsdataset = list()
+    for (dirpath, dirnames, filenames) in os.walk(keypointspath):
+        keypointsdataset.extend(filenames)
+        break
+    
+    for i, imagename in enumerate(keypointsdataset):
+
+        for ftd in functions:
+
+            for g in resolutions:
+
+                penalty = (g*0.4)/8
+
+                inputdata = imagename
+
+                finaloutputpath = os.path.join(outputpath, ftd.__name__, str(g))
+
+                if not os.path.exists(finaloutputpath):
+                    os.makedirs(finaloutputpath)
+
+                tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
+                                granularity=g,
+                                function=ftd)
+
+                image = gtde.loadimage(os.path.join(datasetpath, inputdata))
+                tdmatrix = tdigenerator.computematrix(image)
+                tdimage = tdigenerator.computetdi(image)
+
+                labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
+                grid = gtde.gridlist(image, g)
+                keypoints = graphmap.label2keypoints(labelpoints, grid)
+
+                router = graphmap.RouteEstimator()
+                G = router.tdm2graph(tdmatrix)
+
+                for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
+
+                    source = G.vertex(s)
+                    target = G.vertex(t)
+
+                    path = router.route(G, source, target)
+                    ipath = [int(v) for v in path]
+
+                    pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
+                    pathimage = gtde.imagepath(image.copy(), ipath, grid)
+                    
+                    print("Path %03d computed" % (counter+1))
+
+                    gtde.saveimage( os.path.join(finaloutputpath, "%s-%03d.jpg" % (inputdata.split('.')[0], counter + 1)), [pathtdi, pathimage])
 
 ten()
