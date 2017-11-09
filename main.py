@@ -190,15 +190,18 @@ def seven():
 
             for measure in measures:
 
-                data[measure] = dict()
+                if not measure in data:
+                    data[measure] = dict()
 
                 for ftd in functions:
 
-                    data[measure][ftd.__name__] = dict()
+                    if not ftd.__name__ in data[measure]:
+                        data[measure][ftd.__name__] = dict()
 
                     for g in resolutions:
                         
-                        data[measure][ftd.__name__][str(g)] = list()
+                        if not str(g) in data[measure][ftd.__name__]:
+                            data[measure][ftd.__name__][str(g)] = list()
 
                         estimator = gtde.GroundTraversalDifficultyEstimator( \
                                         granularity=g,
@@ -346,7 +349,7 @@ def ten():
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    images = ['aerial04.jpg']
+    images = ['aerial07.jpg']
     functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16]
 
@@ -372,13 +375,15 @@ def ten():
 
             ftd = functions[j]
 
-            data[ftd.__name__] = dict()
+            if not ftd.__name__ in data:
+                data[ftd.__name__] = dict()
 
             for k in tqdm.trange(len(resolutions), desc="             Resolution "):
 
                 g = resolutions[k]
 
-                data[ftd.__name__][str(g)] = list()
+                if not str(g) in data[ftd.__name__]:
+                    data[ftd.__name__][str(g)] = list()
 
                 penalty = (g*0.3)/8
 
