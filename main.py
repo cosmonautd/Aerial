@@ -285,9 +285,9 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    g = 8
+    g = 6
     penalty = (g*0.3)/8
-    inputdata = 'aerial02.jpg'
+    inputdata = 'aerial08.jpg'
 
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
@@ -349,7 +349,7 @@ def ten():
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    images = ['aerial07.jpg']
+    images = []
     functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16]
 
@@ -449,4 +449,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-ten()
+nine()
