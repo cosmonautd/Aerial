@@ -287,7 +287,7 @@ def nine():
     """
     g = 6
     penalty = (g*0.3)/8
-    inputdata = 'aerial08.jpg'
+    inputdata = 'aerial01.jpg'
 
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
