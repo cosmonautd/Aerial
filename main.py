@@ -343,7 +343,7 @@ def nine():
                 pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
             
             gtde.saveimage(os.path.join("output", inputdata.split('.')[0], str(g), \
-                            "%s-%03d-%03d.jpg" % (inputdata.split('.')[0], str(g), counter + 1)), [pathtdi, pathlabel, pathimage])
+                            "%s-%03d-%03d.jpg" % (inputdata.split('.')[0], g, counter + 1)), [pathtdi, pathlabel, pathimage])
 
 
 def ten():
