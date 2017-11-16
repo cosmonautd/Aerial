@@ -287,7 +287,7 @@ def nine():
     """
     g = 4
     penalty = (g*0.3)/8
-    inputdata = 'aerial05.jpg'
+    inputdata = 'aerial07.jpg'
 
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
@@ -437,7 +437,7 @@ def ten():
         y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]) for element in x])
         ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
     pyplot.title("Path planning performance")
-    ax0.legend(loc='upper left')
+    ax0.legend(loc='bottom right')
     ax0.set_xlabel("Region size")
     # ax0.set_xscale('log')
     ax0.tick_params(axis='x', which='minor', bottom='off')
@@ -449,4 +449,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-ten()
+nine()
