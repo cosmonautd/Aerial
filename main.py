@@ -358,7 +358,7 @@ def ten():
         os.makedirs(outputpath)
 
     images = []
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [gtde.randomftd, gtde.cannyedge, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
     labeldataset = list()
@@ -445,7 +445,7 @@ def ten():
         y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]) for element in x])
         ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
     pyplot.title("Path planning performance")
-    ax0.legend(loc='bottom right')
+    ax0.legend(loc='lower right')
     ax0.set_xlabel("Region size")
     # ax0.set_xscale('log')
     ax0.tick_params(axis='x', which='minor', bottom='off')
