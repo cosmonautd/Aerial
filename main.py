@@ -358,7 +358,7 @@ def ten():
         os.makedirs(outputpath)
 
     images = []
-    functions = [gtde.randomftd, gtde.cannyedge, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
     labeldataset = list()
@@ -457,4 +457,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-nine()
+ten()
