@@ -149,17 +149,13 @@ def six():
 def seven():
     """ Example 7: Generate graphs for all similarity measures available in gtde
     """
-    rootpath = '/home/dave/Datasets/DroneMapper/MeasuresEvaluation'
-    labelpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_LABELS/'
-    datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
+    rootpath = 'output'
+    labelpath = 'labels'
+    datasetpath = 'image'
 
-    # measures = ['corr', 'jaccard', 'rmse', 'nrmse', 'psnr', 'ssim']
-    # functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
-    # resolutions = [512, 256, 128, 64, 32]
-
-    measures = ['nmae', 'nrmse']
+    measures = ['corr', 'jaccard', 'nrmse']
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
-    resolutions = [512, 256, 128, 64, 32]
+    resolutions = [4, 6, 8, 10, 12, 14, 16]
 
     labeldataset = list()
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
@@ -207,10 +203,10 @@ def seven():
                                         granularity=g,
                                         function=ftd)
                         
-                        gt = estimator.groundtruth(lbl)
+                        gt = estimator.groundtruth(lbl, matrix=True)
                         start = time.time()
-                        tdi = estimator.computetdi(img)
-                        data[measure][ftd.__name__][str(g)].append(estimator.error(tdi, gt, measure))
+                        tdm = estimator.computematrix(img)
+                        data[measure][ftd.__name__][str(g)].append(estimator.error(tdm, gt, measure))
                         tdilog.write("%s\n" % (imagename))
                         tdilog.write("    %s %s %3d %.3f\n" % (measure, ftd.__name__, g, data[measure][ftd.__name__][str(g)][-1]))
                         tdilog.flush()
@@ -457,4 +453,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-ten()
+seven()
