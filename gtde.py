@@ -93,8 +93,6 @@ def traversaldiff(regions, function, parallel=True, view=False, rmask=numpy.arra
                 tdiff[i][j] = function(regions[i][j], view=view)
     else:
         with multiprocessing.Pool() as p:
-            # for i in range(td_rows):
-            #     tdiff[i] = p.map(function, regions[i])
             array = [regions[i][j] for i in range(td_rows) for j in range(td_columns)]
             tdarray = p.map(function, array)
             tdiff = numpy.array(tdarray, dtype=float).reshape((td_rows, td_columns))
@@ -367,7 +365,7 @@ class GroundTraversalDifficultyEstimator():
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         if contrast:
             clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(3,3))
-            diffmatrix = clahe.apply(diffmatrix.astype(numpy.uint8))
+            diffmatrix = numpy.array(clahe.apply(diffmatrix.astype(numpy.uint8)), dtype=float)
         return diffmatrix
 
     def computetdi(self, image, contrast=True, mask=numpy.array([])):
