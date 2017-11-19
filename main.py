@@ -119,32 +119,27 @@ def five():
 
 def six():
     """ Example 6: Computes one TDI for each defined function
-        Shows on screen a concatenation of input image and its TDIs
+        Saves a concatenation of input image and its TDIs
     """
     gray_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=8,
                     function=gtde.grayhistogram)
     
     rgb_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=8,
                     function=gtde.rgbhistogram)
     
-    edge_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
-                    function=gtde.cannyedge)
-    
     superpixels_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=8,
                     function=gtde.superpixels)
 
-    frame = gtde.loadimage('image/aerial01.jpg')
+    frame = gtde.loadimage('image/aerial07.jpg')
 
     graydiffimage = gray_estimator.computetdi(frame, contrast=False)
     rgbdiffimage = rgb_estimator.computetdi(frame, contrast=False)
-    edgediffimage = edge_estimator.computetdi(frame, contrast=False)
     superpixelsdiffimage = superpixels_estimator.computetdi(frame, contrast=False)
 
-    gtde.show5image(frame, graydiffimage, rgbdiffimage, edgediffimage, superpixelsdiffimage)
+    gtde.saveimage('output/comparison.jpg', [frame, graydiffimage, rgbdiffimage, superpixelsdiffimage])
 
 def seven():
     """ Example 7: Generate graphs for all similarity measures available in gtde
@@ -154,7 +149,7 @@ def seven():
     datasetpath = 'image'
 
     measures = ['corr', 'jaccard', 'nrmse']
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.cannyedge, gtde.superpixels]
+    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
     labeldataset = list()
@@ -228,7 +223,6 @@ def seven():
         "randomftd" : "Random",
         "grayhistogram" : "Gray Histogram",
         "rgbhistogram" : "RGB Histogram",
-        "cannyedge" : "Edge Density",
         "superpixels" : "Superpixels"
     }
     
@@ -354,7 +348,7 @@ def ten():
         os.makedirs(outputpath)
 
     images = []
-    functions = [gtde.randomftd, gtde.cannyedge, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
     labeldataset = list()
@@ -431,7 +425,6 @@ def ten():
         "randomftd" : "Random",
         "grayhistogram" : "Gray Histogram",
         "rgbhistogram" : "RGB Histogram",
-        "cannyedge" : "Edge Density",
         "superpixels" : "Superpixels"
     }
     
@@ -453,4 +446,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-seven()
+six()

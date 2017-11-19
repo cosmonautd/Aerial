@@ -175,24 +175,6 @@ def rgbhistogram(region, view=False):
         pyplot.show()
     return diff
 
-def cannyedge(region, view=False):
-    """ Returns a difficulty value based on edge density
-    """
-    region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(region, 100, 200)
-    diff = numpy.mean(edges.flatten())
-    if view:
-        fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
-        ax0.imshow(region, cmap='gray', interpolation='bicubic')
-        ax0.axes.get_xaxis().set_visible(False)
-        ax0.axes.get_yaxis().set_visible(False)
-        ax1.imshow(edges, cmap='gray', interpolation='bicubic')
-        ax1.axes.get_xaxis().set_visible(False)
-        ax1.axes.get_yaxis().set_visible(False)
-        fig.tight_layout()
-        pyplot.show()
-    return  diff
-
 def superpixels(region, view=False):
     """ Returns a difficulty value based on superpixels dispersion
     """
