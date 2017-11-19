@@ -74,7 +74,7 @@ def drawgraph(G, path=[], filename="tdg.png"):
             for e in v.out_edges():
                 if e.target() == path[i+1]:
                     G.ep.ecolor[e] = [0.640625, 0, 0, 0.9]
-                    G.ep.ewidth[e] = 16
+                    G.ep.ewidth[e] = 8
 
     draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_fill_color=G.vp.vfcolor,\
                     edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output=filename)
@@ -156,9 +156,10 @@ class RouteEstimator:
         G.ep.ecolor = G.new_edge_property("vector<double>")
         G.ep.ewidth = G.new_edge_property("int")
         for v in G.vertices():
-            G.vp.vfcolor[v] = [0, 0.0, 0.0, 1.0]
+            diff = G.vp.diff[v]
+            G.vp.vfcolor[v] = [numpy.sqrt(diff)/255, numpy.sqrt(diff)/255, numpy.sqrt(diff)/255, 1.0]
         for e in G.edges():
-            G.ep.ewidth[e] = numpy.sqrt(G.ep.weight[e]/16 + 1)
+            G.ep.ewidth[e] = 2
             G.ep.ecolor[e] = [0.179, 0.203, 0.210, 0.8]
         
         return G

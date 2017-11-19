@@ -20,7 +20,7 @@ def one():
     frame = gtde.loadimage('image/aerial01.jpg')
     diffimage = estimator.computetdi(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
-    gtde.saveimage('aerial01.jpg', [frame, diffimage])
+    gtde.saveimage('output/aerial01.jpg', [frame, diffimage])
 
 def two():
     """ Example 2: Computes a TDM and writes to stdout
@@ -37,8 +37,8 @@ def three():
         Computes root mean squared error and saves image file on disk
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
-                    function=gtde.superpixels)
+                    granularity=6,
+                    function=gtde.grayhistogram)
 
     frame = gtde.loadimage('image/aerial01.jpg')
     truth = gtde.loadimage('labels/aerial01.jpg')
@@ -50,10 +50,10 @@ def three():
 def four():
     """ Example 4: Computes TDIs for all files in datasetpath and saves to tdipath
     """
-    tdipath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes_TDI/'
-    datasetpath = '/home/dave/Datasets/DroneMapper/DroneMapper_AdobeButtes/'
+    tdipath = 'output'
+    datasetpath = 'image'
 
-    for g in [512, 256, 128, 64, 32]:
+    for g in [4]:
 
         outputpath = os.path.join(tdipath, 'R%03d' % g)
 
@@ -64,7 +64,7 @@ def four():
 
             estimator = gtde.GroundTraversalDifficultyEstimator( \
                             granularity=g,
-                            function=gtde.superpixels)
+                            function=gtde.grayhistogram)
             
             dataset = list()
             for (dirpath, dirnames, filenames) in os.walk(datasetpath):
@@ -102,8 +102,8 @@ def five():
         Saves image to disk
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128,
-                    function=gtde.superpixels)
+                    granularity=16,
+                    function=gtde.grayhistogram)
 
     image = gtde.loadimage('image/aerial01.jpg')
     tdmatrix = tdigenerator.computematrix(image)
@@ -115,7 +115,7 @@ def five():
     target = G.vertex(graphmap.coord2((4, 14), tdmatrix.shape[1]))
 
     path = router.route(G, source, target)
-    graphmap.drawgraph(G, path, 'tdg.png')
+    graphmap.drawgraph(G, path, 'output/tdg.png')
 
 def six():
     """ Example 6: Computes one TDI for each defined function
@@ -133,7 +133,7 @@ def six():
                     granularity=8,
                     function=gtde.superpixels)
 
-    frame = gtde.loadimage('image/aerial07.jpg')
+    frame = gtde.loadimage('image/aerial01.jpg')
 
     graydiffimage = gray_estimator.computetdi(frame, contrast=False)
     rgbdiffimage = rgb_estimator.computetdi(frame, contrast=False)
@@ -249,14 +249,14 @@ def eight():
         Shows the route over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=64,
-                    function=gtde.rgbhistogram)
+                    granularity=4,
+                    function=gtde.grayhistogram)
 
-    image = gtde.loadimage('image/aerial01.jpg')
+    image = gtde.loadimage('image/aerial05.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial01.jpg')
-    grid = gtde.gridlist(image, 64)
+    labelpoints = gtde.loadimage('keypoints/aerial05.jpg')
+    grid = gtde.gridlist(image, 4)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -265,11 +265,11 @@ def eight():
     [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
 
     path = router.route(G, source, target)
-    graphmap.drawgraph(G, path, 'tdg.png')
+    graphmap.drawgraph(G, path, 'output/tdg.png')
 
     ipath = [int(v) for v in path]
     pathtdi = gtde.imagepath(image, ipath, grid)
-    gtde.showimage(pathtdi)
+    gtde.saveimage('output/tdi.jpg', [pathtdi])
 
 def nine():
     """ Example 9: Computes a route between all labeled keypoints
@@ -446,4 +446,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-six()
+eight()
