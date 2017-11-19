@@ -252,7 +252,7 @@ def eight():
                     granularity=4,
                     function=gtde.grayhistogram)
 
-    image = gtde.loadimage('image/aerial05.jpg')
+    image = gtde.loadimage('image/aerial07.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     labelpoints = gtde.loadimage('keypoints/aerial05.jpg')
