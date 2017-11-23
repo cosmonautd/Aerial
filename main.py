@@ -216,7 +216,7 @@ def seven():
         "nrmse" : "Normalized root mean square error", 
         "psnr" : "Peak signal to noise ratio", 
         "ssim" : "Structural similarity index",
-        "nmae" : "Normalized mean absolute error"5
+        "nmae" : "Normalized mean absolute error"
     }
     
     ftd_curve = {   
