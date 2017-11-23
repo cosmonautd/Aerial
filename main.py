@@ -231,18 +231,18 @@ def seven():
         for ftd in functions:
             x = numpy.array(resolutions)
             y = numpy.array([numpy.mean(data[measure][ftd.__name__][str(element)]) for element in x])
-            ax0.plot(x, y, '-o', markevery=range(5), label=ftd_curve[ftd.__name__])
+            ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
         pyplot.title(plot_title[measure])
         ax0.legend(loc='upper left')
         ax0.set_xlabel("Region size")
-        ax0.set_xscale('log')
+        # ax0.set_xscale('log')
         ax0.tick_params(axis='x', which='minor', bottom='off')
         ax0.set_xticks(resolutions)
         ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
         ax0.set_ylabel(plot_title[measure].split(" ")[-1].title())
         fig.tight_layout()
-        pyplot.show(block=False)
-    pyplot.show()
+        fig.savefig(os.path.join(rootpath, "score-tdi-%s.png" % (measure)), dpi=300, bbox_inches='tight')
+        pyplot.close(fig)
 
 def eight():
     """ Example 8: Computes a route between two labeled keypoints
@@ -446,4 +446,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-eight()
+seven()
