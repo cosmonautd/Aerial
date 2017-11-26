@@ -92,10 +92,11 @@ def traversaldiff(regions, function, parallel=True, view=False, rmask=numpy.arra
             for j in range(td_columns):
                 tdiff[i][j] = function(regions[i][j], view=view)
     else:
-        with multiprocessing.Pool() as p:
-            array = [regions[i][j] for i in range(td_rows) for j in range(td_columns)]
-            tdarray = p.map(function, array)
-            tdiff = numpy.array(tdarray, dtype=float).reshape((td_rows, td_columns))
+        array = [regions[i][j] for i in range(td_rows) for j in range(td_columns)]
+        p = multiprocessing.Pool()
+        tdarray = p.map(function, array)
+        p.close()
+        tdiff = numpy.array(tdarray, dtype=float).reshape((td_rows, td_columns))
 
     tdiff *= 255/tdiff.max()
     if len(rmask) > 0:

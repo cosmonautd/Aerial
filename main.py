@@ -148,7 +148,7 @@ def seven():
     labelpath = 'labels'
     datasetpath = 'image'
 
-    measures = ['corr', 'jaccard', 'nrmse']
+    measures = ['rmse', 'ssim']
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
@@ -173,6 +173,9 @@ def seven():
         os.makedirs(rootpath)
 
     with open(os.path.join(rootpath, 'tdi.log'), 'w') as tdilog:
+
+        counter = 0
+        bar.update(counter)
 
         for i, imagename in enumerate(labeldataset):
 
@@ -205,7 +208,8 @@ def seven():
                         tdilog.write("%s\n" % (imagename))
                         tdilog.write("    %s %s %3d %.3f\n" % (measure, ftd.__name__, g, data[measure][ftd.__name__][str(g)][-1]))
                         tdilog.flush()
-                        bar.update(i+1)
+                        counter += 1
+                        bar.update(counter)
         
         bar.finish()
     
@@ -249,14 +253,14 @@ def eight():
         Shows the route over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=4,
+                    granularity=8,
                     function=gtde.grayhistogram)
 
-    image = gtde.loadimage('image/aerial07.jpg')
+    image = gtde.loadimage('image/aerial08.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial05.jpg')
-    grid = gtde.gridlist(image, 4)
+    labelpoints = gtde.loadimage('keypoints/aerial08.jpg')
+    grid = gtde.gridlist(image, 8)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -446,4 +450,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-seven()
+eight()
