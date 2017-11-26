@@ -98,7 +98,7 @@ def traversaldiff(regions, function, parallel=True, view=False, rmask=numpy.arra
         p.close()
         tdiff = numpy.array(tdarray, dtype=float).reshape((td_rows, td_columns))
 
-    tdiff *= 255/tdiff.max()
+    tdiff /= tdiff.max()
     if len(rmask) > 0:
         tdiff[rmask < 127] = 255
     return tdiff
@@ -112,12 +112,12 @@ def tdi(image, grid, diffmatrix):
     """ Returns traversal difficulty image from image, grid and difficulty matrix
     """
     height, width, _ = image.shape
-    diffimage = 255*numpy.ones((height, width), dtype=numpy.uint8)
+    diffimage = numpy.ones((height, width), dtype=numpy.uint8)
     for k, element in enumerate(grid):
         tlx, tly, size = element[0], element[1], element[2]
         row, column = coord(k, diffmatrix.shape[1])
         diff = diffmatrix[row][column]
-        region = diff*numpy.ones((size, size))
+        region = (255*diff)*numpy.ones((size, size))
         diffimage[tly:tly+region.shape[0], tlx:tlx+region.shape[1]] = region
     return diffimage
 
@@ -138,7 +138,7 @@ def randomftd(region, view=False):
     """ Returns a random difficulty value
     """
     #return numpy.random.randint(256)
-    return random.randint(0, 255)
+    return random.random()
 
 def grayhistogram(region, view=False):
     """ Returns a difficulty value based on grayscale histogram dispersion
@@ -348,7 +348,7 @@ class GroundTraversalDifficultyEstimator():
             _, diffmatrix = cv2.threshold(diffmatrix, self.threshold, 255, cv2.THRESH_BINARY)
         if contrast:
             clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(3,3))
-            diffmatrix = numpy.array(clahe.apply(diffmatrix.astype(numpy.uint8)), dtype=float)
+            diffmatrix = numpy.array(clahe.apply((255*diffmatrix).astype(numpy.uint8)), dtype=float)/255
         return diffmatrix
 
     def computetdi(self, image, contrast=True, mask=numpy.array([])):
