@@ -148,7 +148,7 @@ def seven():
     labelpath = 'labels'
     datasetpath = 'image'
 
-    measures = ['rmse', 'ssim']
+    measures = ['psnr', 'ssim']
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
@@ -279,9 +279,9 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    inputdata = 'aerial01.jpg'
+    inputdata = 'aerial08.jpg'
 
-    resolutions = [4, 6, 8, 10, 12, 14, 16]
+    resolutions = [4]
 
     for g in resolutions:
 
@@ -323,7 +323,7 @@ def nine():
 
             rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
             for row, column in rpath:
-                if gtmatrix[row][column] > 220:
+                if gtmatrix[row][column] > 0.85:
                     results[-1] = numpy.maximum(0, results[-1] - penalty)
 
             ipath = [int(v) for v in path]
@@ -420,7 +420,7 @@ def ten():
 
                     rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                     for row, column in rpath:
-                        if gtmatrix[row][column] > 220:
+                        if gtmatrix[row][column] > 0.85:
                             results[-1] = numpy.maximum(0, results[-1] - penalty)
                     
                     data[ftd.__name__][str(g)].append(results[-1])
@@ -450,4 +450,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-eight()
+ten()
