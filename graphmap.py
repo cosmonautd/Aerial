@@ -157,7 +157,7 @@ class RouteEstimator:
         G.ep.ewidth = G.new_edge_property("int")
         for v in G.vertices():
             diff = G.vp.diff[v]
-            G.vp.vfcolor[v] = [numpy.sqrt(diff)/255, numpy.sqrt(diff)/255, numpy.sqrt(diff)/255, 1.0]
+            G.vp.vfcolor[v] = [numpy.sqrt(diff)/100, numpy.sqrt(diff)/100, numpy.sqrt(diff)/100, 1.0]
         for e in G.edges():
             G.ep.ewidth[e] = 2
             G.ep.ecolor[e] = [0.179, 0.203, 0.210, 0.8]
