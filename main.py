@@ -148,7 +148,7 @@ def seven():
     labelpath = 'labels'
     datasetpath = 'image'
 
-    measures = ['psnr', 'ssim']
+    measures = ['corr']
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
@@ -450,4 +450,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-ten()
+seven()
