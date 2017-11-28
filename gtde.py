@@ -121,17 +121,20 @@ def tdi(image, grid, diffmatrix):
         diffimage[tly:tly+region.shape[0], tlx:tlx+region.shape[1]] = region
     return diffimage
 
-def imagepath(image, ipath, grid, pathcolor=(0,255,0)):
+def imagepath(image, ipath, grid, pathcolor=(0,255,0), found=False):
     if len(image.shape) < 3:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     centers = []
     for k in ipath:
         tly, tlx, size = grid[k]
         centers.append((int(tlx+(size/2)), int(tly+(size/2))))
-    for k in range(len(centers)-1):
-        r0, c0 = centers[k]
-        r1, c1 = centers[k+1]
-        cv2.line(image, (c0, r0), (c1, r1), pathcolor, 4)
+    cv2.circle(image, centers[0][::-1], 6, pathcolor, -1)
+    cv2.circle(image, centers[-1][::-1], 6, pathcolor, -1)
+    if found:
+        for k in range(len(centers)-1):
+            r0, c0 = centers[k]
+            r1, c1 = centers[k+1]
+            cv2.line(image, (c0, r0), (c1, r1), pathcolor, 4)
     return image
 
 def randomftd(region, view=False):

@@ -114,7 +114,7 @@ def five():
     source = G.vertex(graphmap.coord2((12, 1), tdmatrix.shape[1]))
     target = G.vertex(graphmap.coord2((4, 14), tdmatrix.shape[1]))
 
-    path = router.route(G, source, target)
+    path, found = router.route(G, source, target)
     graphmap.drawgraph(G, path, 'output/tdg.png')
 
 def six():
@@ -253,14 +253,14 @@ def eight():
         Shows the route over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=8,
+                    granularity=16,
                     function=gtde.grayhistogram)
 
     image = gtde.loadimage('image/aerial08.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     labelpoints = gtde.loadimage('keypoints/aerial08.jpg')
-    grid = gtde.gridlist(image, 8)
+    grid = gtde.gridlist(image, 16)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -268,11 +268,11 @@ def eight():
 
     [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
 
-    path = router.route(G, source, target)
+    path, found = router.route(G, source, target)
     graphmap.drawgraph(G, path, 'output/tdg.png')
 
     ipath = [int(v) for v in path]
-    pathtdi = gtde.imagepath(image, ipath, grid)
+    pathtdi = gtde.imagepath(image, ipath, grid, found=found)
     gtde.saveimage('output/tdi.jpg', [pathtdi])
 
 def nine():
@@ -317,7 +317,7 @@ def nine():
             source = G.vertex(s)
             target = G.vertex(t)
 
-            path = router.route(G, source, target)
+            path, found = router.route(G, source, target)
 
             results.append(1.0)
 
@@ -328,13 +328,13 @@ def nine():
 
             ipath = [int(v) for v in path]
             if results[-1] > 0.6:
-                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid)
-                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid)
-                pathimage = gtde.imagepath(image.copy(), ipath, grid)
+                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, found=found)
+                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, found=found)
+                pathimage = gtde.imagepath(image.copy(), ipath, grid, found=found)
             else:
-                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
-                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0))
-                pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0))
+                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
+                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
+                pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
             
             gtde.saveimage(os.path.join("output", inputdata.split('.')[0], str(g), \
                             "%s-%03d-%03d.jpg" % (inputdata.split('.')[0], g, counter + 1)), [pathtdi, pathlabel, pathimage])
@@ -416,7 +416,7 @@ def ten():
                     source = G.vertex(s)
                     target = G.vertex(t)
 
-                    path = router.route(G, source, target)
+                    path, found = router.route(G, source, target)
 
                     rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                     for row, column in rpath:
@@ -450,4 +450,4 @@ def ten():
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-seven()
+ten()

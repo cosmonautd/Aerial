@@ -111,7 +111,7 @@ class RouteEstimator:
                 
         for v in G.vertices():
 
-            if G.vp.diff[v] > (100*(0.8))**2:
+            if G.vp.diff[v] > (100*(0.4))**2:
                 continue
 
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
@@ -176,12 +176,18 @@ class RouteEstimator:
             dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor(target))
 
         path = list()
-        path.append(target)
+        found = False
 
         v = target
-        if G.vertex(pred[v]):
+        if G.vertex(pred[target]) and dist[target] != float('inf'):
+            found = True
+            path.append(target)
             while v != source:
                 v = G.vertex(pred[v])
                 path.append(v)
+        
+        if len(path) == 0:
+            path.append(target)
+            path.append(source)
 
-        return path[::-1]
+        return path[::-1], found
