@@ -99,4 +99,4 @@ ENV/
 .mypy_cache/
 
 output
-.vscode/tags
+.vscode

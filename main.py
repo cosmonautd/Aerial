@@ -385,7 +385,9 @@ def ten():
                 g = resolutions[k]
 
                 if not str(g) in data[ftd.__name__]:
-                    data[ftd.__name__][str(g)] = list()
+                    data[ftd.__name__][str(g)] = dict()
+                    data[ftd.__name__][str(g)]['score'] = list()
+                    data[ftd.__name__][str(g)]['found'] = list()
 
                 penalty = (g*0.3)/8
 
@@ -423,7 +425,8 @@ def ten():
                         if gtmatrix[row][column] > 0.85:
                             results[-1] = numpy.maximum(0, results[-1] - penalty)
                     
-                    data[ftd.__name__][str(g)].append(results[-1])
+                    data[ftd.__name__][str(g)]['score'].append(results[-1])
+                    data[ftd.__name__][str(g)]['found'].append(float(found))
     
     ftd_curve = {
         "randomftd" : "Random",
@@ -435,12 +438,11 @@ def ten():
     fig, (ax0) = pyplot.subplots(ncols=1)
     for ftd in functions:
         x = numpy.array(resolutions)
-        y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]) for element in x])
+        y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]['score']) for element in x])
         ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
     pyplot.title("Path planning performance")
     ax0.legend(loc='lower right')
     ax0.set_xlabel("Region size")
-    # ax0.set_xscale('log')
     ax0.tick_params(axis='x', which='minor', bottom='off')
     ax0.set_xticks(resolutions)
     ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
@@ -448,6 +450,23 @@ def ten():
     ax0.set_ylim([0, 1])
     fig.tight_layout()
     fig.savefig(os.path.join(outputpath, "score.png"), dpi=300, bbox_inches='tight')
+    pyplot.close(fig)
+
+    fig, (ax0) = pyplot.subplots(ncols=1)
+    for ftd in functions:
+        x = numpy.array(resolutions)
+        y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]['found']) for element in x])
+        ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
+    pyplot.title("Path finding performance")
+    ax0.legend(loc='lower right')
+    ax0.set_xlabel("Region size")
+    ax0.tick_params(axis='x', which='minor', bottom='off')
+    ax0.set_xticks(resolutions)
+    ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
+    ax0.set_ylabel("Score")
+    ax0.set_ylim([0, 1])
+    fig.tight_layout()
+    fig.savefig(os.path.join(outputpath, "found.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
 ten()
