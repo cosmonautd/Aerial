@@ -111,7 +111,7 @@ class RouteEstimator:
                 
         for v in G.vertices():
 
-            if G.vp.diff[v] > (100*(0.4))**2:
+            if G.vp.diff[v] > (100*(0.3))**2:
                 continue
 
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
