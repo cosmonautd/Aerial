@@ -253,14 +253,14 @@ def eight():
         Shows the route over image on screen
     """
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
+                    granularity=4,
                     function=gtde.grayhistogram)
 
     image = gtde.loadimage('image/aerial08.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     labelpoints = gtde.loadimage('keypoints/aerial08.jpg')
-    grid = gtde.gridlist(image, 16)
+    grid = gtde.gridlist(image, 4)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -469,4 +469,5 @@ def ten():
     fig.savefig(os.path.join(outputpath, "found.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-ten()
+import cProfile
+cProfile.run("eight()", sort="cumulative")
