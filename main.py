@@ -469,5 +469,108 @@ def ten():
     fig.savefig(os.path.join(outputpath, "found.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
+def eleven():
+    """ Example 11:
+    """
+    labelpath = 'labels/'
+    datasetpath = 'image/'
+    keypointspath = 'keypoints-impossible/'
+    outputpath = 'output/'
+
+    if not os.path.exists(outputpath):
+        os.makedirs(outputpath)
+
+    images = ['aerial01.jpg', 'aerial02.jpg', 'aerial03.jpg', 'aerial04.jpg', 'aerial05.jpg', 'aerial06.jpg', 'aerial07.jpg']
+    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    resolutions = [4, 6, 8, 10, 12, 14, 16]
+
+    labeldataset = list()
+    for (dirpath, dirnames, filenames) in os.walk(labelpath):
+        labeldataset.extend(filenames)
+        break
+    
+    labeldataset.sort()
+    
+    selected = list(set(labeldataset).intersection(images)) if len(images) > 0 else labeldataset
+
+    data = dict()
+    
+    for i in tqdm.trange(len(selected), desc="            Input image "):
+
+        inputdata = selected[i]
+        image = gtde.loadimage(os.path.join(datasetpath, inputdata))
+        gt = gtde.loadimage(os.path.join(labelpath, inputdata))
+        labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
+
+        for j in tqdm.trange(len(functions), desc="Traversability function "):
+
+            ftd = functions[j]
+
+            if not ftd.__name__ in data:
+                data[ftd.__name__] = dict()
+
+            for k in tqdm.trange(len(resolutions), desc="             Resolution "):
+
+                g = resolutions[k]
+
+                if not str(g) in data[ftd.__name__]:
+                    data[ftd.__name__][str(g)] = dict()
+                    data[ftd.__name__][str(g)]['found'] = list()
+
+                tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
+                                granularity=g,
+                                function=ftd)
+                
+                tdmatrix = tdigenerator.computematrix(image)
+
+                gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
+
+                grid = gtde.gridlist(image, g)
+                keypoints = graphmap.label2keypoints(labelpoints, grid)
+
+                router = graphmap.RouteEstimator()
+                G = router.tdm2graph(tdmatrix)
+
+                results = list()
+
+                combinations = list(itertools.combinations(keypoints, 2))
+
+                for counter in tqdm.trange(len(combinations), desc="                   Path "):
+
+                    (s, t) = combinations[counter]
+
+                    results.append(1.0)
+
+                    source = G.vertex(s)
+                    target = G.vertex(t)
+
+                    path, found = router.route(G, source, target)
+                    
+                    data[ftd.__name__][str(g)]['found'].append(float(not found))
+    
+    ftd_curve = {
+        "randomftd" : "Random",
+        "grayhistogram" : "Gray Histogram",
+        "rgbhistogram" : "RGB Histogram",
+        "superpixels" : "Superpixels"
+    }
+
+    fig, (ax0) = pyplot.subplots(ncols=1)
+    for ftd in functions:
+        x = numpy.array(resolutions)
+        y = numpy.array([numpy.mean(data[ftd.__name__][str(element)]['found']) for element in x])
+        ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
+    pyplot.title("Path finding performance")
+    ax0.legend(loc='lower right')
+    ax0.set_xlabel("Region size")
+    ax0.tick_params(axis='x', which='minor', bottom='off')
+    ax0.set_xticks(resolutions)
+    ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
+    ax0.set_ylabel("Score")
+    ax0.set_ylim([0, 1])
+    fig.tight_layout()
+    fig.savefig(os.path.join(outputpath, "found.png"), dpi=300, bbox_inches='tight')
+    pyplot.close(fig)
+
 import cProfile
-cProfile.run("eight()", sort="cumulative")
+cProfile.run("ten()", sort="cumulative")
