@@ -351,7 +351,7 @@ def ten():
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    images = ['aerial01.jpg', 'aerial02.jpg', 'aerial03.jpg', 'aerial04.jpg', 'aerial05.jpg', 'aerial06.jpg', 'aerial07.jpg']
+    images = []
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
