@@ -352,7 +352,7 @@ def ten():
         os.makedirs(outputpath)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.grayhistogram]
+    functions = [gtde.randomftd, gtde.grayhistogram]
     resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
 
     labeldataset = list()
