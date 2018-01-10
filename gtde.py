@@ -339,8 +339,16 @@ class GroundTraversalDifficultyEstimator():
     def computematrix(self, image, contrast=True, mask=numpy.array([])):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
-        image = cv2.bilateralFilter(image, 9, 75, 75)
+        ############################################################################
+        ######    THIS CODE IS JUST FOR OBTAINING RESULTS FIX LATER ################
+        ############################################################################
+        saveimage('output/example-original.jpg', [image])
+        image = cv2.bilateralFilter(image, 15, 75, 75)
+        saveimage('output/example-bilateral-filter.jpg', [image])
         squaregrid = gridlist(image, self.granularity)
+        img = drawgrid(image, squaregrid)
+        saveimage('output/example-grid-%dx%d.jpg' % (self.granularity, self.granularity), [img])
+        ############################################################################
         regions = regionmatrix(image, squaregrid)
         if len(mask) > 0:
             rmask = self.groundtruth(mask, matrix=True)

@@ -15,12 +15,12 @@ def one():
     """ Example 1: Computes a TDI and shows on screen
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16)
+                    granularity=32)
 
-    frame = gtde.loadimage('image/aerial01.jpg')
+    frame = gtde.loadimage('image/example.jpg')
     diffimage = estimator.computetdi(frame)
     grid = gtde.gridlist(frame, estimator.granularity)
-    gtde.saveimage('output/aerial01.jpg', [frame, diffimage])
+    gtde.saveimage('output/example.jpg', [frame, diffimage])
 
 def two():
     """ Example 2: Computes a TDM and writes to stdout
@@ -510,4 +510,4 @@ def ten():
     pyplot.close(fig)
 
 import cProfile
-cProfile.run("ten()", sort="cumulative")
+cProfile.run("one()", sort="cumulative")
