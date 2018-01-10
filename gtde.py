@@ -141,7 +141,7 @@ def randomftd(region, view=False):
     """ Returns a random difficulty value
     """
     #return numpy.random.randint(256)
-    return random.random()
+    return - random.uniform(-1, 0)
 
 def grayhistogram(region, view=False):
     """ Returns a difficulty value based on grayscale histogram dispersion
