@@ -147,7 +147,9 @@ def grayhistogram(region, view=False):
     """ Returns a difficulty value based on grayscale histogram dispersion
     """
     region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
-    diff = numpy.std(region.flatten())
+    std = numpy.std(region.flatten())
+    if std == 0: diff = 1
+    else: diff = numpy.minimum(1, 1/std)
     if view:
         fig, (ax0, ax1) = pyplot.subplots(ncols=2, figsize=(8, 4))
         ax0.imshow(region, cmap='gray', interpolation='bicubic')
@@ -327,7 +329,7 @@ class GroundTraversalDifficultyEstimator():
     """ Defines a ground traversal difficulty estimator
     """
 
-    def __init__(self, function=superpixels, granularity=128, binary=False, threshold=127):
+    def __init__(self, function=grayhistogram, granularity=128, binary=False, threshold=127):
         """ Ground traversal difficulty estimator constructor
             Sets all initial estimator parameters
         """
@@ -342,12 +344,13 @@ class GroundTraversalDifficultyEstimator():
         ############################################################################
         ######    THIS CODE IS JUST FOR OBTAINING RESULTS FIX LATER ################
         ############################################################################
-        saveimage('output/example-original.jpg', [image])
+        # if not os.path.exists('output'): os.mkdir('output')
+        # saveimage('output/example-original.jpg', [image])
         image = cv2.bilateralFilter(image, 15, 75, 75)
-        saveimage('output/example-bilateral-filter.jpg', [image])
+        # saveimage('output/example-bilateral-filter.jpg', [image])
         squaregrid = gridlist(image, self.granularity)
-        img = drawgrid(image, squaregrid)
-        saveimage('output/example-grid-%dx%d.jpg' % (self.granularity, self.granularity), [img])
+        # img = drawgrid(image, squaregrid)
+        # saveimage('output/example-grid-%dx%d.jpg' % (self.granularity, self.granularity), [img])
         ############################################################################
         regions = regionmatrix(image, squaregrid)
         if len(mask) > 0:

@@ -15,7 +15,7 @@ def one():
     """ Example 1: Computes a TDI and shows on screen
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=32)
+                    granularity=20)
 
     frame = gtde.loadimage('image/example.jpg')
     diffimage = estimator.computetdi(frame)
@@ -26,7 +26,7 @@ def two():
     """ Example 2: Computes a TDM and writes to stdout
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=128)
+                    granularity=8)
 
     frame = gtde.loadimage('image/aerial01.jpg')
     diffmatrix = estimator.computematrix(frame)
@@ -351,9 +351,9 @@ def ten():
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    images = []
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
-    resolutions = [4, 6, 8, 10, 12, 14, 16]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    functions = [gtde.grayhistogram]
+    resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
 
     labeldataset = list()
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
@@ -509,5 +509,7 @@ def ten():
     fig.savefig(os.path.join(outputpath, "path_negatives.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-import cProfile
-cProfile.run("one()", sort="cumulative")
+# import cProfile
+# cProfile.run("one()", sort="cumulative")
+
+ten()
