@@ -509,7 +509,7 @@ def ten():
     fig.savefig(os.path.join(outputpath, "path_negatives.png"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
-# import cProfile
-# cProfile.run("one()", sort="cumulative")
+import cProfile
+cProfile.run("one()", sort="cumulative")
 
-ten()
+# ten()
