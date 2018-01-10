@@ -107,7 +107,10 @@ class RouteEstimator:
                 v = G.add_vertex()
                 G.vp.pos[v] = [i, j]
                 G.vp.pos2[v] = [j, i]
-                G.vp.diff[v] = (100*(1/tdmatrix[i][j]))**2
+                if tdmatrix[i][j] == 0:
+                    G.vp.diff[v] = float('inf')
+                else:
+                    G.vp.diff[v] = (100*(1/tdmatrix[i][j]))**2
                 
         for v in G.vertices():
 
