@@ -279,8 +279,9 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    inputdata = 'aerial01.jpg'
-    resolutions = [16]
+    inputdata = 'example.jpg'
+    resolutions = [8]
+    confidence = 0.5
 
     for g in resolutions:
 
@@ -302,12 +303,12 @@ def nine():
             gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
             gtimage = tdigenerator.groundtruth(gt)
 
-        labelpoints = gtde.loadimage(os.path.join('keypoints-impossible', inputdata))
+        labelpoints = gtde.loadimage(os.path.join('keypoints', inputdata))
         grid = gtde.gridlist(image, g)
         keypoints = graphmap.label2keypoints(labelpoints, grid)
 
         router = graphmap.RouteEstimator()
-        G = router.tdm2graph(tdmatrix)
+        G = router.tdm2graph(tdmatrix, confidence)
 
         results = list()
 
@@ -354,6 +355,7 @@ def ten():
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     functions = [gtde.randomftd, gtde.grayhistogram]
     resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
+    confidence = 0.5
 
     labeldataset = list()
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
@@ -406,7 +408,7 @@ def ten():
                 keypoints = graphmap.label2keypoints(labelpoints, grid)
 
                 router = graphmap.RouteEstimator()
-                G = router.tdm2graph(tdmatrix)
+                G = router.tdm2graph(tdmatrix, confidence)
 
                 results = list()
 

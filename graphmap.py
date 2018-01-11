@@ -93,7 +93,7 @@ class RouteEstimator:
     def __init__(self):
         pass
     
-    def tdm2graph(self, tdmatrix):
+    def tdm2graph(self, tdmatrix, confidence=0.7):
 
         G = graphtool.Graph(directed=False)
 
@@ -114,7 +114,7 @@ class RouteEstimator:
                 
         for v in G.vertices():
 
-            if G.vp.diff[v] > (100*(1/0.7))**2:
+            if G.vp.diff[v] > (100*(1/confidence))**2:
                 continue
 
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]

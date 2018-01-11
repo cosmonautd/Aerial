@@ -14,6 +14,7 @@ from skimage.util import img_as_float
 from skimage import exposure
 from skimage.morphology import dilation, square
 from skimage.measure import compare_mse, compare_nrmse, compare_psnr, compare_ssim
+import scipy
 
 def loadimage(path):
     """ Loads image from path
@@ -363,6 +364,7 @@ class GroundTraversalDifficultyEstimator():
         if contrast:
             clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(3,3))
             diffmatrix = numpy.array(clahe.apply((255*diffmatrix).astype(numpy.uint8)), dtype=float)/255
+        diffmatrix = scipy.ndimage.filters.convolve(diffmatrix, numpy.full((3, 3), 1.0/9))
         return diffmatrix
 
     def computetdi(self, image, contrast=True, mask=numpy.array([])):
