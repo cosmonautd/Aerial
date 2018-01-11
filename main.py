@@ -279,8 +279,8 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    inputdata = 'example.jpg'
-    resolutions = [8]
+    inputdata = 'aerial02.jpg'
+    resolutions = [6]
     confidence = 0.5
 
     for g in resolutions:
@@ -353,7 +353,7 @@ def ten():
         os.makedirs(outputpath)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.randomftd, gtde.grayhistogram]
+    functions = [gtde.grayhistogram]
     resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
     confidence = 0.5
 
