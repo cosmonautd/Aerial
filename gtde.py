@@ -166,7 +166,9 @@ def rgbhistogram(region, view=False):
     """ Returns a difficulty value based on RGB histogram dispersion
     """
     red, green, blue = cv2.split(region)
-    diff = numpy.std(red)**2 + numpy.std(green)**2 + numpy.std(blue)**2
+    std = numpy.std(red)**2 + numpy.std(green)**2 + numpy.std(blue)**2
+    if std == 0: diff = 1
+    else: diff = numpy.minimum(1, 1/std)
     if view:
         red, green, blue = red.flatten(), green.flatten(), blue.flatten()
         fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
@@ -199,9 +201,11 @@ def superpixels(region, view=False):
         stats_g.append(numpy.array([pixel[1] for pixel in pixels]).mean())
         stats_b.append(numpy.array([pixel[2] for pixel in pixels]).mean())
     
-    diff = numpy.std(numpy.array(stats_r))**2 \
-            + numpy.std(numpy.array(stats_g))**2 \
-            + numpy.std(numpy.array(stats_b))**2
+    std = numpy.std(numpy.array(stats_r))**2 + numpy.std(numpy.array(stats_g))**2 + numpy.std(numpy.array(stats_b))**2
+    
+    if std == 0: diff = 1
+    else: diff = numpy.minimum(1, 1/std)
+
     if view:
         for i, row in enumerate(segments):
             for j, pixel in enumerate(row):
