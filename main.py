@@ -10,6 +10,7 @@ import matplotlib.pyplot as pyplot
 import gtde
 import graphmap
 import tqdm
+import json
 
 def one():
     """ Example 1: Computes a TDI and shows on screen
@@ -522,10 +523,10 @@ def eleven():
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
-    resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
-    confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    images = ['aerial%02d.jpg' % i for i in [1, 2, 3, 4, 5, 6, 7, 8]]
+    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    resolutions = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+    confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     labeldataset = list()
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
@@ -536,7 +537,7 @@ def eleven():
     
     selected = list(set(labeldataset).intersection(images)) if len(images) > 0 else labeldataset
 
-    data = dict()
+    data = list()
     
     for i in tqdm.trange(len(selected), desc="            Input image "):
 
@@ -550,18 +551,9 @@ def eleven():
 
             ftd = functions[j]
 
-            if not ftd.__name__ in data:
-                data[ftd.__name__] = dict()
-
             for k in tqdm.trange(len(resolutions), desc="             Resolution "):
 
                 g = resolutions[k]
-
-                if not str(g) in data[ftd.__name__]:
-                    data[ftd.__name__][str(g)] = dict()
-                    data[ftd.__name__][str(g)]['score'] = list()
-                    data[ftd.__name__][str(g)]['positive'] = list()
-                    data[ftd.__name__][str(g)]['negative'] = list()
 
                 penalty = (g*0.3)/8
 
@@ -584,15 +576,13 @@ def eleven():
                     router = graphmap.RouteEstimator()
                     G = router.tdm2graph(tdmatrix, confidence)
 
-                    results = list()
-
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
 
                         (s, t) = combinations[counter]
 
-                        results.append(1.0)
+                        score = 1.0
 
                         source = G.vertex(s)
                         target = G.vertex(t)
@@ -602,12 +592,20 @@ def eleven():
                         rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                         for row, column in rpath:
                             if gtmatrix[row][column] > 0.85:
-                                results[-1] = numpy.maximum(0, results[-1] - penalty)
-                        
-                        data[ftd.__name__][str(g)]['score'].append(results[-1])
-                        data[ftd.__name__][str(g)]['positive'].append(float(found))
+                                score = numpy.maximum(0, score - penalty)
 
-                        # inputdata, ftd.__name__, resolution, confidence, positive
+                        results = dict()
+                        results['image'] = inputdata
+                        results['traversability_function'] = ftd.__name__
+                        results['region_size'] = g
+                        results['confidence_threshold'] = confidence
+                        results['path_existence'] = True
+                        results['path_found'] = found
+                        if found:
+                            results['path_score'] = score
+                            results['path_regions'] = rpath
+
+                        data.append(results)
                     
                     ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
                     icombinations = list(itertools.combinations(ikeypoints, 2))
@@ -620,12 +618,21 @@ def eleven():
                         target = G.vertex(t)
 
                         path, found = router.route(G, source, target)
-                        
-                        data[ftd.__name__][str(g)]['negative'].append(float(not found))
 
-                        # inputdata, ftd.__name__, resolution, confidence, negative
+                        results = dict()
+                        results['image'] = inputdata
+                        results['traversability_function'] = ftd.__name__
+                        results['region_size'] = g
+                        results['confidence_threshold'] = confidence
+                        results['path_existence'] = False
+                        results['path_found'] = found
+
+                        data.append(results)
+    
+    with open( os.path.join(outputpath, 'data.json'), 'w') as datafile:
+        json.dump(data, datafile, indent=4)
 
 # import cProfile
 # cProfile.run("one()", sort="cumulative")
 
-ten()
+eleven()
