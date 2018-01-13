@@ -629,8 +629,8 @@ def eleven():
 
                         data.append(results)
     
-    with open( os.path.join(outputpath, 'data.json'), 'w') as datafile:
-        json.dump(data, datafile, indent=4)
+        with open(os.path.join(outputpath, 'data.json'), 'w') as datafile:
+            json.dump(data, datafile, indent=4)
 
 # import cProfile
 # cProfile.run("one()", sort="cumulative")
