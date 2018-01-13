@@ -340,7 +340,7 @@ def nine():
                             "%s-%03d-%03d.jpg" % (inputdata.split('.')[0], g, counter + 1)), [pathtdi, pathlabel, pathimage])
 
 
-def ten():
+def ten(confidence=0.5):
     """ Example 10:
     """
     labelpath = 'labels/'
@@ -355,7 +355,6 @@ def ten():
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
-    confidence = 0.5
 
     labeldataset = list()
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
@@ -470,7 +469,7 @@ def ten():
     ax0.set_ylim([-0.02, 1.02])
     ax0.set_yticks(numpy.arange(0, 1.02, 0.1))
     fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "path_quality.png"), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(outputpath, "path_quality_%.1f.png" % confidence), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
     fig, (ax0) = pyplot.subplots(ncols=1)
@@ -489,7 +488,7 @@ def ten():
     ax0.set_ylim([-0.02, 1.02])
     ax0.set_yticks(numpy.arange(0, 1.02, 0.1))
     fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "path_positives.png"), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(outputpath, "path_positives_%.1f.png" % confidence), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
     fig, (ax0) = pyplot.subplots(ncols=1)
@@ -508,8 +507,123 @@ def ten():
     ax0.set_ylim([-0.02, 1.02])
     ax0.set_yticks(numpy.arange(0, 1.02, 0.1))
     fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "path_negatives.png"), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(outputpath, "path_negatives_%.1f.png" % confidence), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
+
+def eleven():
+    """ Example 11:
+    """
+    labelpath = 'labels/'
+    datasetpath = 'image/'
+    keypointspath = 'keypoints/'
+    ikeypointspath = 'keypoints-impossible/'
+    outputpath = 'output/'
+
+    if not os.path.exists(outputpath):
+        os.makedirs(outputpath)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
+    confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+    labeldataset = list()
+    for (dirpath, dirnames, filenames) in os.walk(labelpath):
+        labeldataset.extend(filenames)
+        break
+    
+    labeldataset.sort()
+    
+    selected = list(set(labeldataset).intersection(images)) if len(images) > 0 else labeldataset
+
+    data = dict()
+    
+    for i in tqdm.trange(len(selected), desc="            Input image "):
+
+        inputdata = selected[i]
+        image = gtde.loadimage(os.path.join(datasetpath, inputdata))
+        gt = gtde.loadimage(os.path.join(labelpath, inputdata))
+        labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
+        ilabelpoints = gtde.loadimage(os.path.join(ikeypointspath, inputdata))
+
+        for j in tqdm.trange(len(functions), desc="Traversability function "):
+
+            ftd = functions[j]
+
+            if not ftd.__name__ in data:
+                data[ftd.__name__] = dict()
+
+            for k in tqdm.trange(len(resolutions), desc="             Resolution "):
+
+                g = resolutions[k]
+
+                if not str(g) in data[ftd.__name__]:
+                    data[ftd.__name__][str(g)] = dict()
+                    data[ftd.__name__][str(g)]['score'] = list()
+                    data[ftd.__name__][str(g)]['positive'] = list()
+                    data[ftd.__name__][str(g)]['negative'] = list()
+
+                penalty = (g*0.3)/8
+
+                tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
+                                granularity=g,
+                                function=ftd)
+                
+                tdmatrix = tdigenerator.computematrix(image)
+
+                gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
+
+                grid = gtde.gridlist(image, g)
+
+                for c in tqdm.trange(len(confidences), desc="             Confidence "):
+
+                    confidence = confidences[c]
+
+                    keypoints = graphmap.label2keypoints(labelpoints, grid)
+
+                    router = graphmap.RouteEstimator()
+                    G = router.tdm2graph(tdmatrix, confidence)
+
+                    results = list()
+
+                    combinations = list(itertools.combinations(keypoints, 2))
+
+                    for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
+
+                        (s, t) = combinations[counter]
+
+                        results.append(1.0)
+
+                        source = G.vertex(s)
+                        target = G.vertex(t)
+
+                        path, found = router.route(G, source, target)
+
+                        rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
+                        for row, column in rpath:
+                            if gtmatrix[row][column] > 0.85:
+                                results[-1] = numpy.maximum(0, results[-1] - penalty)
+                        
+                        data[ftd.__name__][str(g)]['score'].append(results[-1])
+                        data[ftd.__name__][str(g)]['positive'].append(float(found))
+
+                        # inputdata, ftd.__name__, resolution, confidence, positive
+                    
+                    ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
+                    icombinations = list(itertools.combinations(ikeypoints, 2))
+
+                    for counter in tqdm.trange(len(icombinations), desc="         Negative paths "):
+
+                        (s, t) = icombinations[counter]
+
+                        source = G.vertex(s)
+                        target = G.vertex(t)
+
+                        path, found = router.route(G, source, target)
+                        
+                        data[ftd.__name__][str(g)]['negative'].append(float(not found))
+
+                        # inputdata, ftd.__name__, resolution, confidence, negative
 
 # import cProfile
 # cProfile.run("one()", sort="cumulative")
