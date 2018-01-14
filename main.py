@@ -27,11 +27,29 @@ def two():
     """ Example 2: Computes a TDM and writes to stdout
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=8)
+                    granularity=20)
 
-    frame = gtde.loadimage('image/aerial01.jpg')
+    frame = gtde.loadimage('image/aerial08.jpg')
     diffmatrix = estimator.computematrix(frame)
-    print(diffmatrix)
+
+    import matplotlib
+    import matplotlib.mlab as mlab
+    matplotlib.rcParams.update({'font.size': 12})
+
+    fig, ax = pyplot.subplots(1,1)
+
+    weights = numpy.ones_like(diffmatrix.flatten())/float(len(diffmatrix.flatten()))
+    n, _, _ = ax.hist(diffmatrix.flatten(), bins=numpy.arange(0, 1 + 0.1, 0.1), weights=weights, facecolor='green', alpha=0.75)
+
+    ax.set_xlabel("Atravessabilidade")
+    ax.set_xticks(numpy.arange(0, 1.01, 0.1))
+    ax.set_xlim([0, 1])
+    ax.set_ylabel("Porcentagem")
+    ax.set_yticks(numpy.arange(0, max(n)+0.1, 0.1))
+    ax.set_yticklabels(["%.0f%%" % (100*x) for x in numpy.arange(0, max(n)+0.1, 0.1)])
+    ax.grid(True)
+    fig.tight_layout()
+    pyplot.show()
 
 def three():
     """ Example 3: Computes a TDI and compares to its ground truth
@@ -532,13 +550,12 @@ def eleven():
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
         labeldataset.extend(filenames)
         break
-    
-    labeldataset.sort()
-    
+
     selected = list(set(labeldataset).intersection(images)) if len(images) > 0 else labeldataset
+    selected.sort()
 
     data = list()
-    
+
     for i in tqdm.trange(len(selected), desc="            Input image "):
 
         inputdata = selected[i]
@@ -718,4 +735,4 @@ def twelve():
 # import cProfile
 # cProfile.run("one()", sort="cumulative")
 
-twelve()
+two()

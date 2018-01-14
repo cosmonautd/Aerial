@@ -200,9 +200,9 @@ def superpixels(region, view=False):
         stats_r.append(numpy.array([pixel[0] for pixel in pixels]).mean())
         stats_g.append(numpy.array([pixel[1] for pixel in pixels]).mean())
         stats_b.append(numpy.array([pixel[2] for pixel in pixels]).mean())
-    
+
     std = numpy.std(numpy.array(stats_r))**2 + numpy.std(numpy.array(stats_g))**2 + numpy.std(numpy.array(stats_b))**2
-    
+
     if std == 0: diff = 1
     else: diff = numpy.minimum(1, 1/std)
 
@@ -342,7 +342,7 @@ class GroundTraversalDifficultyEstimator():
         self.granularity = granularity
         self.binary = binary
         self.threshold = threshold
-    
+
     def computematrix(self, image, contrast=True, mask=numpy.array([])):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
@@ -378,7 +378,7 @@ class GroundTraversalDifficultyEstimator():
         diffmatrix = self.computematrix(image, contrast=contrast, mask=mask)
         diffimage = tdi(image, squaregrid, diffmatrix)
         return diffimage
-    
+
     def groundtruth(self, imagelabel, matrix=False):
         """ Returns the ground truth based on a labeled binary image
         """
@@ -390,7 +390,7 @@ class GroundTraversalDifficultyEstimator():
         else:
             diffimage = tdi(imagelabel, squaregrid, diffmatrix)
             return diffimage
-    
+
     def error(self, tdi, gt, function='corr'):
         """ Returns an similarity or error measurement between a traversal 
             difficulty image and a provided ground truth
