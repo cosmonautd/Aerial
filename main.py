@@ -659,8 +659,8 @@ def twelve():
     with open('output/data.json') as datafile:
         data = json.load(datafile)
     
-    images = ['aerial%02d.jpg' % i for i in [1,3,4,6,7,8]]
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    functions = [gtde.grayhistogram]
     resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -668,7 +668,7 @@ def twelve():
     counter = numpy.ones((len(resolutions), len(confidences)))
 
     for sample in data:
-        if sample['image'] in images and sample['traversability_function'] == gtde.grayhistogram.__name__ \
+        if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions] \
             and sample['path_existence'] == True and sample['path_found'] == True:
             r = resolutions.index(sample['region_size'])
             c = confidences.index(sample['confidence_threshold'])
@@ -677,62 +677,72 @@ def twelve():
     
     heatmatrix /= counter
 
-    df = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
-    p1 = sns.heatmap(df, cmap='RdYlGn')
-    pyplot.show()
+    f1 = pyplot.figure(1)
+    df1 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
+    hm1 = sns.heatmap(df1, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
 
     #########################################################################
 
     heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
+    counter = numpy.ones((len(resolutions), len(confidences)))
 
     for sample in data:
-        if sample['image'] in images and sample['traversability_function'] == gtde.grayhistogram.__name__ \
-            and sample['path_existence'] == True and sample['path_found'] == True:
+        if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
             r = resolutions.index(sample['region_size'])
             c = confidences.index(sample['confidence_threshold'])
-            heatmatrix[r][c] += 1
+            if sample['path_existence'] == True:
+                counter[r][c] += 1
+                if sample['path_found'] == True:
+                    heatmatrix[r][c] += 1
     
-    heatmatrix /= 66*len(images)
+    heatmatrix /= counter
 
-    df = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
-    p1 = sns.heatmap(df, cmap='RdYlGn')
-    pyplot.show()
+    f2 = pyplot.figure(2)
+    df2 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
+    hm2 = sns.heatmap(df2, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
 
     #########################################################################
 
     heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
+    counter = numpy.ones((len(resolutions), len(confidences)))
 
     for sample in data:
-        if sample['image'] in images and sample['traversability_function'] == gtde.grayhistogram.__name__ \
-            and sample['path_existence'] == False and sample['path_found'] == False:
+        if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
             r = resolutions.index(sample['region_size'])
             c = confidences.index(sample['confidence_threshold'])
-            heatmatrix[r][c] += 1
+            if sample['path_existence'] == False:
+                counter[r][c] += 1
+                if sample['path_found'] == False:
+                    heatmatrix[r][c] += 1
     
-    heatmatrix /= 66*len(images)
+    heatmatrix /= counter
 
-    df = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
-    p1 = sns.heatmap(df, cmap='RdYlGn')
-    pyplot.show()
+    f3 = pyplot.figure(3)
+    df3 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
+    hm3 = sns.heatmap(df3, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
 
     #########################################################################
 
     heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
+    counter = numpy.ones((len(resolutions), len(confidences)))
 
     for sample in data:
-        if sample['image'] in images and sample['traversability_function'] == gtde.grayhistogram.__name__ \
-            and sample['path_existence'] == sample['path_found']:
+        if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
             r = resolutions.index(sample['region_size'])
             c = confidences.index(sample['confidence_threshold'])
-            heatmatrix[r][c] += 1
+            counter[r][c] += 1
+            if sample['path_existence'] == sample['path_found']:
+                heatmatrix[r][c] += 1
     
-    heatmatrix /= 66*2*len(images)
+    heatmatrix /= counter
 
-    df = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
-    p1 = sns.heatmap(df, cmap='RdYlGn')
+    f4 = pyplot.figure(4)
+    df4 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
+    hm4 = sns.heatmap(df4, vmin=0.5, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+
     pyplot.show()
 
 # import cProfile
 # cProfile.run("one()", sort="cumulative")
 
-eleven()
+twelve()
