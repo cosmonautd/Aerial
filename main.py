@@ -299,9 +299,9 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    inputdata = 'aerial05.jpg'
-    resolutions = [12]
-    confidence = 0.5
+    inputdata = 'aerial04.jpg'
+    resolutions = [14]
+    confidence = 0.3
 
     for g in resolutions:
 
@@ -657,10 +657,10 @@ def twelve():
     import pandas as pd
     import numpy as np
 
-    with open('output/data.json') as datafile:
+    with open('output/data2.json') as datafile:
         data = json.load(datafile)
     
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    images = ['aerial%02d.jpg' % i for i in [4]]
     functions = [gtde.grayhistogram]
     resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -746,4 +746,4 @@ def twelve():
 # import cProfile
 # cProfile.run("one()", sort="cumulative")
 
-eight()
+nine()
