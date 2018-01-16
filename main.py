@@ -271,7 +271,7 @@ def eight():
     """ Example 8: Computes a route between two labeled keypoints
         Shows the route over image on screen
     """
-    g = 10
+    g = 6
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
                     function=gtde.grayhistogram)
@@ -744,6 +744,6 @@ def twelve():
     pyplot.show()
 
 # import cProfile
-# cProfile.run("one()", sort="cumulative")
+# cProfile.run("eight()", sort="cumulative")
 
-nine()
+eleven()
