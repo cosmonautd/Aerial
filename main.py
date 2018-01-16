@@ -300,8 +300,8 @@ def nine():
         Shows the routes over image on screen
     """
     inputdata = 'aerial04.jpg'
-    resolutions = [14]
-    confidence = 0.3
+    resolutions = [22]
+    confidence = 0.1
 
     for g in resolutions:
 
@@ -657,7 +657,7 @@ def twelve():
     import pandas as pd
     import numpy as np
 
-    with open('output/data2.json') as datafile:
+    with open('output/data3-broken.json') as datafile:
         data = json.load(datafile)
     
     images = ['aerial%02d.jpg' % i for i in [4]]
@@ -746,4 +746,4 @@ def twelve():
 # import cProfile
 # cProfile.run("eight()", sort="cumulative")
 
-eleven()
+nine()

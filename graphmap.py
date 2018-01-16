@@ -161,6 +161,8 @@ class RouteEstimator:
         
         G.add_edge_list(edges, eprops=[G.ep.weight])
 
+        del edges
+
         G.vp.vfcolor = G.new_vertex_property("vector<double>")
         G.ep.ecolor = G.new_edge_property("vector<double>")
         G.ep.ewidth = G.new_edge_property("int")
