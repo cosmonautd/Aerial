@@ -119,6 +119,8 @@ class RouteEstimator:
 
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
 
+            # TODO: ADD ALL EDGES AT ONCE INSTEAD OF ONE BY ONE !!!
+
             top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
             if i-1 > -1:
                 if G.edge(coord2(top, tdmatrix.shape[1]), v) == None:
@@ -160,7 +162,7 @@ class RouteEstimator:
         G.ep.ewidth = G.new_edge_property("int")
         for v in G.vertices():
             diff = G.vp.diff[v]
-            G.vp.vfcolor[v] = [numpy.sqrt(diff)/100, numpy.sqrt(diff)/100, numpy.sqrt(diff)/100, 1.0]
+            G.vp.vfcolor[v] = [1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1.0]
         for e in G.edges():
             G.ep.ewidth[e] = 2
             G.ep.ecolor[e] = [0.179, 0.203, 0.210, 0.8]

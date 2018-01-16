@@ -271,15 +271,16 @@ def eight():
     """ Example 8: Computes a route between two labeled keypoints
         Shows the route over image on screen
     """
+    g = 10
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=4,
+                    granularity=g,
                     function=gtde.grayhistogram)
 
     image = gtde.loadimage('image/aerial08.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
     labelpoints = gtde.loadimage('keypoints/aerial08.jpg')
-    grid = gtde.gridlist(image, 4)
+    grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -288,11 +289,11 @@ def eight():
     [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
 
     path, found = router.route(G, source, target)
-    graphmap.drawgraph(G, path, 'output/tdg.png')
+    graphmap.drawgraph(G, path, 'output/tg.png')
 
     ipath = [int(v) for v in path]
     pathtdi = gtde.imagepath(image, ipath, grid, found=found)
-    gtde.saveimage('output/tdi.jpg', [pathtdi])
+    gtde.saveimage('output/ti.jpg', [pathtdi])
 
 def nine():
     """ Example 9: Computes a route between all labeled keypoints
@@ -745,4 +746,4 @@ def twelve():
 # import cProfile
 # cProfile.run("one()", sort="cumulative")
 
-twelve()
+eight()
