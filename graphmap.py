@@ -100,6 +100,7 @@ class RouteEstimator:
         G.vp.pos = G.new_vertex_property("vector<double>")
         G.vp.pos2 = G.new_vertex_property("vector<double>")
         G.vp.diff = G.new_vertex_property("double")
+        G.vp.cut = G.new_vertex_property("bool")
         G.ep.weight = G.new_edge_property("double")
 
         for i, row in enumerate(tdmatrix):
@@ -111,50 +112,51 @@ class RouteEstimator:
                     G.vp.diff[v] = float('inf')
                 else:
                     G.vp.diff[v] = (100*(1/tdmatrix[i][j]))**2
+                if G.vp.diff[v] > (100*(1/confidence))**2:
+                    G.vp.cut[v] = True
+                else:
+                    G.vp.cut[v] = False
         
         edges = list()
                 
-        for v in G.vertices():
-
-            if G.vp.diff[v] > (100*(1/confidence))**2:
-                continue
+        for v in [vv for vv in G.vertices() if not G.vp.cut[vv]]:
 
             (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
 
             top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
             if i-1 > -1:
                 u = G.vertex(coord2(top, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i+1 < tdmatrix.shape[0]:
                 u = G.vertex(coord2(bottom, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if j-1 > -1:
                 u = G.vertex(coord2(left, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(right, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             
             topleft, topright, bottomleft, bottomright = (i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)
             if i-1 > -1 and j-1 > -1:
                 u = G.vertex(coord2(topleft, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i-1 > -1 and j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(topright, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i+1 < tdmatrix.shape[0] and j-1 > -1:
                 u = G.vertex(coord2(bottomleft, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i+1 < tdmatrix.shape[0] and j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(bottomright, tdmatrix.shape[1]))
-                if G.edge(v, u) == None:
+                if G.edge(v, u) == None and not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
         
         G.add_edge_list(edges, eprops=[G.ep.weight])
