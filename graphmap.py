@@ -123,39 +123,47 @@ class RouteEstimator:
 
             top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
             if i-1 > -1:
-                if G.edge(coord2(top, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(top, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(top, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(top, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
             if i+1 < tdmatrix.shape[0]:
-                if G.edge(coord2(bottom, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(bottom, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(bottom, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(bottom, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
             if j-1 > -1:
-                if G.edge(coord2(left, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(left, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(left, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(left, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
             if j+1 < tdmatrix.shape[1]:
-                if G.edge(coord2(right, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(right, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(right, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(right, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
             
             topleft, topright, bottomleft, bottomright = (i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)
             if i-1 > -1 and j-1 > -1:
-                if G.edge(coord2(topleft, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(topleft, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(topleft, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(topleft, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
             if i-1 > -1 and j+1 < tdmatrix.shape[1]:
-                if G.edge(coord2(topright, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(topright, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(topright, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(topright, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
             if i+1 < tdmatrix.shape[0] and j-1 > -1:
-                if G.edge(coord2(bottomleft, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(bottomleft, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(bottomleft, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(bottomleft, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
             if i+1 < tdmatrix.shape[0] and j+1 < tdmatrix.shape[1]:
-                if G.edge(coord2(bottomright, tdmatrix.shape[1]), v) == None:
-                    e = G.add_edge(v, G.vertex(coord2(bottomright, tdmatrix.shape[1])))
-                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[G.vertex(coord2(bottomright, tdmatrix.shape[1]))])
+                u = G.vertex(coord2(bottomright, tdmatrix.shape[1]))
+                if G.edge(v, u) == None:
+                    e = G.add_edge(v, u)
+                    G.ep.weight[e] = (G.vp.diff[v] + G.vp.diff[u])
 
         G.vp.vfcolor = G.new_vertex_property("vector<double>")
         G.ep.ecolor = G.new_edge_property("vector<double>")
