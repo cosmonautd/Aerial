@@ -27,9 +27,9 @@ def two():
     """ Example 2: Computes a TDM and writes to stdout
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=20)
+                    granularity=12)
 
-    frame = gtde.loadimage('image/aerial08.jpg')
+    frame = gtde.loadimage('image/example.jpg')
     diffmatrix = estimator.computematrix(frame)
 
     import matplotlib
@@ -271,29 +271,30 @@ def eight():
     """ Example 8: Computes a route between two labeled keypoints
         Shows the route over image on screen
     """
-    g = 6
+    g = 12
+    c = 0.5
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
                     function=gtde.grayhistogram)
 
-    image = gtde.loadimage('image/aerial08.jpg')
+    image = gtde.loadimage('image/example.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial08.jpg')
+    labelpoints = gtde.loadimage('keypoints/example.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
-    G = router.tdm2graph(tdmatrix)
+    G = router.tdm2graph(tdmatrix, confidence=c)
 
     [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
 
     path, found = router.route(G, source, target)
-    graphmap.drawgraph(G, path, 'output/tg.png')
+    graphmap.drawgraph(G, path, 'output/path-graph.pdf')
 
     ipath = [int(v) for v in path]
     pathtdi = gtde.imagepath(image, ipath, grid, found=found)
-    gtde.saveimage('output/ti.jpg', [pathtdi])
+    gtde.saveimage('output/ti.png', [pathtdi])
 
 def nine():
     """ Example 9: Computes a route between all labeled keypoints
@@ -746,4 +747,4 @@ def twelve():
 # import cProfile
 # cProfile.run("eight()", sort="cumulative")
 
-nine()
+eight()

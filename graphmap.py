@@ -69,12 +69,12 @@ def label2keypoints(image, grid):
 
 def drawgraph(G, path=[], filename="tdg.png"):
     for i, v in enumerate(path):
-        G.vp.vfcolor[v] = [0.640625, 0, 0, 0.9]
+        G.vp.vfcolor[v] = [0, 0.640625, 0, 0.9]
         if i < len(path) - 1:
             for e in v.out_edges():
                 if e.target() == path[i+1]:
-                    G.ep.ecolor[e] = [0.640625, 0, 0, 0.9]
-                    G.ep.ewidth[e] = 8
+                    G.ep.ecolor[e] = [0, 0.640625, 0, 0.9]
+                    G.ep.ewidth[e] = 6
 
     draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_fill_color=G.vp.vfcolor,\
                     edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output=filename)
