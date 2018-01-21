@@ -381,13 +381,13 @@ def ten(confidence=0.5):
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
         labeldataset.extend(filenames)
         break
-    
+
     labeldataset.sort()
-    
+
     selected = list(set(labeldataset).intersection(images)) if len(images) > 0 else labeldataset
 
     data = dict()
-    
+
     for i in tqdm.trange(len(selected), desc="            Input image "):
 
         inputdata = selected[i]
@@ -418,7 +418,7 @@ def ten(confidence=0.5):
                 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                                 granularity=g,
                                 function=ftd)
-                
+
                 tdmatrix = tdigenerator.computematrix(image)
 
                 gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
@@ -449,10 +449,10 @@ def ten(confidence=0.5):
                     for row, column in rpath:
                         if gtmatrix[row][column] > 0.85:
                             results[-1] = numpy.maximum(0, results[-1] - penalty)
-                    
+
                     data[ftd.__name__][str(g)]['score'].append(results[-1])
                     data[ftd.__name__][str(g)]['positive'].append(float(found))
-                
+
                 ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
                 icombinations = list(itertools.combinations(ikeypoints, 2))
 
@@ -464,16 +464,16 @@ def ten(confidence=0.5):
                     target = G.vertex(t)
 
                     path, found = router.route(G, source, target)
-                    
+
                     data[ftd.__name__][str(g)]['negative'].append(float(not found))
-    
+
     ftd_curve = {
         "randomftd" : "Random",
         "grayhistogram" : "Gray Histogram",
         "rgbhistogram" : "RGB Histogram",
         "superpixels" : "Superpixels"
     }
-    
+
     fig, (ax0) = pyplot.subplots(ncols=1)
     for ftd in functions:
         x = numpy.array(resolutions)
@@ -579,7 +579,7 @@ def eleven():
                 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                                 granularity=g,
                                 function=ftd)
-                
+
                 tdmatrix = tdigenerator.computematrix(image)
 
                 gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
@@ -625,7 +625,7 @@ def eleven():
                             results['path_regions'] = rpath
 
                         data.append(results)
-                    
+
                     ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
                     icombinations = list(itertools.combinations(ikeypoints, 2))
 
@@ -647,7 +647,7 @@ def eleven():
                         results['path_found'] = found
 
                         data.append(results)
-    
+
         with open(os.path.join(outputpath, 'data.json'), 'w') as datafile:
             json.dump(data, datafile, indent=4)
 
@@ -660,7 +660,7 @@ def twelve():
 
     with open('output/data3-broken.json') as datafile:
         data = json.load(datafile)
-    
+
     images = ['aerial%02d.jpg' % i for i in [4]]
     functions = [gtde.grayhistogram]
     resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
@@ -676,7 +676,7 @@ def twelve():
             c = confidences.index(sample['confidence_threshold'])
             heatmatrix[r][c] += sample['path_score']
             counter[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f1 = pyplot.figure(1)
@@ -696,7 +696,7 @@ def twelve():
                 counter[r][c] += 1
                 if sample['path_found'] == True:
                     heatmatrix[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f2 = pyplot.figure(2)
@@ -716,7 +716,7 @@ def twelve():
                 counter[r][c] += 1
                 if sample['path_found'] == False:
                     heatmatrix[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f3 = pyplot.figure(3)
@@ -735,7 +735,7 @@ def twelve():
             counter[r][c] += 1
             if sample['path_existence'] == sample['path_found']:
                 heatmatrix[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f4 = pyplot.figure(4)
