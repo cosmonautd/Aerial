@@ -344,7 +344,7 @@ def nine():
 
             rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
             for row, column in rpath:
-                if gtmatrix[row][column] > 0.85:
+                if gtmatrix[row][column] < 0.15:
                     results[-1] = numpy.maximum(0, results[-1] - penalty)
 
             ipath = [int(v) for v in path]
@@ -447,7 +447,7 @@ def ten(confidence=0.5):
 
                     rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                     for row, column in rpath:
-                        if gtmatrix[row][column] > 0.85:
+                        if gtmatrix[row][column] < 0.15:
                             results[-1] = numpy.maximum(0, results[-1] - penalty)
 
                     data[ftd.__name__][str(g)]['score'].append(results[-1])
@@ -545,7 +545,7 @@ def eleven():
 
     images = ['aerial%02d.jpg' % i for i in [1, 2, 3, 4, 5, 6, 7, 8]]
     functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
-    resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
+    resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     labeldataset = list()
@@ -658,10 +658,10 @@ def twelve():
     import pandas as pd
     import numpy as np
 
-    with open('output/data3-broken.json') as datafile:
+    with open('output/data3.json') as datafile:
         data = json.load(datafile)
 
-    images = ['aerial%02d.jpg' % i for i in [4]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     functions = [gtde.grayhistogram]
     resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -747,4 +747,4 @@ def twelve():
 # import cProfile
 # cProfile.run("eight()", sort="cumulative")
 
-eight()
+twelve()
