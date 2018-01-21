@@ -300,13 +300,13 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-    inputdata = 'aerial04.jpg'
-    resolutions = [22]
-    confidence = 0.1
+    inputdata = 'aerial01.jpg'
+    resolutions = [10]
+    confidence = 0.2
 
     for g in resolutions:
 
-        penalty = (g*0.3)/8
+        penalty = g*(0.2/6)
 
         if not os.path.exists(os.path.join('output', inputdata.split('.')[0], str(g))):
             os.makedirs(os.path.join('output', inputdata.split('.')[0], str(g)))
@@ -344,11 +344,11 @@ def nine():
 
             rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
             for row, column in rpath:
-                if gtmatrix[row][column] < 0.15:
+                if gtmatrix[row][column] < 0.20:
                     results[-1] = numpy.maximum(0, results[-1] - penalty)
 
             ipath = [int(v) for v in path]
-            if results[-1] > 0.6:
+            if results[-1] > 0.7:
                 pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, found=found)
                 pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, found=found)
                 pathimage = gtde.imagepath(image.copy(), ipath, grid, found=found)
@@ -413,7 +413,7 @@ def ten(confidence=0.5):
                     data[ftd.__name__][str(g)]['positive'] = list()
                     data[ftd.__name__][str(g)]['negative'] = list()
 
-                penalty = (g*0.3)/8
+                penalty = g*(0.2/6)
 
                 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                                 granularity=g,
@@ -447,7 +447,7 @@ def ten(confidence=0.5):
 
                     rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                     for row, column in rpath:
-                        if gtmatrix[row][column] < 0.15:
+                        if gtmatrix[row][column] < 0.20:
                             results[-1] = numpy.maximum(0, results[-1] - penalty)
 
                     data[ftd.__name__][str(g)]['score'].append(results[-1])
@@ -544,7 +544,7 @@ def eleven():
         os.makedirs(outputpath)
 
     images = ['aerial%02d.jpg' % i for i in [1, 2, 3, 4, 5, 6, 7, 8]]
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -574,7 +574,7 @@ def eleven():
 
                 g = resolutions[k]
 
-                penalty = (g*0.3)/8
+                penalty = g*(0.2/6)
 
                 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                                 granularity=g,
@@ -610,7 +610,7 @@ def eleven():
 
                         rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                         for row, column in rpath:
-                            if gtmatrix[row][column] > 0.85:
+                            if gtmatrix[row][column] < 0.20:
                                 score = numpy.maximum(0, score - penalty)
 
                         results = dict()
@@ -747,4 +747,4 @@ def twelve():
 # import cProfile
 # cProfile.run("eight()", sort="cumulative")
 
-twelve()
+eleven()
