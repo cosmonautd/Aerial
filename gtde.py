@@ -223,7 +223,7 @@ def superpixels(region, view=False):
         pyplot.show()
     return diff
 
-def density(region, view=False):
+def reference(region, view=False):
     """ Returns a difficulty value based on white pixel density (for labels)
     """
     region = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
@@ -238,7 +238,7 @@ def density(region, view=False):
         ax1.axes.get_yaxis().set_visible(False)
         fig.tight_layout()
         pyplot.show()
-    return  diff
+    return diff
 
 def showimage(image):
     """ Displays an image on screen
@@ -384,7 +384,7 @@ class GroundTraversalDifficultyEstimator():
         """
         squaregrid = gridlist(imagelabel, self.granularity)
         regions = regionmatrix(imagelabel, squaregrid)
-        diffmatrix = traversaldiff(regions, density)
+        diffmatrix = traversaldiff(regions, reference)
         if matrix:
             return diffmatrix
         else:

@@ -544,7 +544,7 @@ def eleven():
         os.makedirs(outputpath)
 
     images = ['aerial%02d.jpg' % i for i in [1, 2, 3, 4, 5, 6, 7, 8]]
-    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [gtde.reference, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -590,11 +590,14 @@ def eleven():
 
                     confidence = confidences[c]
 
-                    keypoints = graphmap.label2keypoints(labelpoints, grid)
-
                     router = graphmap.RouteEstimator()
-                    G = router.tdm2graph(tdmatrix, confidence)
 
+                    if ftd == gtde.reference:
+                        G = router.tdm2graph(gtmatrix, confidence)
+                    else:
+                        G = router.tdm2graph(tdmatrix, confidence)
+
+                    keypoints = graphmap.label2keypoints(labelpoints, grid)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
@@ -658,12 +661,12 @@ def twelve():
     import pandas as pd
     import numpy as np
 
-    with open('output/data3.json') as datafile:
+    with open('output/data.json') as datafile:
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     functions = [gtde.grayhistogram]
-    resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
+    resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
