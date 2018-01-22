@@ -27,9 +27,9 @@ def two():
     """ Example 2: Computes a TDM and writes to stdout
     """
     estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=20)
+                    granularity=12)
 
-    frame = gtde.loadimage('image/aerial08.jpg')
+    frame = gtde.loadimage('image/example.jpg')
     diffmatrix = estimator.computematrix(frame)
 
     import matplotlib
@@ -271,41 +271,48 @@ def eight():
     """ Example 8: Computes a route between two labeled keypoints
         Shows the route over image on screen
     """
-    g = 6
+    g = 12
+    c = 0.5
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
                     function=gtde.grayhistogram)
 
-    image = gtde.loadimage('image/aerial08.jpg')
+    image = gtde.loadimage('image/example.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial08.jpg')
+    labelpoints = gtde.loadimage('keypoints/example.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
-    G = router.tdm2graph(tdmatrix)
+    G = router.tdm2graph(tdmatrix, confidence=c)
 
     [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
 
     path, found = router.route(G, source, target)
-    graphmap.drawgraph(G, path, 'output/tg.png')
+    graphmap.drawgraph(G, path, 'output/path-graph.pdf')
 
     ipath = [int(v) for v in path]
     pathtdi = gtde.imagepath(image, ipath, grid, found=found)
-    gtde.saveimage('output/ti.jpg', [pathtdi])
+    gtde.saveimage('output/ti.png', [pathtdi])
 
 def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
+<<<<<<< HEAD
     inputdata = 'aerial05.jpg'
     resolutions = [6]
     confidence = 0.3
+=======
+    inputdata = 'aerial01.jpg'
+    resolutions = [10]
+    confidence = 0.2
+>>>>>>> ad22e04e70522f8c99f35324a8e8172c0c868ef9
 
     for g in resolutions:
 
-        penalty = (g*0.3)/8
+        penalty = g*(0.2/6)
 
         if not os.path.exists(os.path.join('output', inputdata.split('.')[0], str(g))):
             os.makedirs(os.path.join('output', inputdata.split('.')[0], str(g)))
@@ -343,11 +350,11 @@ def nine():
 
             rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
             for row, column in rpath:
-                if gtmatrix[row][column] > 0.85:
+                if gtmatrix[row][column] < 0.20:
                     results[-1] = numpy.maximum(0, results[-1] - penalty)
 
             ipath = [int(v) for v in path]
-            if results[-1] > 0.6:
+            if results[-1] > 0.7:
                 pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, found=found)
                 pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, found=found)
                 pathimage = gtde.imagepath(image.copy(), ipath, grid, found=found)
@@ -380,13 +387,13 @@ def ten(confidence=0.5):
     for (dirpath, dirnames, filenames) in os.walk(labelpath):
         labeldataset.extend(filenames)
         break
-    
+
     labeldataset.sort()
-    
+
     selected = list(set(labeldataset).intersection(images)) if len(images) > 0 else labeldataset
 
     data = dict()
-    
+
     for i in tqdm.trange(len(selected), desc="            Input image "):
 
         inputdata = selected[i]
@@ -412,12 +419,12 @@ def ten(confidence=0.5):
                     data[ftd.__name__][str(g)]['positive'] = list()
                     data[ftd.__name__][str(g)]['negative'] = list()
 
-                penalty = (g*0.3)/8
+                penalty = g*(0.2/6)
 
                 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                                 granularity=g,
                                 function=ftd)
-                
+
                 tdmatrix = tdigenerator.computematrix(image)
 
                 gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
@@ -446,12 +453,12 @@ def ten(confidence=0.5):
 
                     rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                     for row, column in rpath:
-                        if gtmatrix[row][column] > 0.85:
+                        if gtmatrix[row][column] < 0.20:
                             results[-1] = numpy.maximum(0, results[-1] - penalty)
-                    
+
                     data[ftd.__name__][str(g)]['score'].append(results[-1])
                     data[ftd.__name__][str(g)]['positive'].append(float(found))
-                
+
                 ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
                 icombinations = list(itertools.combinations(ikeypoints, 2))
 
@@ -463,16 +470,16 @@ def ten(confidence=0.5):
                     target = G.vertex(t)
 
                     path, found = router.route(G, source, target)
-                    
+
                     data[ftd.__name__][str(g)]['negative'].append(float(not found))
-    
+
     ftd_curve = {
         "randomftd" : "Random",
         "grayhistogram" : "Gray Histogram",
         "rgbhistogram" : "RGB Histogram",
         "superpixels" : "Superpixels"
     }
-    
+
     fig, (ax0) = pyplot.subplots(ncols=1)
     for ftd in functions:
         x = numpy.array(resolutions)
@@ -543,8 +550,8 @@ def eleven():
         os.makedirs(outputpath)
 
     images = ['aerial%02d.jpg' % i for i in [1, 2, 3, 4, 5, 6, 7, 8]]
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
-    resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
+    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     labeldataset = list()
@@ -573,12 +580,12 @@ def eleven():
 
                 g = resolutions[k]
 
-                penalty = (g*0.3)/8
+                penalty = g*(0.2/6)
 
                 tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                                 granularity=g,
                                 function=ftd)
-                
+
                 tdmatrix = tdigenerator.computematrix(image)
 
                 gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
@@ -609,7 +616,7 @@ def eleven():
 
                         rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                         for row, column in rpath:
-                            if gtmatrix[row][column] > 0.85:
+                            if gtmatrix[row][column] < 0.20:
                                 score = numpy.maximum(0, score - penalty)
 
                         results = dict()
@@ -624,7 +631,7 @@ def eleven():
                             results['path_regions'] = rpath
 
                         data.append(results)
-                    
+
                     ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
                     icombinations = list(itertools.combinations(ikeypoints, 2))
 
@@ -646,7 +653,7 @@ def eleven():
                         results['path_found'] = found
 
                         data.append(results)
-    
+
         with open(os.path.join(outputpath, 'data.json'), 'w') as datafile:
             json.dump(data, datafile, indent=4)
 
@@ -659,8 +666,13 @@ def twelve():
 
     with open('output/data3.json') as datafile:
         data = json.load(datafile)
+<<<<<<< HEAD
     
     images = ['aerial%02d.jpg' % i for i in [5]]
+=======
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+>>>>>>> ad22e04e70522f8c99f35324a8e8172c0c868ef9
     functions = [gtde.grayhistogram]
     resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -675,7 +687,7 @@ def twelve():
             c = confidences.index(sample['confidence_threshold'])
             heatmatrix[r][c] += sample['path_score']
             counter[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f1 = pyplot.figure(1)
@@ -695,7 +707,7 @@ def twelve():
                 counter[r][c] += 1
                 if sample['path_found'] == True:
                     heatmatrix[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f2 = pyplot.figure(2)
@@ -715,7 +727,7 @@ def twelve():
                 counter[r][c] += 1
                 if sample['path_found'] == False:
                     heatmatrix[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f3 = pyplot.figure(3)
@@ -734,7 +746,7 @@ def twelve():
             counter[r][c] += 1
             if sample['path_existence'] == sample['path_found']:
                 heatmatrix[r][c] += 1
-    
+
     heatmatrix /= counter
 
     f4 = pyplot.figure(4)
@@ -746,4 +758,4 @@ def twelve():
 # import cProfile
 # cProfile.run("eight()", sort="cumulative")
 
-nine()
+eleven()

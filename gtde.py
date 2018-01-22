@@ -57,7 +57,7 @@ def drawgrid(image, squaregrid, marks=None):
         tlx, tly, sqsize = square[0], square[1], square[2]
         topleft = (tlx, tly)
         bottomright = (tlx+sqsize, tly+sqsize)
-        cv2.rectangle(image, topleft, bottomright, (255, 0, 0), 1)
+        cv2.rectangle(image, topleft, bottomright, (0, 0, 0), 1)
         if marks:
             if (i%(width/sqsize), numpy.floor(i/(width/sqsize))) in marks:
                 cv2.rectangle(image, topleft, bottomright, (255, 0, 0), -1)
@@ -135,7 +135,7 @@ def imagepath(image, ipath, grid, pathcolor=(0,255,0), found=False):
         for k in range(len(centers)-1):
             r0, c0 = centers[k]
             r1, c1 = centers[k+1]
-            cv2.line(image, (c0, r0), (c1, r1), pathcolor, 4)
+            cv2.line(image, (c0, r0), (c1, r1), pathcolor, 5)
     return image
 
 def randomftd(region, view=False):
@@ -168,7 +168,7 @@ def rgbhistogram(region, view=False):
     red, green, blue = cv2.split(region)
     std = numpy.std(red)**2 + numpy.std(green)**2 + numpy.std(blue)**2
     if std == 0: diff = 1
-    else: diff = numpy.minimum(1, 1/std)
+    else: diff = numpy.minimum(1, 3/std)
     if view:
         red, green, blue = red.flatten(), green.flatten(), blue.flatten()
         fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
@@ -204,7 +204,7 @@ def superpixels(region, view=False):
     std = numpy.std(numpy.array(stats_r))**2 + numpy.std(numpy.array(stats_g))**2 + numpy.std(numpy.array(stats_b))**2
 
     if std == 0: diff = 1
-    else: diff = numpy.minimum(1, 1/std)
+    else: diff = numpy.minimum(1, 3/std)
 
     if view:
         for i, row in enumerate(segments):
