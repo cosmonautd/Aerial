@@ -301,7 +301,7 @@ def nine():
         Shows the routes over image on screen
     """
     inputdata = 'aerial01.jpg'
-    resolutions = [10]
+    resolutions = [6]
     confidence = 0.2
 
     for g in resolutions:
@@ -745,6 +745,6 @@ def twelve():
     pyplot.show()
 
 # import cProfile
-# cProfile.run("eight()", sort="cumulative")
+# cProfile.run("nine()", sort="cumulative")
 
 eleven()

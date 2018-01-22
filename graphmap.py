@@ -126,37 +126,37 @@ class RouteEstimator:
             top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
             if i-1 > -1:
                 u = G.vertex(coord2(top, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i+1 < tdmatrix.shape[0]:
                 u = G.vertex(coord2(bottom, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if j-1 > -1:
                 u = G.vertex(coord2(left, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(right, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
 
             topleft, topright, bottomleft, bottomright = (i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)
             if i-1 > -1 and j-1 > -1:
                 u = G.vertex(coord2(topleft, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i-1 > -1 and j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(topright, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i+1 < tdmatrix.shape[0] and j-1 > -1:
                 u = G.vertex(coord2(bottomleft, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
             if i+1 < tdmatrix.shape[0] and j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(bottomright, tdmatrix.shape[1]))
-                if (u, v, G.vp.diff[v] + G.vp.diff[u]) not in edges and not G.vp.cut[u]:
+                if not G.vp.cut[u]:
                     edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
 
         G.add_edge_list(edges, eprops=[G.ep.weight])
