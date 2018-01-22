@@ -300,15 +300,9 @@ def nine():
     """ Example 9: Computes a route between all labeled keypoints
         Shows the routes over image on screen
     """
-<<<<<<< HEAD
-    inputdata = 'aerial05.jpg'
-    resolutions = [6]
-    confidence = 0.3
-=======
     inputdata = 'aerial01.jpg'
     resolutions = [10]
     confidence = 0.2
->>>>>>> ad22e04e70522f8c99f35324a8e8172c0c868ef9
 
     for g in resolutions:
 
@@ -666,13 +660,8 @@ def twelve():
 
     with open('output/data3.json') as datafile:
         data = json.load(datafile)
-<<<<<<< HEAD
-    
-    images = ['aerial%02d.jpg' % i for i in [5]]
-=======
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
->>>>>>> ad22e04e70522f8c99f35324a8e8172c0c868ef9
     functions = [gtde.grayhistogram]
     resolutions = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
