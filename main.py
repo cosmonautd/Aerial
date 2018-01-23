@@ -585,7 +585,9 @@ def eleven():
                                 granularity=g,
                                 function=ftd)
 
+                start_matrix_time = time.time()
                 tdmatrix = tdigenerator.computematrix(image)
+                matrix_time = time.time() - start_matrix_time
 
                 gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
 
@@ -597,10 +599,12 @@ def eleven():
 
                     router = graphmap.RouteEstimator()
 
+                    start_graph_time = time.time()
                     if ftd == gtde.reference:
                         G = router.tdm2graph(gtmatrix, confidence)
                     else:
                         G = router.tdm2graph(tdmatrix, confidence)
+                    graph_time = time.time() - start_graph_time
 
                     keypoints = graphmap.label2keypoints(labelpoints, grid)
                     combinations = list(itertools.combinations(keypoints, 2))
@@ -614,7 +618,9 @@ def eleven():
                         source = G.vertex(s)
                         target = G.vertex(t)
 
+                        start_route_time = time.time()
                         path, found = router.route(G, source, target)
+                        route_time = time.time() - start_route_time
 
                         rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
                         for row, column in rpath:
@@ -628,9 +634,11 @@ def eleven():
                         results['confidence_threshold'] = confidence
                         results['path_existence'] = True
                         results['path_found'] = found
-                        if found:
-                            results['path_score'] = score
-                            results['path_regions'] = rpath
+                        results['path_score'] = score if found else 0.0
+                        results['path_regions'] = rpath
+                        results['matrix_build_time'] = matrix_time
+                        results['graph_build_time'] = graph_time
+                        results['route_build_time'] = route_time
 
                         data.append(results)
 
@@ -644,7 +652,9 @@ def eleven():
                         source = G.vertex(s)
                         target = G.vertex(t)
 
+                        start_route_time = time.time()
                         path, found = router.route(G, source, target)
+                        route_time = time.time() - start_route_time
 
                         results = dict()
                         results['image'] = inputdata
@@ -653,6 +663,11 @@ def eleven():
                         results['confidence_threshold'] = confidence
                         results['path_existence'] = False
                         results['path_found'] = found
+                        results['path_score'] = 1.0 if not found else 0.0
+                        results['path_regions'] = rpath
+                        results['matrix_build_time'] = matrix_time
+                        results['graph_build_time'] = graph_time
+                        results['route_build_time'] = route_time
 
                         data.append(results)
 
