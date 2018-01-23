@@ -539,6 +539,7 @@ def eleven():
     keypointspath = 'keypoints/'
     ikeypointspath = 'keypoints-impossible/'
     outputpath = 'output/'
+    outputfile = 'data.json'
 
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
@@ -556,7 +557,11 @@ def eleven():
     selected = list(set(labeldataset).intersection(images)) if len(images) > 0 else labeldataset
     selected.sort()
 
-    data = list()
+    if os.path.exists(os.path.join(outputpath, outputfile)):
+        with open(os.path.join(outputpath, outputfile)) as datafile:
+            data = json.load(datafile)
+    else:
+        data = list()
 
     for i in tqdm.trange(len(selected), desc="            Input image "):
 
@@ -651,7 +656,7 @@ def eleven():
 
                         data.append(results)
 
-        with open(os.path.join(outputpath, 'data.json'), 'w') as datafile:
+        with open(os.path.join(outputpath, outputfile), 'w') as datafile:
             json.dump(data, datafile, indent=4)
 
 def twelve():
