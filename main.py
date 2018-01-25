@@ -544,7 +544,7 @@ def eleven():
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    images = ['aerial%02d.jpg' % i for i in [1, 2, 3, 4, 5, 6, 7, 8]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     functions = [gtde.reference, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -770,4 +770,4 @@ def twelve():
 # import cProfile
 # cProfile.run("nine()", sort="cumulative")
 
-eleven()
+twelve()
