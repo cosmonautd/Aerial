@@ -681,11 +681,13 @@ def twelve():
     import pandas as pd
     import numpy as np
 
+    outputpath = 'output/'
+
     with open('output/data.json') as datafile:
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.grayhistogram]
+    functions = [gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -694,7 +696,7 @@ def twelve():
 
     for sample in data:
         if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions] \
-            and sample['path_existence'] == True and sample['path_found'] == True:
+            and sample['path_found'] == True:
             r = resolutions.index(sample['region_size'])
             c = confidences.index(sample['confidence_threshold'])
             heatmatrix[r][c] += sample['path_score']
@@ -705,67 +707,125 @@ def twelve():
     f1 = pyplot.figure(1)
     df1 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
     hm1 = sns.heatmap(df1, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    f1.savefig(os.path.join(outputpath, "path_quality.pdf"), dpi=300, bbox_inches='tight')
 
     #########################################################################
 
-    heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
-    counter = numpy.ones((len(resolutions), len(confidences)))
+    # heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
+    # counter = numpy.ones((len(resolutions), len(confidences)))
+
+    # for sample in data:
+    #     if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
+    #         r = resolutions.index(sample['region_size'])
+    #         c = confidences.index(sample['confidence_threshold'])
+    #         if sample['path_existence'] == True:
+    #             counter[r][c] += 1
+    #             if sample['path_found'] == True:
+    #                 heatmatrix[r][c] += 1
+
+    # heatmatrix /= counter
+
+    # f2 = pyplot.figure(2)
+    # df2 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
+    # hm2 = sns.heatmap(df2, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    # f2.savefig(os.path.join(outputpath, "path_positives.pdf"), dpi=300, bbox_inches='tight')
+
+    # #########################################################################
+
+    # heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
+    # counter = numpy.ones((len(resolutions), len(confidences)))
+
+    # for sample in data:
+    #     if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
+    #         r = resolutions.index(sample['region_size'])
+    #         c = confidences.index(sample['confidence_threshold'])
+    #         if sample['path_existence'] == False:
+    #             counter[r][c] += 1
+    #             if sample['path_found'] == False:
+    #                 heatmatrix[r][c] += 1
+
+    # heatmatrix /= counter
+
+    # f3 = pyplot.figure(3)
+    # df3 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
+    # hm3 = sns.heatmap(df3, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    # f3.savefig(os.path.join(outputpath, "path_negatives.pdf"), dpi=300, bbox_inches='tight')
+
+    # #########################################################################
+
+    # heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
+    # counter = numpy.ones((len(resolutions), len(confidences)))
+
+    # for sample in data:
+    #     if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
+    #         r = resolutions.index(sample['region_size'])
+    #         c = confidences.index(sample['confidence_threshold'])
+    #         counter[r][c] += 1
+    #         if sample['path_existence'] == sample['path_found']:
+    #             heatmatrix[r][c] += 1
+
+    # heatmatrix /= counter
+
+    # f4 = pyplot.figure(4)
+    # df4 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
+    # hm4 = sns.heatmap(df4, vmin=0.5, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    # f4.savefig(os.path.join(outputpath, "path_feasibility.pdf"), dpi=300, bbox_inches='tight')
+
+
+def thirteen():
+    """ Example 13
+    """
+    import seaborn as sns
+    import pandas as pd
+    import numpy as np
+
+    ftd_curve = {
+        "randomftd" : "Random",
+        "grayhistogram" : "Dispersão de histograma em escala de cinza",
+        "rgbhistogram" : "Dispersão de histogramas RGB",
+        "superpixels" : "Dispersão de superpixels"
+    }
+
+    outputpath = 'output/'
+
+    with open('output/data.json') as datafile:
+        data = json.load(datafile)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+
+    info_time = dict()
+    for ft in functions:
+        info_time[ft.__name__] = dict()
+        for r in resolutions:
+            info_time[ft.__name__][str(r)] = list()
 
     for sample in data:
         if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
-            r = resolutions.index(sample['region_size'])
-            c = confidences.index(sample['confidence_threshold'])
-            if sample['path_existence'] == True:
-                counter[r][c] += 1
-                if sample['path_found'] == True:
-                    heatmatrix[r][c] += 1
+            info_time[sample['traversability_function']][str(sample['region_size'])].append(sample['matrix_build_time']+sample['graph_build_time']+sample['path_build_time'])
 
-    heatmatrix /= counter
+    sns.set_style("darkgrid")
 
-    f2 = pyplot.figure(2)
-    df2 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
-    hm2 = sns.heatmap(df2, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    fig, (ax0) = pyplot.subplots(ncols=1)
+    for ftd in functions:
+        x = numpy.array(resolutions)
+        y = numpy.array([numpy.mean(info_time[ftd.__name__][str(element)]) for element in x])
+        ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
+    # pyplot.title("Traversability matrix build time")
+    # pyplot.grid()
+    ax0.legend(loc='upper right')
+    ax0.set_xlabel("Tamanho da região (pxp)")
+    ax0.tick_params(axis='x', which='minor', bottom='off')
+    ax0.set_xticks(resolutions)
+    ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
+    ax0.set_ylabel("Tempo (s)")
+    #ax0.set_ylim([-0.02, 1.02])
+    #ax0.set_yticks(numpy.arange(0, 55, 5))
+    fig.tight_layout()
+    fig.savefig(os.path.join(outputpath, "all_build_time.pdf"), dpi=300, bbox_inches='tight')
+    pyplot.close(fig)
 
-    #########################################################################
-
-    heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
-    counter = numpy.ones((len(resolutions), len(confidences)))
-
-    for sample in data:
-        if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
-            r = resolutions.index(sample['region_size'])
-            c = confidences.index(sample['confidence_threshold'])
-            if sample['path_existence'] == False:
-                counter[r][c] += 1
-                if sample['path_found'] == False:
-                    heatmatrix[r][c] += 1
-
-    heatmatrix /= counter
-
-    f3 = pyplot.figure(3)
-    df3 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
-    hm3 = sns.heatmap(df3, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
-
-    #########################################################################
-
-    heatmatrix = numpy.zeros((len(resolutions), len(confidences)))
-    counter = numpy.ones((len(resolutions), len(confidences)))
-
-    for sample in data:
-        if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
-            r = resolutions.index(sample['region_size'])
-            c = confidences.index(sample['confidence_threshold'])
-            counter[r][c] += 1
-            if sample['path_existence'] == sample['path_found']:
-                heatmatrix[r][c] += 1
-
-    heatmatrix /= counter
-
-    f4 = pyplot.figure(4)
-    df4 = pd.DataFrame(heatmatrix, index=resolutions, columns=confidences)
-    hm4 = sns.heatmap(df4, vmin=0.5, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
-
-    pyplot.show()
 
 # import cProfile
 # cProfile.run("nine()", sort="cumulative")
