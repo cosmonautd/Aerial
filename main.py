@@ -34,19 +34,22 @@ def two():
 
     import matplotlib
     import matplotlib.mlab as mlab
-    matplotlib.rcParams.update({'font.size': 12})
+    matplotlib.rcParams.update({'font.size': 14})
+
+    import seaborn as sns
+    sns.set_style("darkgrid")
 
     fig, ax = pyplot.subplots(1,1)
 
     weights = numpy.ones_like(diffmatrix.flatten())/float(len(diffmatrix.flatten()))
-    n, _, _ = ax.hist(diffmatrix.flatten(), bins=numpy.arange(0, 1 + 0.1, 0.1), weights=weights, facecolor='green', alpha=0.75)
+    n, _, _ = ax.hist(diffmatrix.flatten(), bins=numpy.arange(0, 1 + 0.1, 0.1), weights=weights, facecolor='green', alpha=0.5)
 
-    ax.set_xlabel("Atravessabilidade")
+    # ax.set_xlabel("Atravessabilidade")
     ax.set_xticks(numpy.arange(0, 1.01, 0.1))
     ax.set_xlim([0, 1])
-    ax.set_ylabel("Porcentagem")
-    ax.set_yticks(numpy.arange(0, max(n)+0.1, 0.1))
-    ax.set_yticklabels(["%.0f%%" % (100*x) for x in numpy.arange(0, max(n)+0.1, 0.1)])
+    # ax.set_ylabel("Porcentagem")
+    ax.set_yticks(numpy.arange(0.05, max(n)+0.05, 0.05))
+    ax.set_yticklabels(["%.0f%%" % (100*x) for x in numpy.arange(0.05, max(n)+0.05, 0.05)])
     ax.grid(True)
     fig.tight_layout()
     pyplot.show()
@@ -794,40 +797,41 @@ def thirteen():
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+    confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     info_time = dict()
     for ft in functions:
         info_time[ft.__name__] = dict()
-        for r in resolutions:
-            info_time[ft.__name__][str(r)] = list()
+        for c in confidences:
+            info_time[ft.__name__][str(c)] = list()
 
     for sample in data:
         if sample['image'] in images and sample['traversability_function'] in [ft.__name__ for ft in functions]:
-            info_time[sample['traversability_function']][str(sample['region_size'])].append(sample['matrix_build_time']+sample['graph_build_time']+sample['path_build_time'])
+            info_time[sample['traversability_function']][str(sample['confidence_threshold'])].append(sample['graph_build_time'])
 
     sns.set_style("darkgrid")
 
     fig, (ax0) = pyplot.subplots(ncols=1)
     for ftd in functions:
-        x = numpy.array(resolutions)
+        x = numpy.array(confidences)
         y = numpy.array([numpy.mean(info_time[ftd.__name__][str(element)]) for element in x])
         ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[ftd.__name__])
     # pyplot.title("Traversability matrix build time")
     # pyplot.grid()
     ax0.legend(loc='upper right')
-    ax0.set_xlabel("Tamanho da região (pxp)")
+    ax0.set_xlabel("Limiar de confiabilidade")
     ax0.tick_params(axis='x', which='minor', bottom='off')
-    ax0.set_xticks(resolutions)
-    ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
+    ax0.set_xticks(confidences)
+    ax0.set_xticklabels(["%.1f" % (c) for c in confidences])
     ax0.set_ylabel("Tempo (s)")
-    #ax0.set_ylim([-0.02, 1.02])
-    #ax0.set_yticks(numpy.arange(0, 55, 5))
+    #ax0.set_ylim([0, 30])
+    #ax0.set_yticks(numpy.arange(0, 32, 5))
     fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "all_build_time.pdf"), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(outputpath, "graph_build_time_c.pdf"), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
 
 # import cProfile
 # cProfile.run("nine()", sort="cumulative")
 
-twelve()
+two()
