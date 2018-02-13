@@ -7,7 +7,7 @@ import numpy
 import progressbar
 import itertools
 import matplotlib.pyplot as pyplot
-import gtde
+import trav
 import graphmap
 import tqdm
 import json
@@ -15,22 +15,22 @@ import json
 def one():
     """ Example 1: Computes a TDI and shows on screen
     """
-    estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=20)
+    estimator = trav.TraversabilityEstimator( \
+                    r=12)
 
-    frame = gtde.loadimage('image/example.jpg')
-    diffimage = estimator.computetdi(frame)
-    grid = gtde.gridlist(frame, estimator.granularity)
-    gtde.saveimage('output/example.jpg', [frame, diffimage])
+    frame = trav.load_image('image/aerial03.jpg')
+    traversability_image = estimator.get_traversability_image(frame)
+    grid = trav.grid_list(frame, estimator.r)
+    trav.save_image('output/example.jpg', [frame, traversability_image])
 
 def two():
     """ Example 2: Computes a TDM and writes to stdout
     """
-    estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=12)
+    estimator = trav.TraversabilityEstimator( \
+                    r=12)
 
-    frame = gtde.loadimage('image/example.jpg')
-    diffmatrix = estimator.computematrix(frame)
+    frame = trav.load_image('image/example.jpg')
+    traversability_matrix = estimator.get_traversability_matrix(frame)
 
     import matplotlib
     import matplotlib.mlab as mlab
@@ -41,8 +41,8 @@ def two():
 
     fig, ax = pyplot.subplots(1,1)
 
-    weights = numpy.ones_like(diffmatrix.flatten())/float(len(diffmatrix.flatten()))
-    n, _, _ = ax.hist(diffmatrix.flatten(), bins=numpy.arange(0, 1 + 0.1, 0.1), weights=weights, facecolor='green', alpha=0.5)
+    weights = numpy.ones_like(traversability_matrix.flatten())/float(len(traversability_matrix.flatten()))
+    n, _, _ = ax.hist(traversability_matrix.flatten(), bins=numpy.arange(0, 1 + 0.1, 0.1), weights=weights, facecolor='green', alpha=0.5)
 
     # ax.set_xlabel("Atravessabilidade")
     ax.set_xticks(numpy.arange(0, 1.01, 0.1))
@@ -58,16 +58,16 @@ def three():
     """ Example 3: Computes a TDI and compares to its ground truth
         Computes root mean squared error and saves image file on disk
     """
-    estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=6,
-                    function=gtde.grayhistogram)
+    estimator = trav.TraversabilityEstimator( \
+                    r=6,
+                    function=trav.tf_grayhist)
 
-    frame = gtde.loadimage('image/aerial01.jpg')
-    truth = gtde.loadimage('labels/aerial01.jpg')
-    framediff = estimator.computetdi(frame)
-    truthdiff = estimator.groundtruth(truth)
+    frame = trav.load_image('image/aerial01.jpg')
+    truth = trav.load_image('ground-truth/aerial01.jpg')
+    framediff = estimator.get_traversability_image(frame)
+    truthdiff = estimator.get_ground_truth(truth)
     print("Correlation:", estimator.error(framediff, truthdiff, 'corr'))
-    gtde.saveimage('ground-truth.jpg', [truthdiff, framediff])
+    trav.save_image('ground-truth.jpg', [truthdiff, framediff])
 
 def four():
     """ Example 4: Computes TDIs for all files in datasetpath and saves to tdipath
@@ -84,9 +84,9 @@ def four():
 
         with open(os.path.join(outputpath, 'time.log'), 'w') as timelog:
 
-            estimator = gtde.GroundTraversalDifficultyEstimator( \
-                            granularity=g,
-                            function=gtde.grayhistogram)
+            estimator = trav.TraversabilityEstimator( \
+                            r=g,
+                            function=trav.tf_grayhist)
             
             dataset = list()
             for (dirpath, dirnames, filenames) in os.walk(datasetpath):
@@ -106,11 +106,11 @@ def four():
             bar.start()
 
             for i, imagename in enumerate(dataset):
-                img = gtde.loadimage(os.path.join(datasetpath, imagename))
+                img = trav.load_image(os.path.join(datasetpath, imagename))
                 start = time.time()
-                tdi = estimator.computetdi(img)
+                traversability_image = estimator.get_traversability_image(img)
                 times.append(time.time() - start)
-                gtde.save2image(os.path.join(outputpath, imagename), img, tdi)
+                trav.save_image(os.path.join(outputpath, imagename), [img, traversability_image])
                 timelog.write("%s: %.3f s\n" % (imagename, times[-1]))
                 timelog.flush()
                 bar.update(i+1)
@@ -123,12 +123,12 @@ def five():
     """ Example 5: Computes a route between two regions pictured in an input image
         Saves image to disk
     """
-    tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=16,
-                    function=gtde.grayhistogram)
+    tdigenerator = trav.TraversabilityEstimator( \
+                    r=16,
+                    function=trav.tf_grayhist)
 
-    image = gtde.loadimage('image/aerial01.jpg')
-    tdmatrix = tdigenerator.computematrix(image)
+    image = trav.load_image('image/aerial01.jpg')
+    tdmatrix = tdigenerator.get_traversability_matrix(image)
 
     router = graphmap.RouteEstimator()
     G = router.tdm2graph(tdmatrix)
@@ -143,35 +143,35 @@ def six():
     """ Example 6: Computes one TDI for each defined function
         Saves a concatenation of input image and its TDIs
     """
-    gray_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=8,
-                    function=gtde.grayhistogram)
+    gray_estimator = trav.TraversabilityEstimator( \
+                    r=8,
+                    function=trav.tf_grayhist)
     
-    rgb_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=8,
-                    function=gtde.rgbhistogram)
+    rgb_estimator = trav.TraversabilityEstimator( \
+                    r=8,
+                    function=trav.tf_rgbhist)
     
-    superpixels_estimator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=8,
-                    function=gtde.superpixels)
+    superpixels_estimator = trav.TraversabilityEstimator( \
+                    r=8,
+                    function=trav.tf_superpixels)
 
-    frame = gtde.loadimage('image/aerial01.jpg')
+    frame = trav.load_image('image/aerial01.jpg')
 
-    graydiffimage = gray_estimator.computetdi(frame, contrast=False)
-    rgbdiffimage = rgb_estimator.computetdi(frame, contrast=False)
-    superpixelsdiffimage = superpixels_estimator.computetdi(frame, contrast=False)
+    gray_t_image = gray_estimator.get_traversability_image(frame, normalize=False)
+    rgb_t_image = rgb_estimator.get_traversability_image(frame, normalize=False)
+    superpixels_t_image = superpixels_estimator.get_traversability_image(frame, normalize=False)
 
-    gtde.saveimage('output/comparison.jpg', [frame, graydiffimage, rgbdiffimage, superpixelsdiffimage])
+    trav.save_image('output/comparison.jpg', [frame, gray_t_image, rgb_t_image, superpixels_t_image])
 
 def seven():
-    """ Example 7: Generate graphs for all similarity measures available in gtde
+    """ Example 7: Generate graphs for all similarity measures available in trav
     """
     rootpath = 'output'
-    labelpath = 'labels'
+    labelpath = 'ground-truth'
     datasetpath = 'image'
 
     measures = ['corr']
-    functions = [gtde.randomftd, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [trav.tf_random, trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16]
 
     labeldataset = list()
@@ -194,15 +194,15 @@ def seven():
     if not os.path.exists(rootpath):
         os.makedirs(rootpath)
 
-    with open(os.path.join(rootpath, 'tdi.log'), 'w') as tdilog:
+    with open(os.path.join(rootpath, 'traversability_image.log'), 'w') as tdilog:
 
         counter = 0
         bar.update(counter)
 
         for i, imagename in enumerate(labeldataset):
 
-            lbl = gtde.loadimage(os.path.join(labelpath, imagename))
-            img = gtde.loadimage(os.path.join(datasetpath, imagename))
+            lbl = trav.load_image(os.path.join(labelpath, imagename))
+            img = trav.load_image(os.path.join(datasetpath, imagename))
 
             for measure in measures:
 
@@ -219,13 +219,13 @@ def seven():
                         if not str(g) in data[measure][ftd.__name__]:
                             data[measure][ftd.__name__][str(g)] = list()
 
-                        estimator = gtde.GroundTraversalDifficultyEstimator( \
-                                        granularity=g,
+                        estimator = trav.TraversabilityEstimator( \
+                                        r=g,
                                         function=ftd)
                         
-                        gt = estimator.groundtruth(lbl, matrix=True)
+                        gt = estimator.get_ground_truth(lbl, matrix=True)
                         start = time.time()
-                        tdm = estimator.computematrix(img)
+                        tdm = estimator.get_traversability_matrix(img)
                         data[measure][ftd.__name__][str(g)].append(estimator.error(tdm, gt, measure))
                         tdilog.write("%s\n" % (imagename))
                         tdilog.write("    %s %s %3d %.3f\n" % (measure, ftd.__name__, g, data[measure][ftd.__name__][str(g)][-1]))
@@ -246,10 +246,10 @@ def seven():
     }
     
     ftd_curve = {   
-        "randomftd" : "Random",
-        "grayhistogram" : "Gray Histogram",
-        "rgbhistogram" : "RGB Histogram",
-        "superpixels" : "Superpixels"
+        "tf_random" : "Random",
+        "tf_grayhist" : "Gray Histogram",
+        "tf_rgbhist" : "RGB Histogram",
+        "tf_superpixels" : "Superpixels"
     }
     
     for measure in measures:
@@ -267,7 +267,7 @@ def seven():
         ax0.set_xticklabels(["%dx%d" % (r, r) for r in resolutions])
         ax0.set_ylabel(plot_title[measure].split(" ")[-1].title())
         fig.tight_layout()
-        fig.savefig(os.path.join(rootpath, "score-tdi-%s.png" % (measure)), dpi=300, bbox_inches='tight')
+        fig.savefig(os.path.join(rootpath, "score-traversability_image-%s.png" % (measure)), dpi=300, bbox_inches='tight')
         pyplot.close(fig)
 
 def eight():
@@ -276,15 +276,15 @@ def eight():
     """
     g = 8
     c = 0.45
-    tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                    granularity=g,
-                    function=gtde.grayhistogram)
+    tdigenerator = trav.TraversabilityEstimator( \
+                    r=g,
+                    function=trav.tf_grayhist)
 
-    image = gtde.loadimage('image/aerial01.jpg')
-    tdmatrix = tdigenerator.computematrix(image)
+    image = trav.load_image('image/aerial01.jpg')
+    tdmatrix = tdigenerator.get_traversability_matrix(image)
 
-    labelpoints = gtde.loadimage('keypoints/aerial01.jpg')
-    grid = gtde.gridlist(image, g)
+    labelpoints = trav.load_image('keypoints/aerial01.jpg')
+    grid = trav.grid_list(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
     router = graphmap.RouteEstimator()
@@ -296,8 +296,8 @@ def eight():
     graphmap.drawgraph(G, path, 'output/path-graph.pdf')
 
     ipath = [int(v) for v in path]
-    pathtdi = gtde.imagepath(image, ipath, grid, found=found)
-    gtde.saveimage('output/ti.jpg', [pathtdi])
+    pathtdi = trav.draw_path(image, ipath, grid, found=found)
+    trav.save_image('output/ti.jpg', [pathtdi])
 
 def nine():
     """ Example 9: Computes a route between all labeled keypoints
@@ -314,21 +314,21 @@ def nine():
         if not os.path.exists(os.path.join('output', inputdata.split('.')[0], str(g)+'-negative')):
             os.makedirs(os.path.join('output', inputdata.split('.')[0], str(g)+'-negative'))
 
-        tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                        granularity=g,
-                        function=gtde.grayhistogram)
+        tdigenerator = trav.TraversabilityEstimator( \
+                        r=g,
+                        function=trav.tf_grayhist)
 
-        image = gtde.loadimage(os.path.join('image', inputdata))
-        tdmatrix = tdigenerator.computematrix(image)
-        tdimage = tdigenerator.computetdi(image)
+        image = trav.load_image(os.path.join('image', inputdata))
+        tdmatrix = tdigenerator.get_traversability_matrix(image)
+        tdimage = tdigenerator.get_traversability_image(image)
 
-        if os.path.isfile(os.path.join('labels', inputdata)):
-            gt = gtde.loadimage(os.path.join(os.path.join('labels', inputdata)))
-            gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
-            gtimage = tdigenerator.groundtruth(gt)
+        if os.path.isfile(os.path.join('ground-truth', inputdata)):
+            gt = trav.load_image(os.path.join(os.path.join('ground-truth', inputdata)))
+            gtmatrix = tdigenerator.get_ground_truth(gt, matrix=True)
+            gtimage = tdigenerator.get_ground_truth(gt)
 
-        labelpoints = gtde.loadimage(os.path.join('keypoints-impossible', inputdata))
-        grid = gtde.gridlist(image, g)
+        labelpoints = trav.load_image(os.path.join('keypoints-impossible', inputdata))
+        grid = trav.grid_list(image, g)
         keypoints = graphmap.label2keypoints(labelpoints, grid)
 
         router = graphmap.RouteEstimator()
@@ -345,29 +345,29 @@ def nine():
 
             results.append(1.0)
 
-            rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
+            rpath = [trav.coord(int(v), gtmatrix.shape[1]) for v in path]
             for row, column in rpath:
                 if gtmatrix[row][column] < 0.20:
                     results[-1] = numpy.maximum(0, results[-1] - penalty)
 
             ipath = [int(v) for v in path]
             if results[-1] > 0.7:
-                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, found=found)
-                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, found=found)
-                pathimage = gtde.imagepath(image.copy(), ipath, grid, found=found)
+                pathtdi = trav.draw_path(tdimage.copy(), ipath, grid, found=found)
+                pathlabel = trav.draw_path(gtimage.copy(), ipath, grid, found=found)
+                pathimage = trav.draw_path(image.copy(), ipath, grid, found=found)
             else:
-                pathtdi = gtde.imagepath(tdimage.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
-                pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
-                pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
+                pathtdi = trav.draw_path(tdimage.copy(), ipath, grid, color=(255, 0, 0), found=found)
+                pathlabel = trav.draw_path(gtimage.copy(), ipath, grid, color=(255, 0, 0), found=found)
+                pathimage = trav.draw_path(image.copy(), ipath, grid, color=(255, 0, 0), found=found)
             
-            gtde.saveimage(os.path.join("output", inputdata.split('.')[0], str(g)+'-negative', \
+            trav.save_image(os.path.join("output", inputdata.split('.')[0], str(g)+'-negative', \
                             "%s-%03d-%03d.jpg" % (inputdata.split('.')[0], g, counter + 1)), [pathtdi, pathlabel, pathimage])
 
 
 def ten(confidence=0.5):
     """ Example 10:
     """
-    labelpath = 'labels/'
+    labelpath = 'ground-truth/'
     datasetpath = 'image/'
     keypointspath = 'keypoints/'
     ikeypointspath = 'keypoints-impossible/'
@@ -377,7 +377,7 @@ def ten(confidence=0.5):
         os.makedirs(outputpath)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
     resolutions = [4, 6, 8, 10, 12, 14, 16, 18, 20]
 
     labeldataset = list()
@@ -394,10 +394,10 @@ def ten(confidence=0.5):
     for i in tqdm.trange(len(selected), desc="            Input image "):
 
         inputdata = selected[i]
-        image = gtde.loadimage(os.path.join(datasetpath, inputdata))
-        gt = gtde.loadimage(os.path.join(labelpath, inputdata))
-        labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
-        ilabelpoints = gtde.loadimage(os.path.join(ikeypointspath, inputdata))
+        image = trav.load_image(os.path.join(datasetpath, inputdata))
+        gt = trav.load_image(os.path.join(labelpath, inputdata))
+        labelpoints = trav.load_image(os.path.join(keypointspath, inputdata))
+        ilabelpoints = trav.load_image(os.path.join(ikeypointspath, inputdata))
 
         for j in tqdm.trange(len(functions), desc="Traversability function "):
 
@@ -418,15 +418,15 @@ def ten(confidence=0.5):
 
                 penalty = g*(0.2/6)
 
-                tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                                granularity=g,
+                tdigenerator = trav.TraversabilityEstimator( \
+                                r=g,
                                 function=ftd)
 
-                tdmatrix = tdigenerator.computematrix(image)
+                tdmatrix = tdigenerator.get_traversability_matrix(image)
 
-                gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
+                gtmatrix = tdigenerator.get_ground_truth(gt, matrix=True)
 
-                grid = gtde.gridlist(image, g)
+                grid = trav.grid_list(image, g)
 
                 keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -448,7 +448,7 @@ def ten(confidence=0.5):
 
                     path, found = router.route(G, source, target)
 
-                    rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
+                    rpath = [trav.coord(int(v), gtmatrix.shape[1]) for v in path]
                     for row, column in rpath:
                         if gtmatrix[row][column] < 0.20:
                             results[-1] = numpy.maximum(0, results[-1] - penalty)
@@ -471,10 +471,10 @@ def ten(confidence=0.5):
                     data[ftd.__name__][str(g)]['negative'].append(float(not found))
 
     ftd_curve = {
-        "randomftd" : "Random",
-        "grayhistogram" : "Gray Histogram",
-        "rgbhistogram" : "RGB Histogram",
-        "superpixels" : "Superpixels"
+        "tf_random" : "Random",
+        "tf_grayhist" : "Gray Histogram",
+        "tf_rgbhist" : "RGB Histogram",
+        "tf_superpixels" : "Superpixels"
     }
 
     fig, (ax0) = pyplot.subplots(ncols=1)
@@ -537,7 +537,7 @@ def ten(confidence=0.5):
 def eleven():
     """ Example 11:
     """
-    labelpath = 'labels/'
+    labelpath = 'ground-truth/'
     datasetpath = 'image/'
     keypointspath = 'keypoints/'
     ikeypointspath = 'keypoints-impossible/'
@@ -548,7 +548,7 @@ def eleven():
         os.makedirs(outputpath)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.reference, gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [trav.reference, trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -569,10 +569,10 @@ def eleven():
     for i in tqdm.trange(len(selected), desc="            Input image "):
 
         inputdata = selected[i]
-        image = gtde.loadimage(os.path.join(datasetpath, inputdata))
-        gt = gtde.loadimage(os.path.join(labelpath, inputdata))
-        labelpoints = gtde.loadimage(os.path.join(keypointspath, inputdata))
-        ilabelpoints = gtde.loadimage(os.path.join(ikeypointspath, inputdata))
+        image = trav.load_image(os.path.join(datasetpath, inputdata))
+        gt = trav.load_image(os.path.join(labelpath, inputdata))
+        labelpoints = trav.load_image(os.path.join(keypointspath, inputdata))
+        ilabelpoints = trav.load_image(os.path.join(ikeypointspath, inputdata))
 
         for j in tqdm.trange(len(functions), desc="Traversability function "):
 
@@ -584,17 +584,17 @@ def eleven():
 
                 penalty = g*(0.2/6)
 
-                tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
-                                granularity=g,
+                tdigenerator = trav.TraversabilityEstimator( \
+                                r=g,
                                 function=ftd)
 
                 start_matrix_time = time.time()
-                tdmatrix = tdigenerator.computematrix(image)
+                tdmatrix = tdigenerator.get_traversability_matrix(image)
                 matrix_time = time.time() - start_matrix_time
 
-                gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
+                gtmatrix = tdigenerator.get_ground_truth(gt, matrix=True)
 
-                grid = gtde.gridlist(image, g)
+                grid = trav.grid_list(image, g)
 
                 for c in tqdm.trange(len(confidences), desc="             Confidence "):
 
@@ -603,7 +603,7 @@ def eleven():
                     router = graphmap.RouteEstimator()
 
                     start_graph_time = time.time()
-                    if ftd == gtde.reference:
+                    if ftd == trav.reference:
                         G = router.tdm2graph(gtmatrix, confidence)
                     else:
                         G = router.tdm2graph(tdmatrix, confidence)
@@ -625,7 +625,7 @@ def eleven():
                         path, found = router.route(G, source, target)
                         route_time = time.time() - start_route_time
 
-                        rpath = [gtde.coord(int(v), gtmatrix.shape[1]) for v in path]
+                        rpath = [trav.coord(int(v), gtmatrix.shape[1]) for v in path]
                         for row, column in rpath:
                             if gtmatrix[row][column] < 0.20:
                                 score = numpy.maximum(0, score - penalty)
@@ -690,7 +690,7 @@ def twelve():
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.superpixels]
+    functions = [trav.tf_superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -783,10 +783,10 @@ def thirteen():
     import numpy as np
 
     ftd_curve = {
-        "randomftd" : "Random",
-        "grayhistogram" : "Dispersão de histograma em escala de cinza",
-        "rgbhistogram" : "Dispersão de histogramas RGB",
-        "superpixels" : "Dispersão de superpixels"
+        "tf_random" : "Random",
+        "tf_grayhist" : "Dispersão de histograma em escala de cinza",
+        "tf_rgbhist" : "Dispersão de histogramas RGB",
+        "tf_superpixels" : "Dispersão de tf_superpixels"
     }
 
     outputpath = 'output/'
@@ -795,7 +795,7 @@ def thirteen():
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    functions = [gtde.grayhistogram, gtde.rgbhistogram, gtde.superpixels]
+    functions = [trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
     resolutions = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     confidences = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -834,4 +834,4 @@ def thirteen():
 # import cProfile
 # cProfile.run("nine()", sort="cumulative")
 
-eight()
+one()

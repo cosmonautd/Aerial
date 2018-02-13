@@ -1,6 +1,5 @@
 import cv2
 import numpy
-import gtde
 import matplotlib
 import graph_tool as graphtool
 import graph_tool.draw as draw
