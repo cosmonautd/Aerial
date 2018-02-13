@@ -68,16 +68,28 @@ def label2keypoints(image, grid):
     return indexes
 
 def drawgraph(G, path=[], filename="tdg.png"):
+
+    G.vp.vfcolor = G.new_vertex_property("vector<double>")
+    G.ep.ecolor = G.new_edge_property("vector<double>")
+    G.ep.ewidth = G.new_edge_property("int")
+
+    for v in G.vertices():
+        diff = G.vp.diff[v]
+        G.vp.vfcolor[v] = [1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1.0]
+    for e in G.edges():
+        G.ep.ewidth[e] = 6
+        G.ep.ecolor[e] = [0.179, 0.203, 0.210, 0.8]
+    
     for i, v in enumerate(path):
         G.vp.vfcolor[v] = [0, 0.640625, 0, 0.9]
         if i < len(path) - 1:
             for e in v.out_edges():
                 if e.target() == path[i+1]:
-                    G.ep.ecolor[e] = [0, 0.640625, 0, 0.9]
-                    G.ep.ewidth[e] = 6
+                    G.ep.ecolor[e] = [0, 0.640625, 0, 1]
+                    G.ep.ewidth[e] = 10
 
-    draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_fill_color=G.vp.vfcolor,\
-                    edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output=filename)
+    draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_color=[0,0,0,1], vertex_fill_color=G.vp.vfcolor,\
+                    edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output=filename, edge_marker_size=4)
 
 class Visitor(search.DijkstraVisitor):
 
@@ -95,7 +107,7 @@ class RouteEstimator:
 
     def tdm2graph(self, tdmatrix, confidence=0.7):
 
-        G = graphtool.Graph(directed=False)
+        G = graphtool.Graph(directed=True)
 
         G.vp.pos = G.new_vertex_property("vector<double>")
         G.vp.pos2 = G.new_vertex_property("vector<double>")
@@ -162,16 +174,6 @@ class RouteEstimator:
         G.add_edge_list(edges, eprops=[G.ep.weight])
 
         del edges
-
-        G.vp.vfcolor = G.new_vertex_property("vector<double>")
-        G.ep.ecolor = G.new_edge_property("vector<double>")
-        G.ep.ewidth = G.new_edge_property("int")
-        for v in G.vertices():
-            diff = G.vp.diff[v]
-            G.vp.vfcolor[v] = [1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1.0]
-        for e in G.edges():
-            G.ep.ewidth[e] = 2
-            G.ep.ecolor[e] = [0.179, 0.203, 0.210, 0.8]
 
         return G
 

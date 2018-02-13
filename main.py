@@ -274,16 +274,16 @@ def eight():
     """ Example 8: Computes a route between two labeled keypoints
         Shows the route over image on screen
     """
-    g = 12
-    c = 0.5
+    g = 8
+    c = 0.45
     tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                     granularity=g,
                     function=gtde.grayhistogram)
 
-    image = gtde.loadimage('image/example.jpg')
+    image = gtde.loadimage('image/aerial01.jpg')
     tdmatrix = tdigenerator.computematrix(image)
 
-    labelpoints = gtde.loadimage('keypoints/example.jpg')
+    labelpoints = gtde.loadimage('keypoints/aerial01.jpg')
     grid = gtde.gridlist(image, g)
     keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -297,7 +297,7 @@ def eight():
 
     ipath = [int(v) for v in path]
     pathtdi = gtde.imagepath(image, ipath, grid, found=found)
-    gtde.saveimage('output/ti.png', [pathtdi])
+    gtde.saveimage('output/ti.jpg', [pathtdi])
 
 def nine():
     """ Example 9: Computes a route between all labeled keypoints
@@ -305,14 +305,14 @@ def nine():
     """
     inputdata = 'aerial01.jpg'
     resolutions = [6]
-    confidence = 0.2
+    confidence = 0.4
 
     for g in resolutions:
 
         penalty = g*(0.2/6)
 
-        if not os.path.exists(os.path.join('output', inputdata.split('.')[0], str(g))):
-            os.makedirs(os.path.join('output', inputdata.split('.')[0], str(g)))
+        if not os.path.exists(os.path.join('output', inputdata.split('.')[0], str(g)+'-negative')):
+            os.makedirs(os.path.join('output', inputdata.split('.')[0], str(g)+'-negative'))
 
         tdigenerator = gtde.GroundTraversalDifficultyEstimator( \
                         granularity=g,
@@ -327,7 +327,7 @@ def nine():
             gtmatrix = tdigenerator.groundtruth(gt, matrix=True)
             gtimage = tdigenerator.groundtruth(gt)
 
-        labelpoints = gtde.loadimage(os.path.join('keypoints', inputdata))
+        labelpoints = gtde.loadimage(os.path.join('keypoints-impossible', inputdata))
         grid = gtde.gridlist(image, g)
         keypoints = graphmap.label2keypoints(labelpoints, grid)
 
@@ -360,7 +360,7 @@ def nine():
                 pathlabel = gtde.imagepath(gtimage.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
                 pathimage = gtde.imagepath(image.copy(), ipath, grid, pathcolor=(255, 0, 0), found=found)
             
-            gtde.saveimage(os.path.join("output", inputdata.split('.')[0], str(g), \
+            gtde.saveimage(os.path.join("output", inputdata.split('.')[0], str(g)+'-negative', \
                             "%s-%03d-%03d.jpg" % (inputdata.split('.')[0], g, counter + 1)), [pathtdi, pathlabel, pathimage])
 
 
@@ -834,4 +834,4 @@ def thirteen():
 # import cProfile
 # cProfile.run("nine()", sort="cumulative")
 
-two()
+eight()

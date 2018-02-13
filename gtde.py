@@ -135,7 +135,10 @@ def imagepath(image, ipath, grid, pathcolor=(0,255,0), found=False):
         for k in range(len(centers)-1):
             r0, c0 = centers[k]
             r1, c1 = centers[k+1]
-            cv2.line(image, (c0, r0), (c1, r1), pathcolor, 5)
+            cv2.line(image, (c0, r0), (c1, r1), pathcolor, 10)
+        r0, c0 = int(numpy.mean([center[0] for center in centers[-5:]])), int(numpy.mean([center[1] for center in centers[-5:]]))
+        r1, c1 = centers[-1]
+        cv2.arrowedLine(image, (c0, r0), (c1, r1), pathcolor, 10, 2, 0, 1)
     return image
 
 def randomftd(region, view=False):
