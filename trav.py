@@ -122,11 +122,11 @@ def traversability_image(image, grid, traversability_matrix):
         t_image[tly:tly+R.shape[0], tlx:tlx+R.shape[1]] = R
     return t_image
 
-def draw_path(image, path_indices, grid, color=(0,255,0), found=False):
+def draw_path(image, path_indexes, grid, color=(0,255,0), found=False):
     if len(image.shape) < 3:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     centers = []
-    for k in path_indices:
+    for k in path_indexes:
         tly, tlx, size = grid[k]
         centers.append((int(tlx+(size/2)), int(tly+(size/2))))
     cv2.circle(image, centers[0][::-1], 6, color, -1)

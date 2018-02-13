@@ -1,3 +1,12 @@
+""" The graphmap module provides methods to generate 
+    traversability graphs from traversability matrices.
+    Tools for path computation are also be provided.
+    Class RouteEstimator: defines a route estimator and its configuration.
+    Method tdi2graph: builds a graph from a traversability matrix
+    Method route: returns the best route between two regions
+    Method draw_graph: saves a graph as an image (optionally, draws paths)
+"""
+
 import cv2
 import numpy
 import matplotlib
@@ -5,21 +14,12 @@ import graph_tool as graphtool
 import graph_tool.draw as draw
 import graph_tool.search as search
 
-""" The graphmap module provides methods to generate 
-    traversal difficulty graphs from traversal difficulty images.
-    Tools for path computation must also be provided.
-    Class RouteEstimator: defines a route estimator and its configuration.
-    Method tdi2graph: builds a graph from a TDI source matrix
-    Method route: returns the best route between two regions
-    Method drawgraph: saves a graph as an image (optionally, draws paths)
-"""
-
 def coord2(position, columns):
     """ Converts two-dimensional indexes to one-dimension coordinate
     """
     return position[0]*columns + position[1]
 
-def label2keypoints(image, grid):
+def get_keypoints(image, grid):
     """
     """
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -66,14 +66,14 @@ def label2keypoints(image, grid):
 
     return indexes
 
-def drawgraph(G, path=[], filename="tdg.png"):
+def draw_graph(G, filename="traversability-graph.png", path=[]):
 
     G.vp.vfcolor = G.new_vertex_property("vector<double>")
     G.ep.ecolor = G.new_edge_property("vector<double>")
     G.ep.ewidth = G.new_edge_property("int")
 
     for v in G.vertices():
-        diff = G.vp.diff[v]
+        diff = G.vp.traversability[v]
         G.vp.vfcolor[v] = [1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1/(numpy.sqrt(diff)/100), 1.0]
     for e in G.edges():
         G.ep.ewidth[e] = 6
@@ -87,43 +87,44 @@ def drawgraph(G, path=[], filename="tdg.png"):
                     G.ep.ecolor[e] = [0, 0.640625, 0, 1]
                     G.ep.ewidth[e] = 10
 
-    draw.graph_draw(G, pos=G.vp.pos2, output_size=(1200, 1200), vertex_color=[0,0,0,1], vertex_fill_color=G.vp.vfcolor,\
+    draw.graph_draw(G, pos=G.vp.pos, output_size=(1200, 1200), vertex_color=[0,0,0,1], vertex_fill_color=G.vp.vfcolor,\
                     edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output=filename, edge_marker_size=4)
 
 class Visitor(search.DijkstraVisitor):
+        """
+        """
+        def __init__(self, target=None):
+            if target is not None:
+                self.target = target
 
-    def __init__(self, target):
-        self.target = target
-
-    def finish_vertex(self, v):
-        if v == self.target:
-            raise graphtool.search.StopSearch()
+        def finish_vertex(self, v):
+            if v == self.target:
+                raise graphtool.search.StopSearch()
 
 class RouteEstimator:
+    """
+    """
+    def __init__(self, c=0.7):
+        self.c = c
 
-    def __init__(self):
-        pass
-
-    def tdm2graph(self, tdmatrix, confidence=0.7):
+    def tm2graph(self, tdmatrix):
 
         G = graphtool.Graph(directed=True)
 
         G.vp.pos = G.new_vertex_property("vector<double>")
-        G.vp.pos2 = G.new_vertex_property("vector<double>")
-        G.vp.diff = G.new_vertex_property("double")
+        G.vp.traversability = G.new_vertex_property("double")
         G.vp.cut = G.new_vertex_property("bool")
         G.ep.weight = G.new_edge_property("double")
 
         for i, row in enumerate(tdmatrix):
             for j, element in enumerate(row):
                 v = G.add_vertex()
-                G.vp.pos[v] = [i, j]
-                G.vp.pos2[v] = [j, i]
+                G.vp.pos[v] = [j, i]
                 if tdmatrix[i][j] == 0:
-                    G.vp.diff[v] = float('inf')
+                    G.vp.traversability[v] = float('inf')
                 else:
-                    G.vp.diff[v] = (100*(1/tdmatrix[i][j]))**2
-                if G.vp.diff[v] > (100*(1/confidence))**2:
+                    G.vp.traversability[v] = (100*(1/tdmatrix[i][j]))**2
+                if G.vp.traversability[v] > (100*(1/self.c))**2:
                     G.vp.cut[v] = True
                 else:
                     G.vp.cut[v] = False
@@ -132,43 +133,43 @@ class RouteEstimator:
 
         for v in [vv for vv in G.vertices() if not G.vp.cut[vv]]:
 
-            (i, j) = G.vp.pos[v][0], G.vp.pos[v][1]
+            (i, j) = G.vp.pos[v][1], G.vp.pos[v][0]
 
             top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
             if i-1 > -1:
                 u = G.vertex(coord2(top, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
             if i+1 < tdmatrix.shape[0]:
                 u = G.vertex(coord2(bottom, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
             if j-1 > -1:
                 u = G.vertex(coord2(left, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
             if j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(right, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
 
             topleft, topright, bottomleft, bottomright = (i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)
             if i-1 > -1 and j-1 > -1:
                 u = G.vertex(coord2(topleft, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
             if i-1 > -1 and j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(topright, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
             if i+1 < tdmatrix.shape[0] and j-1 > -1:
                 u = G.vertex(coord2(bottomleft, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
             if i+1 < tdmatrix.shape[0] and j+1 < tdmatrix.shape[1]:
                 u = G.vertex(coord2(bottomright, tdmatrix.shape[1]))
                 if not G.vp.cut[u]:
-                    edges.append((v, u, G.vp.diff[v] + G.vp.diff[u]))
+                    edges.append((v, u, G.vp.traversability[v] + G.vp.traversability[u]))
 
         G.add_edge_list(edges, eprops=[G.ep.weight])
 
@@ -176,7 +177,7 @@ class RouteEstimator:
 
         return G
 
-    def routeall(self, G, source):
+    def map_from_source(self, G, source):
         dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor())
         return dist, pred
 

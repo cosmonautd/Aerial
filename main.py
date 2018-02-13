@@ -60,7 +60,7 @@ def three():
     """
     estimator = trav.TraversabilityEstimator( \
                     r=6,
-                    function=trav.tf_grayhist)
+                    tf=trav.tf_grayhist)
 
     frame = trav.load_image('image/aerial01.jpg')
     truth = trav.load_image('ground-truth/aerial01.jpg')
@@ -86,7 +86,7 @@ def four():
 
             estimator = trav.TraversabilityEstimator( \
                             r=g,
-                            function=trav.tf_grayhist)
+                            tf=trav.tf_grayhist)
             
             dataset = list()
             for (dirpath, dirnames, filenames) in os.walk(datasetpath):
@@ -125,19 +125,19 @@ def five():
     """
     tdigenerator = trav.TraversabilityEstimator( \
                     r=16,
-                    function=trav.tf_grayhist)
+                    tf=trav.tf_grayhist)
 
     image = trav.load_image('image/aerial01.jpg')
     tdmatrix = tdigenerator.get_traversability_matrix(image)
 
     router = graphmap.RouteEstimator()
-    G = router.tdm2graph(tdmatrix)
+    G = router.tm2graph(tdmatrix)
 
     source = G.vertex(graphmap.coord2((12, 1), tdmatrix.shape[1]))
     target = G.vertex(graphmap.coord2((4, 14), tdmatrix.shape[1]))
 
     path, found = router.route(G, source, target)
-    graphmap.drawgraph(G, path, 'output/tdg.png')
+    graphmap.draw_graph(G, 'output/tdg.png', path)
 
 def six():
     """ Example 6: Computes one TDI for each defined function
@@ -145,15 +145,15 @@ def six():
     """
     gray_estimator = trav.TraversabilityEstimator( \
                     r=8,
-                    function=trav.tf_grayhist)
+                    tf=trav.tf_grayhist)
     
     rgb_estimator = trav.TraversabilityEstimator( \
                     r=8,
-                    function=trav.tf_rgbhist)
+                    tf=trav.tf_rgbhist)
     
     superpixels_estimator = trav.TraversabilityEstimator( \
                     r=8,
-                    function=trav.tf_superpixels)
+                    tf=trav.tf_superpixels)
 
     frame = trav.load_image('image/aerial01.jpg')
 
@@ -221,7 +221,7 @@ def seven():
 
                         estimator = trav.TraversabilityEstimator( \
                                         r=g,
-                                        function=ftd)
+                                        tf=ftd)
                         
                         gt = estimator.get_ground_truth(lbl, matrix=True)
                         start = time.time()
@@ -274,26 +274,26 @@ def eight():
     """ Example 8: Computes a route between two labeled keypoints
         Shows the route over image on screen
     """
-    g = 8
-    c = 0.45
+    g = 6
+    c = 0.4
     tdigenerator = trav.TraversabilityEstimator( \
                     r=g,
-                    function=trav.tf_grayhist)
+                    tf=trav.tf_grayhist)
 
     image = trav.load_image('image/aerial01.jpg')
     tdmatrix = tdigenerator.get_traversability_matrix(image)
 
-    labelpoints = trav.load_image('keypoints/aerial01.jpg')
+    labelpoints = trav.load_image('keypoints-positive/aerial01.jpg')
     grid = trav.grid_list(image, g)
-    keypoints = graphmap.label2keypoints(labelpoints, grid)
+    keypoints = graphmap.get_keypoints(labelpoints, grid)
 
-    router = graphmap.RouteEstimator()
-    G = router.tdm2graph(tdmatrix, confidence=c)
+    router = graphmap.RouteEstimator(c=c)
+    G = router.tm2graph(tdmatrix)
 
     [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
 
     path, found = router.route(G, source, target)
-    graphmap.drawgraph(G, path, 'output/path-graph.pdf')
+    graphmap.draw_graph(G, 'output/path-graph.pdf', path)
 
     ipath = [int(v) for v in path]
     pathtdi = trav.draw_path(image, ipath, grid, found=found)
@@ -305,7 +305,7 @@ def nine():
     """
     inputdata = 'aerial01.jpg'
     resolutions = [6]
-    confidence = 0.4
+    c = 0.4
 
     for g in resolutions:
 
@@ -316,7 +316,7 @@ def nine():
 
         tdigenerator = trav.TraversabilityEstimator( \
                         r=g,
-                        function=trav.tf_grayhist)
+                        tf=trav.tf_grayhist)
 
         image = trav.load_image(os.path.join('image', inputdata))
         tdmatrix = tdigenerator.get_traversability_matrix(image)
@@ -329,10 +329,10 @@ def nine():
 
         labelpoints = trav.load_image(os.path.join('keypoints-impossible', inputdata))
         grid = trav.grid_list(image, g)
-        keypoints = graphmap.label2keypoints(labelpoints, grid)
+        keypoints = graphmap.get_keypoints(labelpoints, grid)
 
-        router = graphmap.RouteEstimator()
-        G = router.tdm2graph(tdmatrix, confidence)
+        router = graphmap.RouteEstimator(c=c)
+        G = router.tm2graph(tdmatrix)
 
         results = list()
 
@@ -364,7 +364,7 @@ def nine():
                             "%s-%03d-%03d.jpg" % (inputdata.split('.')[0], g, counter + 1)), [pathtdi, pathlabel, pathimage])
 
 
-def ten(confidence=0.5):
+def ten(c=0.5):
     """ Example 10:
     """
     labelpath = 'ground-truth/'
@@ -420,7 +420,7 @@ def ten(confidence=0.5):
 
                 tdigenerator = trav.TraversabilityEstimator( \
                                 r=g,
-                                function=ftd)
+                                tf=ftd)
 
                 tdmatrix = tdigenerator.get_traversability_matrix(image)
 
@@ -428,10 +428,10 @@ def ten(confidence=0.5):
 
                 grid = trav.grid_list(image, g)
 
-                keypoints = graphmap.label2keypoints(labelpoints, grid)
+                keypoints = graphmap.get_keypoints(labelpoints, grid)
 
-                router = graphmap.RouteEstimator()
-                G = router.tdm2graph(tdmatrix, confidence)
+                router = graphmap.RouteEstimator(c=c)
+                G = router.tm2graph(tdmatrix)
 
                 results = list()
 
@@ -456,7 +456,7 @@ def ten(confidence=0.5):
                     data[ftd.__name__][str(g)]['score'].append(results[-1])
                     data[ftd.__name__][str(g)]['positive'].append(float(found))
 
-                ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
+                ikeypoints = graphmap.get_keypoints(ilabelpoints, grid)
                 icombinations = list(itertools.combinations(ikeypoints, 2))
 
                 for counter in tqdm.trange(len(icombinations), desc="         Negative paths "):
@@ -493,7 +493,7 @@ def ten(confidence=0.5):
     ax0.set_ylim([-0.02, 1.02])
     ax0.set_yticks(numpy.arange(0, 1.02, 0.1))
     fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "path_quality_%.1f.png" % confidence), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(outputpath, "path_quality_%.1f.png" % c), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
     fig, (ax0) = pyplot.subplots(ncols=1)
@@ -512,7 +512,7 @@ def ten(confidence=0.5):
     ax0.set_ylim([-0.02, 1.02])
     ax0.set_yticks(numpy.arange(0, 1.02, 0.1))
     fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "path_positives_%.1f.png" % confidence), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(outputpath, "path_positives_%.1f.png" % c), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
     fig, (ax0) = pyplot.subplots(ncols=1)
@@ -531,7 +531,7 @@ def ten(confidence=0.5):
     ax0.set_ylim([-0.02, 1.02])
     ax0.set_yticks(numpy.arange(0, 1.02, 0.1))
     fig.tight_layout()
-    fig.savefig(os.path.join(outputpath, "path_negatives_%.1f.png" % confidence), dpi=300, bbox_inches='tight')
+    fig.savefig(os.path.join(outputpath, "path_negatives_%.1f.png" % c), dpi=300, bbox_inches='tight')
     pyplot.close(fig)
 
 def eleven():
@@ -586,7 +586,7 @@ def eleven():
 
                 tdigenerator = trav.TraversabilityEstimator( \
                                 r=g,
-                                function=ftd)
+                                tf=ftd)
 
                 start_matrix_time = time.time()
                 tdmatrix = tdigenerator.get_traversability_matrix(image)
@@ -598,18 +598,18 @@ def eleven():
 
                 for c in tqdm.trange(len(confidences), desc="             Confidence "):
 
-                    confidence = confidences[c]
+                    c = confidences[c]
 
-                    router = graphmap.RouteEstimator()
+                    router = graphmap.RouteEstimator(c=c)
 
                     start_graph_time = time.time()
                     if ftd == trav.reference:
-                        G = router.tdm2graph(gtmatrix, confidence)
+                        G = router.tm2graph(gtmatrix)
                     else:
-                        G = router.tdm2graph(tdmatrix, confidence)
+                        G = router.tm2graph(tdmatrix)
                     graph_time = time.time() - start_graph_time
 
-                    keypoints = graphmap.label2keypoints(labelpoints, grid)
+                    keypoints = graphmap.get_keypoints(labelpoints, grid)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
@@ -634,7 +634,7 @@ def eleven():
                         results['image'] = inputdata
                         results['traversability_function'] = ftd.__name__
                         results['region_size'] = g
-                        results['confidence_threshold'] = confidence
+                        results['confidence_threshold'] = c
                         results['path_existence'] = True
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
@@ -645,7 +645,7 @@ def eleven():
 
                         data.append(results)
 
-                    ikeypoints = graphmap.label2keypoints(ilabelpoints, grid)
+                    ikeypoints = graphmap.get_keypoints(ilabelpoints, grid)
                     icombinations = list(itertools.combinations(ikeypoints, 2))
 
                     for counter in tqdm.trange(len(icombinations), desc="         Negative paths "):
@@ -663,7 +663,7 @@ def eleven():
                         results['image'] = inputdata
                         results['traversability_function'] = ftd.__name__
                         results['region_size'] = g
-                        results['confidence_threshold'] = confidence
+                        results['confidence_threshold'] = c
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
@@ -834,4 +834,4 @@ def thirteen():
 # import cProfile
 # cProfile.run("nine()", sort="cumulative")
 
-one()
+eight()
