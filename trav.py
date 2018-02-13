@@ -243,15 +243,23 @@ def reference(R, view=False):
         pyplot.show()
     return diff
 
-def show_image(image):
-    """ Displays an image on screen
+def show_image(images):
+    """ Displays images on screen
     """
-    fig, (ax0) = pyplot.subplots(ncols=1)
-    ax0.imshow(image, interpolation='bicubic')
-    ax0.axes.get_xaxis().set_visible(False)
-    ax0.axes.get_yaxis().set_visible(False)
+    n = len(images)
+    if n == 1:
+        fig, (ax0) = pyplot.subplots(ncols=1)
+        ax0.imshow(images[0], cmap='gray', interpolation='bicubic')
+        ax0.axes.get_xaxis().set_ticks([])
+        ax0.axes.get_yaxis().set_visible(False)
+    else:
+        fig, axes = pyplot.subplots(ncols=n, figsize=(4*n, 4))
+        for ax, image in zip(axes, images):
+            ax.imshow(image, cmap='gray', interpolation='bicubic')
+            ax.axes.get_xaxis().set_ticks([])
+            ax.axes.get_yaxis().set_visible(False)
     fig.tight_layout()
-    pyplot.show(block=False)
+    pyplot.show()
 
 def save_image(path, images):
     n = len(images)
