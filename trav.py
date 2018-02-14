@@ -123,23 +123,24 @@ def traversability_image(image, grid, traversability_matrix):
     return t_image
 
 def draw_path(image, path_indexes, grid, color=(0,255,0), found=False):
-    if len(image.shape) < 3:
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    image_copy = image.copy()
+    if len(image_copy.shape) < 3:
+        image_copy = cv2.cvtColor(image_copy, cv2.COLOR_GRAY2RGB)
     centers = []
     for k in path_indexes:
         tly, tlx, size = grid[k]
         centers.append((int(tlx+(size/2)), int(tly+(size/2))))
-    cv2.circle(image, centers[0][::-1], 6, color, -1)
-    cv2.circle(image, centers[-1][::-1], 6, color, -1)
+    cv2.circle(image_copy, centers[0][::-1], 6, color, -1)
+    cv2.circle(image_copy, centers[-1][::-1], 6, color, -1)
     if found:
         for k in range(len(centers)-1):
             r0, c0 = centers[k]
             r1, c1 = centers[k+1]
-            cv2.line(image, (c0, r0), (c1, r1), color, 10)
+            cv2.line(image_copy, (c0, r0), (c1, r1), color, 10)
         r0, c0 = int(numpy.mean([center[0] for center in centers[-5:]])), int(numpy.mean([center[1] for center in centers[-5:]]))
         r1, c1 = centers[-1]
-        cv2.arrowedLine(image, (c0, r0), (c1, r1), color, 10, 2, 0, 1)
-    return image
+        cv2.arrowedLine(image_copy, (c0, r0), (c1, r1), color, 10, 2, 0, 1)
+    return image_copy
 
 def tf_random(R, view=False):
     """ Returns a random traversability value
