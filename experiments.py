@@ -114,4 +114,258 @@ def traversability_image_correlation_plot():
     fig.savefig(os.path.join(output_path, "score-traversability_image-%s.png" % (measure)), dpi=300, bbox_inches='tight')
     plt.close(fig)
 
-traversability_image_correlation_plot()
+def main_experiment():
+    """
+    """
+    import os
+    import time
+    import json
+    import tqdm
+    import numpy
+    import itertools
+
+    dataset_path = 'image/'
+    ground_truth_path = 'ground-truth/'
+    positive_keypoints_path = 'keypoints-positive/'
+    negative_keypoints_path = 'keypoints-negative/'
+    output_path = 'output/'
+    output_file = 'data.json'
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    f_set = [trav.reference, trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
+    r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+    dataset = list()
+    for (_, _, filenames) in os.walk(ground_truth_path):
+        dataset.extend(filenames)
+        break
+
+    selected = list(set(dataset).intersection(images)) if len(images) > 0 else dataset
+    selected.sort()
+
+    if os.path.exists(os.path.join(output_path, output_file)):
+        with open(os.path.join(output_path, output_file)) as datafile:
+            data = json.load(datafile)
+    else:
+        data = list()
+
+    for i in tqdm.trange(len(selected), desc="            Input image "):
+
+        image_path = selected[i]
+        image = trav.load_image(os.path.join(dataset_path, image_path))
+        ground_truth = trav.load_image(os.path.join(ground_truth_path, image_path))
+        positive_keypoints = trav.load_image(os.path.join(positive_keypoints_path, image_path))
+        negative_keypoints = trav.load_image(os.path.join(negative_keypoints_path, image_path))
+
+        for j in tqdm.trange(len(f_set), desc="Traversability function "):
+
+            f = f_set[j]
+
+            for k in tqdm.trange(len(r_set), desc="             Resolution "):
+
+                r = r_set[k]
+
+                penalty = r*(0.2/6)
+
+                mapper = trav.TraversabilityEstimator(tf=f, r=r)
+
+                start_matrix_time = time.time()
+                t_matrix = mapper.get_traversability_matrix(image)
+                matrix_time = time.time() - start_matrix_time
+
+                gt_matrix = mapper.get_ground_truth(ground_truth, matrix=True)
+
+                grid = trav.grid_list(image, r)
+
+                for ii in tqdm.trange(len(c_set), desc="             Confidence "):
+
+                    c = c_set[ii]
+
+                    router = graphmap.RouteEstimator(c=c)
+
+                    start_graph_time = time.time()
+                    if f == trav.reference:
+                        G = router.tm2graph(gt_matrix)
+                    else:
+                        G = router.tm2graph(t_matrix)
+                    graph_time = time.time() - start_graph_time
+
+                    keypoints = graphmap.get_keypoints(positive_keypoints, grid)
+                    combinations = list(itertools.combinations(keypoints, 2))
+
+                    for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
+
+                        (s, t) = combinations[counter]
+
+                        score = 1.0
+
+                        source = G.vertex(s)
+                        target = G.vertex(t)
+
+                        start_route_time = time.time()
+                        path, found = router.route(G, source, target)
+                        route_time = time.time() - start_route_time
+
+                        path_region_coordinates = [trav.coord(int(v), gt_matrix.shape[1]) for v in path]
+                        for row, column in path_region_coordinates:
+                            if gt_matrix[row][column] < 0.20:
+                                score = numpy.maximum(0, score - penalty)
+
+                        results = dict()
+                        results['image'] = image_path
+                        results['traversability_function'] = f.__name__
+                        results['region_size'] = r
+                        results['cut_threshold'] = c
+                        results['path_existence'] = True
+                        results['matrix_build_time'] = matrix_time
+                        results['graph_build_time'] = graph_time
+                        results['path_build_time'] = route_time
+                        results['path_found'] = found
+                        results['path_score'] = score if found else 0.0
+                        results['path_regions'] = path_region_coordinates
+
+                        data.append(results)
+
+                    keypoints = graphmap.get_keypoints(negative_keypoints, grid)
+                    combinations = list(itertools.combinations(keypoints, 2))
+
+                    for counter in tqdm.trange(len(combinations), desc="         Negative paths "):
+
+                        (s, t) = combinations[counter]
+
+                        source = G.vertex(s)
+                        target = G.vertex(t)
+
+                        start_route_time = time.time()
+                        path, found = router.route(G, source, target)
+                        route_time = time.time() - start_route_time
+
+                        results = dict()
+                        results['image'] = image_path
+                        results['traversability_function'] = f.__name__
+                        results['region_size'] = r
+                        results['cut_threshold'] = c
+                        results['matrix_build_time'] = matrix_time
+                        results['graph_build_time'] = graph_time
+                        results['path_build_time'] = route_time
+                        results['path_existence'] = False
+                        results['path_found'] = found
+                        results['path_score'] = 1.0 if not found else 0.0
+                        results['path_regions'] = path_region_coordinates
+
+                        data.append(results)
+
+        with open(os.path.join(output_path, output_file), 'w') as datafile:
+            json.dump(data, datafile, indent=4)
+
+def heatmaps_plot():
+    """
+    """
+    import os
+    import json
+    import numpy
+    import pandas
+    import seaborn
+    import matplotlib.pyplot as plt
+
+    output_path = 'output/'
+
+    with open('output/data.json') as datafile:
+        data = json.load(datafile)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    f_set = [trav.tf_grayhist]
+    r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+    # Average path quality plot
+
+    heatmatrix = numpy.zeros((len(r_set), len(c_set)))
+    counter = numpy.ones((len(r_set), len(c_set)))
+
+    for sample in data:
+        if sample['image'] in images \
+            and sample['traversability_function'] in [ft.__name__ for ft in f_set] \
+            and sample['path_found'] == True:
+            r = r_set.index(sample['region_size'])
+            c = c_set.index(sample['cut_threshold'])
+            heatmatrix[r][c] += sample['path_score']
+            counter[r][c] += 1
+
+    heatmatrix /= counter
+
+    f1 = plt.figure(1)
+    df1 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
+    seaborn.heatmap(df1, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    f1.savefig(os.path.join(output_path, "path_quality.pdf"), dpi=300, bbox_inches='tight')
+
+    # Feasible path detection plot
+
+    heatmatrix = numpy.zeros((len(r_set), len(c_set)))
+    counter = numpy.ones((len(r_set), len(c_set)))
+
+    for sample in data:
+        if sample['image'] in images \
+            and sample['traversability_function'] in [ft.__name__ for ft in f_set]:
+            r = r_set.index(sample['region_size'])
+            c = c_set.index(sample['cut_threshold'])
+            if sample['path_existence'] == True:
+                counter[r][c] += 1
+                if sample['path_found'] == True:
+                    heatmatrix[r][c] += 1
+
+    heatmatrix /= counter
+
+    f2 = plt.figure(2)
+    df2 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
+    seaborn.heatmap(df2, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    f2.savefig(os.path.join(output_path, "path_positives.pdf"), dpi=300, bbox_inches='tight')
+
+    # Infeasible path detection plot
+
+    heatmatrix = numpy.zeros((len(r_set), len(c_set)))
+    counter = numpy.ones((len(r_set), len(c_set)))
+
+    for sample in data:
+        if sample['image'] in images \
+            and sample['traversability_function'] in [ft.__name__ for ft in f_set]:
+            r = r_set.index(sample['region_size'])
+            c = c_set.index(sample['cut_threshold'])
+            if sample['path_existence'] == False:
+                counter[r][c] += 1
+                if sample['path_found'] == False:
+                    heatmatrix[r][c] += 1
+
+    heatmatrix /= counter
+
+    f3 = plt.figure(3)
+    df3 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
+    seaborn.heatmap(df3, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    f3.savefig(os.path.join(output_path, "path_negatives.pdf"), dpi=300, bbox_inches='tight')
+
+    # Feasibility detection plot
+
+    heatmatrix = numpy.zeros((len(r_set), len(c_set)))
+    counter = numpy.ones((len(r_set), len(c_set)))
+
+    for sample in data:
+        if sample['image'] in images \
+            and sample['traversability_function'] in [ft.__name__ for ft in f_set]:
+            r = r_set.index(sample['region_size'])
+            c = c_set.index(sample['cut_threshold'])
+            counter[r][c] += 1
+            if sample['path_existence'] == sample['path_found']:
+                heatmatrix[r][c] += 1
+
+    heatmatrix /= counter
+
+    f4 = plt.figure(4)
+    df4 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
+    seaborn.heatmap(df4, vmin=0.5, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    f4.savefig(os.path.join(output_path, "path_feasibility.pdf"), dpi=300, bbox_inches='tight')
+
+heatmaps_plot()
