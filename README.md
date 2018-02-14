@@ -1,1 +1,1 @@
-Ground Traversal Difficulty Estimation
+Algoritmo para navegação robótica terrestre guiada por imagens aéreas
