@@ -90,7 +90,7 @@ def traversability_image_correlation_plot():
         "nmae" : "Normalized mean absolute error"
     }
     
-    ftd_curve = {
+    ft_curve = {
         "tf_random" : "Random",
         "tf_grayhist" : "Gray Histogram",
         "tf_rgbhist" : "RGB Histogram",
@@ -101,7 +101,7 @@ def traversability_image_correlation_plot():
     for f in f_set:
         x = numpy.array(r_set)
         y = numpy.array([numpy.mean(data[measure][f.__name__][str(element)]) for element in x])
-        ax0.plot(x, y, '-o', markevery=range(len(x)), label=ftd_curve[f.__name__])
+        ax0.plot(x, y, '-o', markevery=range(len(x)), label=ft_curve[f.__name__])
     plt.title(plot_title[measure])
     #ax0.legend(loc='upper left')
     #ax0.set_xscale('log')
@@ -368,4 +368,99 @@ def heatmaps_plot():
     seaborn.heatmap(df4, vmin=0.5, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
     f4.savefig(os.path.join(output_path, "path_feasibility.pdf"), dpi=300, bbox_inches='tight')
 
-heatmaps_plot()
+def execution_time_plot():
+    """
+    """
+    import os
+    import json
+    import numpy
+    import seaborn
+    import matplotlib.pyplot as plt
+
+    seaborn.set_style("darkgrid")
+
+    output_path = 'output/'
+
+    with open('output/data.json') as datafile:
+        data = json.load(datafile)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    f_set = [trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
+    r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    
+    variables = ['matrix_build_time', 'graph_build_time', 'path_build_time']
+    
+    for var in variables + ['total_time']:
+
+        info_time = dict()
+        for ft in f_set:
+            info_time[ft.__name__] = dict()
+            for r in r_set:
+                info_time[ft.__name__][str(r)] = list()
+
+        for sample in data:
+            if sample['image'] in images \
+                and sample['region_size'] in r_set and sample['cut_threshold'] in c_set \
+                and sample['traversability_function'] in [ft.__name__ for ft in f_set]:
+                if var in variables:
+                    info_time[sample['traversability_function']][str(sample['region_size'])].append(sample[var])
+                elif var == 'total_time':
+                    info_time[sample['traversability_function']][str(sample['region_size'])].append(sum([sample[v] for v in variables]))
+        
+        ft_curve = {
+            "tf_random" : "Random",
+            "tf_grayhist" : "Gray Histogram",
+            "tf_rgbhist" : "RGB Histogram",
+            "tf_superpixels" : "Superpixels"
+        }
+
+        fig, (ax0) = plt.subplots(ncols=1)
+        pos = -0.25
+        for ft in f_set:
+            x = numpy.array(r_set)
+            y = numpy.array([numpy.mean(info_time[ft.__name__][str(element)]) for element in x])
+            yerr_up = numpy.array([-y[i]+numpy.mean([info_time[ft.__name__][str(element)][j] for j in range(len(info_time[ft.__name__][str(element)])) if info_time[ft.__name__][str(element)][j] >= y[i]]) for i, element in enumerate(x)])
+            yerr_down = numpy.array([y[i]-numpy.mean([info_time[ft.__name__][str(element)][j] for j in range(len(info_time[ft.__name__][str(element)])) if info_time[ft.__name__][str(element)][j] < y[i]]) for i, element in enumerate(x)])
+            ax0.errorbar(x+pos, y, yerr=[yerr_down, yerr_up], capsize=4, fmt='--o', markevery=range(len(x)), label=ft_curve[ft.__name__])
+            pos+=0.25
+
+        ax0.legend(loc='upper right')
+        ax0.set_xlabel("Tamanho da região")
+        ax0.tick_params(axis='x', which='minor', bottom='off')
+        ax0.set_xticks(r_set)
+        ax0.set_xticklabels(["%dx%d" % (r,r) for r in r_set])
+        ax0.set_ylabel("Tempo (s)")
+        fig.tight_layout()
+        fig.savefig(os.path.join(output_path, "%s.pdf" % var), dpi=300, bbox_inches='tight')
+        plt.close(fig)
+
+def average_time_for_param_combination():
+    """
+    """
+    import json
+    import numpy
+
+    with open('output/data.json') as datafile:
+        data = json.load(datafile)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    f = trav.tf_grayhist
+    r = 6
+    c = 0.4
+
+    map_time = list()
+    route_time = list()
+
+    for sample in data:
+        if sample['image'] in images:
+            if sample['traversability_function'] == f.__name__:
+                if sample['region_size'] == r:
+                    if sample['cut_threshold'] == c:
+                        map_time.append(sample['matrix_build_time']+sample['graph_build_time'])
+                        route_time.append(sample['path_build_time'])
+    
+    print("Mapping time:", numpy.mean(map_time))
+    print("Routing time:", numpy.mean(route_time))
+
+average_time_for_param_combination()
