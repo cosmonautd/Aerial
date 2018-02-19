@@ -178,10 +178,14 @@ class RouteEstimator:
         return G
 
     def map_from_source(self, G, source):
+        source = G.vertex(source)
         dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor())
         return dist, pred
 
     def route(self, G, source, target, dist=None, pred=None):
+
+        source = G.vertex(source)
+        target = G.vertex(target)
 
         if dist and pred:
             pass

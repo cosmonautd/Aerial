@@ -1,5 +1,5 @@
 import trav
-import graphmap
+import graphmapx
 
 def compute_traversability_matrix():
     """
@@ -44,15 +44,15 @@ def compute_path_random_keypoints():
 
     keypoints_image = trav.load_image('keypoints-positive/aerial01.jpg')
     grid = trav.grid_list(image, r)
-    keypoints = graphmap.get_keypoints(keypoints_image, grid)
+    keypoints = graphmapx.get_keypoints(keypoints_image, grid)
 
-    router = graphmap.RouteEstimator(c=c)
+    router = graphmapx.RouteEstimator(c=c)
     G = router.tm2graph(t_matrix)
 
-    [source, target] = [G.vertex(v) for v in random.sample(keypoints, 2)]
+    [source, target] = [v for v in random.sample(keypoints, 2)]
 
     path, found = router.route(G, source, target)
-    # graphmap.draw_graph(G, 'output/path-graph.pdf', path)
+    # graphmap.draw_graph(G, 'output/path-graph.pdf', path) # only graph-tool
 
     path_indexes = [int(v) for v in path]
     path_image = trav.draw_path(image, path_indexes, grid, found=found)
@@ -76,9 +76,9 @@ def compute_path_all_keypoints():
 
     keypoints_image = trav.load_image(os.path.join('keypoints-positive', image_path))
     grid = trav.grid_list(image, r)
-    keypoints = graphmap.get_keypoints(keypoints_image, grid)
+    keypoints = graphmapx.get_keypoints(keypoints_image, grid)
 
-    router = graphmap.RouteEstimator(c=c)
+    router = graphmapx.RouteEstimator(c=c)
     G = router.tm2graph(t_matrix)
 
     output_path = 'output/paths-%s-%d-0%d-%s' % (f.__name__, r, 100*c, image_path.split('.')[0])
@@ -87,13 +87,10 @@ def compute_path_all_keypoints():
 
     for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
 
-        source = G.vertex(s)
-        target = G.vertex(t)
-
-        path, found = router.route(G, source, target)
+        path, found = router.route(G, s, t)
 
         path_indexes = [int(v) for v in path]
         path_image = trav.draw_path(image, path_indexes, grid, found=found)
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
-compute_path_random_keypoints()
+compute_path_all_keypoints()
