@@ -103,9 +103,10 @@ class RouteEstimator:
                 index = coord2((i,j), tmatrix.shape[1])
                 G.add_node( index,
                             pos=[j,i],
-                            traversability=float('inf') if tmatrix[i][j] == 0 else (100*(1/tmatrix[i][j]))**2,
-                            cut=True if (100*(1/tmatrix[i][j]))**2 > (100*(1/self.c))**2 else False
+                            inv_traversability=float('inf') if tmatrix[i][j] == 0 else (100*(1/tmatrix[i][j]))**2,
+                            cut=False
                 )
+                G.nodes[i]['cut'] = True if G.nodes[i]['inv_traversability'] < (100*(1/self.c))**2 else False
 
         edges = list()
 
@@ -117,37 +118,37 @@ class RouteEstimator:
             if i-1 > -1:
                 u = coord2(top, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
             if i+1 < tmatrix.shape[0]:
                 u = coord2(bottom, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
             if j-1 > -1:
                 u = coord2(left, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
             if j+1 < tmatrix.shape[1]:
                 u = coord2(right, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
 
             topleft, topright, bottomleft, bottomright = (i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)
             if i-1 > -1 and j-1 > -1:
                 u = coord2(topleft, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
             if i-1 > -1 and j+1 < tmatrix.shape[1]:
                 u = coord2(topright, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
             if i+1 < tmatrix.shape[0] and j-1 > -1:
                 u = coord2(bottomleft, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
             if i+1 < tmatrix.shape[0] and j+1 < tmatrix.shape[1]:
                 u = coord2(bottomright, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
-                    edges.append((v, u, {'weight' : G.nodes[v]['traversability'] + G.nodes[u]['traversability']}))
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
 
         G.add_edges_from(edges)
 
