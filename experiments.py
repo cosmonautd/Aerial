@@ -1,5 +1,5 @@
 import trav
-import graphmap
+import graphmapx
 
 def traversability_matrix_histogram_plot():
     """
@@ -185,7 +185,7 @@ def main_experiment():
 
                     c = c_set[ii]
 
-                    router = graphmap.RouteEstimator(c=c)
+                    router = graphmapx.RouteEstimator(c=c)
 
                     start_graph_time = time.time()
                     if f == trav.reference:
@@ -194,7 +194,7 @@ def main_experiment():
                         G = router.tm2graph(t_matrix)
                     graph_time = time.time() - start_graph_time
 
-                    keypoints = graphmap.get_keypoints(positive_keypoints, grid)
+                    keypoints = graphmapx.get_keypoints(positive_keypoints, grid)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
@@ -203,11 +203,8 @@ def main_experiment():
 
                         score = 1.0
 
-                        source = G.vertex(s)
-                        target = G.vertex(t)
-
                         start_route_time = time.time()
-                        path, found = router.route(G, source, target)
+                        path, found = router.route(G, s, t)
                         route_time = time.time() - start_route_time
 
                         path_region_coordinates = [trav.coord(int(v), gt_matrix.shape[1]) for v in path]
@@ -230,18 +227,15 @@ def main_experiment():
 
                         data.append(results)
 
-                    keypoints = graphmap.get_keypoints(negative_keypoints, grid)
+                    keypoints = graphmapx.get_keypoints(negative_keypoints, grid)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     for counter in tqdm.trange(len(combinations), desc="         Negative paths "):
 
                         (s, t) = combinations[counter]
 
-                        source = G.vertex(s)
-                        target = G.vertex(t)
-
                         start_route_time = time.time()
-                        path, found = router.route(G, source, target)
+                        path, found = router.route(G, s, t)
                         route_time = time.time() - start_route_time
 
                         results = dict()
@@ -463,4 +457,4 @@ def average_time_for_param_combination():
     print("Mapping time:", numpy.mean(map_time))
     print("Routing time:", numpy.mean(route_time))
 
-average_time_for_param_combination()
+main_experiment()
