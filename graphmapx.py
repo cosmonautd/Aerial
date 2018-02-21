@@ -162,10 +162,11 @@ class RouteEstimator:
 
     def route(self, G, source, target):
 
-        path = networkx.shortest_path(G, source, target, 'weight')
-
-        if len(path) == 2:
+        try:
+            path = networkx.shortest_path(G, source, target, 'weight')
+            found = True
+        except networkx.exception.NetworkXNoPath:
+            path = [source, target]
             found = False
-        else: found = True
 
         return path, found
