@@ -165,7 +165,7 @@ def main_experiment():
 
             f = f_set[j]
 
-            for k in tqdm.trange(len(r_set), desc="             Resolution "):
+            for k in tqdm.trange(len(r_set), desc="            Region size "):
 
                 r = r_set[k]
 
@@ -181,7 +181,7 @@ def main_experiment():
 
                 grid = trav.grid_list(image, r)
 
-                for ii in tqdm.trange(len(c_set), desc="             Confidence "):
+                for ii in tqdm.trange(len(c_set), desc="          Cut threshold "):
 
                     c = c_set[ii]
 
