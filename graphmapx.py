@@ -104,9 +104,8 @@ class RouteEstimator:
                 G.add_node( index,
                             pos=[j,i],
                             inv_traversability=float('inf') if tmatrix[i][j] == 0 else (100*(1/tmatrix[i][j]))**2,
-                            cut=False
+                            cut=True if tmatrix[i][j] < self.c else False
                 )
-                G.nodes[i]['cut'] = True if G.nodes[i]['inv_traversability'] < (100*(1/self.c))**2 else False
 
         edges = list()
 
