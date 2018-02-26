@@ -120,7 +120,7 @@ def main_experiment():
     import os
     import time
     import json
-    import tqdm
+    # import tqdm
     import numpy
     import itertools
 
@@ -134,7 +134,7 @@ def main_experiment():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    images = ['aerial%02d.jpg' % i for i in [8]]
     f_set = [trav.reference, trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -153,7 +153,8 @@ def main_experiment():
     else:
         data = list()
 
-    for i in tqdm.trange(len(selected), desc="            Input image "):
+    # for i in tqdm.trange(len(selected), desc="            Input image "):
+    for i in range(len(selected)):
 
         image_path = selected[i]
         image = trav.load_image(os.path.join(dataset_path, image_path))
@@ -161,11 +162,13 @@ def main_experiment():
         positive_keypoints = trav.load_image(os.path.join(positive_keypoints_path, image_path))
         negative_keypoints = trav.load_image(os.path.join(negative_keypoints_path, image_path))
 
-        for j in tqdm.trange(len(f_set), desc="Traversability function "):
+        # for j in tqdm.trange(len(f_set), desc="Traversability function "):
+        for j in range(len(f_set)):
 
             f = f_set[j]
 
-            for k in tqdm.trange(len(r_set), desc="            Region size "):
+            # for k in tqdm.trange(len(r_set), desc="            Region size "):
+            for k in range(len(r_set)):
 
                 r = r_set[k]
 
@@ -181,9 +184,12 @@ def main_experiment():
 
                 grid = trav.grid_list(image, r)
 
-                for ii in tqdm.trange(len(c_set), desc="          Cut threshold "):
+                # for ii in tqdm.trange(len(c_set), desc="          Cut threshold "):
+                for ii in range(len(c_set)):
 
                     c = c_set[ii]
+
+                    print("Processing: %s, tf: %s, r=%d, c=%.1f" % (image_path, f.__name__, r, c))
 
                     router = graphmapx.RouteEstimator(c=c)
 
@@ -197,7 +203,8 @@ def main_experiment():
                     keypoints = graphmapx.get_keypoints(positive_keypoints, grid)
                     combinations = list(itertools.combinations(keypoints, 2))
 
-                    for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
+                    # for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
+                    for counter in range(len(combinations)):
 
                         (s, t) = combinations[counter]
 
@@ -230,7 +237,8 @@ def main_experiment():
                     keypoints = graphmapx.get_keypoints(negative_keypoints, grid)
                     combinations = list(itertools.combinations(keypoints, 2))
 
-                    for counter in tqdm.trange(len(combinations), desc="         Negative paths "):
+                    # for counter in tqdm.trange(len(combinations), desc="         Negative paths "):
+                    for counter in range(len(combinations)):
 
                         (s, t) = combinations[counter]
 
