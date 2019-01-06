@@ -134,8 +134,8 @@ def main_experiment():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [8]]
-    f_set = [trav.reference, trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    f_set = [trav.reference, trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -503,6 +503,8 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=6, c=0.4):
 
     with open('output/data.json') as datafile:
         data = json.load(datafile)
+    
+    print("Total samples:", len(data))
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
 
@@ -523,4 +525,6 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=6, c=0.4):
     print("Graph build time:", numpy.mean(graph_time))
     print("Route build time:", numpy.mean(route_time))
 
-average_time_for_param_combination()
+    print("Evaluated samples:", len(matrix_time))
+
+main_experiment()
