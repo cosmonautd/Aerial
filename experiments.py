@@ -303,6 +303,8 @@ def heatmaps_plot():
     f1 = plt.figure(1)
     df1 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df1, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    plt.xlabel("c")
+    plt.ylabel("r")
     f1.savefig(os.path.join(output_path, "path_quality.pdf"), dpi=300, bbox_inches='tight')
 
     # Feasible path detection plot
@@ -325,6 +327,8 @@ def heatmaps_plot():
     f2 = plt.figure(2)
     df2 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df2, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    plt.xlabel("c")
+    plt.ylabel("r")
     f2.savefig(os.path.join(output_path, "path_positives.pdf"), dpi=300, bbox_inches='tight')
 
     # Infeasible path detection plot
@@ -347,6 +351,8 @@ def heatmaps_plot():
     f3 = plt.figure(3)
     df3 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df3, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    plt.xlabel("c")
+    plt.ylabel("r")
     f3.savefig(os.path.join(output_path, "path_negatives.pdf"), dpi=300, bbox_inches='tight')
 
     # Feasibility detection plot
@@ -368,6 +374,8 @@ def heatmaps_plot():
     f4 = plt.figure(4)
     df4 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df4, vmin=0.5, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
+    plt.xlabel("c")
+    plt.ylabel("r")
     f4.savefig(os.path.join(output_path, "path_feasibility.pdf"), dpi=300, bbox_inches='tight')
 
 def execution_time_plot():
@@ -483,14 +491,14 @@ def execution_time_plot_alternative():
             y = numpy.array([numpy.mean(info_time[str(c)][str(element)]) for element in x])
             yerr_up = numpy.array([-y[i]+numpy.mean([info_time[str(c)][str(element)][j] for j in range(len(info_time[str(c)][str(element)])) if info_time[str(c)][str(element)][j] >= y[i]]) for i, element in enumerate(x)])
             yerr_down = numpy.array([y[i]-numpy.mean([info_time[str(c)][str(element)][j] for j in range(len(info_time[str(c)][str(element)])) if info_time[str(c)][str(element)][j] < y[i]]) for i, element in enumerate(x)])
-            ax0.errorbar(x, y, capsize=0, fmt='--o', markevery=range(len(x)), label=str(c))
+            ax0.errorbar(x, y, capsize=0, fmt='--o', markevery=range(len(x)), label="c = "+str(c))
 
         ax0.legend(loc='upper right')
-        ax0.set_xlabel("Tamanho da região")
+        ax0.set_xlabel("Region size")
         ax0.tick_params(axis='x', which='minor', bottom='off')
         ax0.set_xticks(r_set)
         ax0.set_xticklabels(["%dx%d" % (r,r) for r in r_set])
-        ax0.set_ylabel("Tempo (s)")
+        ax0.set_ylabel("Time (s)")
         fig.tight_layout()
         fig.savefig(os.path.join(output_path, "%s.pdf" % var), dpi=300, bbox_inches='tight')
         plt.close(fig)

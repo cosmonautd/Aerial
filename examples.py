@@ -58,16 +58,11 @@ def compute_path_random_keypoints():
     path_image = trav.draw_path(image, path_indexes, grid, found=found)
     trav.show_image([path_image])
 
-def compute_path_all_keypoints():
+def compute_path_all_keypoints(r=6, c=0.4, f=trav.tf_grayhist, image_path='aerial01.jpg'):
     """
     """
     import os
     import itertools
-
-    r = 6
-    c = 0.4
-    f = trav.tf_grayhist
-    image_path = 'aerial01.jpg'
 
     tdigenerator = trav.TraversabilityEstimator(tf=f, r=r)
 
