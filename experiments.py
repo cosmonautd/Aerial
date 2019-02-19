@@ -135,7 +135,7 @@ def main_experiment():
         os.makedirs(output_path)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
-    f_set = [trav.reference, trav.tf_grayhist]
+    f_set = [trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
