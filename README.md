@@ -1,11 +1,10 @@
 
 ## **Aerial** ##
 
-#### Algorithm for ground robot navigation guided by aerial images ####
-#### Algoritmo para navegação robótica terrestre guiada por imagens aéreas ####
+#### Strategies and evaluation methods for ground global path planning based on aerial images ####
 
-Este é um projeto em construção a ser apresentado como Trabalho de Conclusão do Curso de Engenharia de Computação na Universidade Federal do Ceará -- Campus Sobral.
+This repository contains the code and results of our research about strategies and evaluation methods for ground global path planning based on aerial images.
 
-Os módulos trav e graphmap são, respectivamente, responsáveis pelo cálculo de atravessabilidades e produção de grafos e rotas. O arquivo examples.py contém exemplos de uso desses módulos. O arquivo experiments.py contém os códigos usados para produção de resultados e suas visualizações gráficas. Os dados do experimento mencionado no trabalho podem ser encontrados neste [link](https://mega.nz/#!bx4QAAKB!q7B2U09oiTTxfDsxPm1x-zgKfBurqjlB-KsSX7jPmNA "Dados experimentais").
+The modules trav and graphmap are responsible, respectively, for traversability calculation and production of traversability graphs and routes. The file examples.py contains usage examples. The file experiments.py contains code to generate results and plot graphs. The experimental data obtained after running the main experiment can be found at this [link](https://mega.nz/#!rh5DHKII!z2NkQ3BBIua61HA_OnNJ5bGQV40CHWLVUwQwbCRoiT4 "Experimental data").
 
 ![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/1.jpg) ![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/2.jpg) ![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/3.jpg) ![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/4.jpg)
