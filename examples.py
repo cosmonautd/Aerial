@@ -76,7 +76,7 @@ def compute_path_all_keypoints(r=6, c=0.4, f=trav.tf_grayhist, image_path='aeria
     router = graphmapx.RouteEstimator(c=c)
     G = router.tm2graph(t_matrix)
 
-    output_path = 'output/paths-%s-%d-0%d-%s' % (f.__name__, r, 100*c, image_path.split('.')[0])
+    output_path = 'output/paths-%s-%d-0%d-%s' % (f.__name__, r, 10*c, image_path.split('.')[0])
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
@@ -88,4 +88,5 @@ def compute_path_all_keypoints(r=6, c=0.4, f=trav.tf_grayhist, image_path='aeria
         path_image = trav.draw_path(image, path_indexes, grid, found=found)
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
-compute_path_all_keypoints()
+for i in range(1,9):
+    compute_path_all_keypoints(image_path="aerial%02d.jpg" % (i))
