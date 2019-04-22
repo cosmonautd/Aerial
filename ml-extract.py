@@ -1,9 +1,11 @@
 import os
 import cv2
 import numpy
+import mahotas
 import skimage.feature
 import trav
 
+# x = lbph(R, lbp_radius, lbp_points)
 def lbph(image, radius, points):
     lbp = skimage.feature.local_binary_pattern(image, points, radius, method='uniform')
     (hist, _) = numpy.histogram(lbp.ravel(), 
@@ -13,7 +15,13 @@ def lbph(image, radius, points):
     hist /= (hist.sum() + 1e-6)
     return hist
 
-r = 10
+# x = haralick(R)
+def haralick(image):
+    h = mahotas.features.haralick(image)
+    h_mean = h.mean(axis=0)
+    return h_mean
+
+r = 6
 lbp_radius = int(numpy.log2(r))
 lbp_points = 8*lbp_radius
 
@@ -41,15 +49,15 @@ for id_ in images:
         for j in range(td_columns):
             R = im_regions[i][j]
             R = cv2.cvtColor(R, cv2.COLOR_BGR2GRAY)
-            R_lbph = lbph(R, lbp_radius, lbp_points)
+            x = haralick(R)
             G = gt_regions[i][j]
             G = cv2.cvtColor(G, cv2.COLOR_BGR2GRAY)
             t = numpy.mean(G)/255
-            if t < 0.4: c = 0
-            elif 0.4 < t and t < 0.7: c = 1
-            else: c = 2
-            X.append(R_lbph)
-            Y.append(c)
+            X.append(x)
+            Y.append(t)
 
 X = numpy.array(X)
 Y = numpy.array(Y)
+
+numpy.savetxt("haralick-X.csv", X, delimiter=",")
+numpy.savetxt("haralick-Y.csv", Y, delimiter=",")

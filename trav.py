@@ -8,6 +8,8 @@ import multiprocessing
 import cv2
 import numpy
 import scipy
+import keras
+import mahotas
 import matplotlib
 
 from matplotlib import pyplot
@@ -166,6 +168,25 @@ def tf_grayhist(R, view=False):
         pyplot.show()
     return diff
 
+def haralick(image):
+    h = mahotas.features.haralick(image)
+    h_mean = h.mean(axis=0)
+    return h_mean.reshape((1, h_mean.shape[0]))
+
+with open('model.json', 'r') as json_file:
+    model_json = json_file.read()
+    model = keras.models.model_from_json(model_json)
+model.load_weights("model.h5")
+
+def tf_nn(R, view=False):
+    """ Returns a traversability value based on a neural network
+    """
+    R = cv2.cvtColor(R, cv2.COLOR_BGR2GRAY)
+    x = haralick(R)
+    y = model.predict(x)
+    t = numpy.argmax(y)
+    return t
+
 def tf_rgbhist(R, view=False):
     """ Returns a traversability value based on RGB histogram dispersion
     """
@@ -302,7 +323,7 @@ class TraversabilityEstimator():
         image = cv2.bilateralFilter(image, 15, 75, 75)
         grid = grid_list(image, self.r)
         regions = R_matrix(image, grid)
-        traversability_matrix = traversability(regions, self.tf)
+        traversability_matrix = traversability(regions, self.tf, parallel=False)
         if self.binary:
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
         if normalize:
