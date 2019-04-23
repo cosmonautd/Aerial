@@ -426,7 +426,7 @@ def heatmaps_plot():
 
     output_path = 'output/'
 
-    with open('output/data.json') as datafile:
+    with open('output/data-overlap.json') as datafile:
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
@@ -436,7 +436,7 @@ def heatmaps_plot():
 
     # Average path quality plot
 
-    heatmatrix = numpy.zeros((len(r_set), len(c_set)))
+    heatmatrix = -numpy.ones((len(r_set), len(c_set)))
     counter = numpy.ones((len(r_set), len(c_set)))
 
     for sample in data:
@@ -445,6 +445,7 @@ def heatmaps_plot():
             and sample['path_found'] == True:
             r = r_set.index(sample['region_size'])
             c = c_set.index(sample['cut_threshold'])
+            if heatmatrix[r][c] == -1: heatmatrix[r][c] = 0
             heatmatrix[r][c] += sample['path_score']
             counter[r][c] += 1
 
@@ -685,4 +686,5 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=6, c=0.4):
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment_overlap()
+# main_experiment_overlap()
+heatmaps_plot()

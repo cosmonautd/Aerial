@@ -101,10 +101,10 @@ def compute_path_random_keypoints_overlap():
 
     tdigenerator = trav.TraversabilityEstimator(tf=f, r=r, overlap=True)
 
-    image = trav.load_image('image/aerial01.jpg')
-    t_matrix = tdigenerator.get_traversability_matrix(image)
+    image = trav.load_image('image/aerial04.jpg')
+    t_matrix = tdigenerator.get_traversability_matrix_multiscale(image)
 
-    keypoints_image = trav.load_image('keypoints-positive/aerial01.jpg')
+    keypoints_image = trav.load_image('keypoints-positive/aerial04.jpg')
     grid = trav.grid_list_overlap(image, r)
     keypoints = graphmapx.get_keypoints(keypoints_image, grid)
 
@@ -150,4 +150,4 @@ def compute_path_all_keypoints_overlap(r=6, c=0.2, f=trav.tf_grayhist, image_pat
         path_image = trav.draw_path(image, path_indexes, grid, found=found)
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
-compute_path_all_keypoints_overlap()
+compute_path_random_keypoints_overlap()

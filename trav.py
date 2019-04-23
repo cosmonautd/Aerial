@@ -389,6 +389,37 @@ class TraversabilityEstimator():
             traversability_matrix = numpy.array(clahe.apply((255*traversability_matrix).astype(numpy.uint8)), dtype=float)/255
             # traversability_matrix = scipy.ndimage.filters.convolve(traversability_matrix, numpy.full((3, 3), 1.0/9))
         return traversability_matrix
+    
+    def get_traversability_matrix_multiscale(self, image, normalize=True):
+        """ Returns a difficulty matrix for image based on estimator parameters
+        """
+        image = cv2.bilateralFilter(image, 15, 75, 75)
+        r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+        traversability_matrix = None
+
+        for r in r_set:
+            if r >= self.r:
+                if not self.overlap:
+                    grid = grid_list(image, r)
+                    regions = R_matrix(image, grid)
+                else:
+                    grid = grid_list_overlap(image, r)
+                    regions = R_matrix_overlap(image, grid)
+                if traversability_matrix is None:
+                    traversability_matrix = traversability(regions, self.tf, parallel=True)
+                else:
+                    multiscale = traversability(regions, self.tf, parallel=True)
+                    multiscale = cv2.resize(multiscale, traversability_matrix.shape)
+                    traversability_matrix += (1/r)*multiscale
+        traversability_matrix = traversability_matrix/numpy.amax(traversability_matrix)
+
+        if self.binary:
+            _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
+        if normalize:
+            clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(3,3))
+            traversability_matrix = numpy.array(clahe.apply((255*traversability_matrix).astype(numpy.uint8)), dtype=float)/255
+            # traversability_matrix = scipy.ndimage.filters.convolve(traversability_matrix, numpy.full((3, 3), 1.0/9))
+        return traversability_matrix
 
     def get_traversability_image(self, image, normalize=True):
         """ Returns a traversal difficulty image based on estimator parameters
