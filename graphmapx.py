@@ -206,13 +206,24 @@ class RouteEstimator:
     #     dist, pred = search.dijkstra_search(G, G.ep.weight, source, Visitor())
     #     return dist, pred
 
-    def route(self, G, source, target):
+    # def route(self, G, source, target):
+    #     try:
+    #         path = networkx.shortest_path(G, source, target, 'weight')
+    #         found = True
+    #     except networkx.exception.NetworkXNoPath:
+    #         path = [source, target]
+    #         found = False
+    #     return path, found
 
+    def route(self, G, source, target):
+        def dist(a, b):
+            (y1, x1) = G.nodes[a]['pos'][1], G.nodes[a]['pos'][0]
+            (y2, x2) = G.nodes[b]['pos'][1], G.nodes[b]['pos'][0]
+            return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
         try:
-            path = networkx.shortest_path(G, source, target, 'weight')
+            path = networkx.astar_path(G, source, target, dist, 'weight')
             found = True
         except networkx.exception.NetworkXNoPath:
             path = [source, target]
             found = False
-
         return path, found
