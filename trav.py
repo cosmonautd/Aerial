@@ -8,8 +8,8 @@ import multiprocessing
 import cv2
 import numpy
 import scipy
-import keras
-import mahotas
+# import keras
+# import mahotas
 import matplotlib
 
 from matplotlib import pyplot
@@ -51,6 +51,33 @@ def grid_list(image, r):
         else:
             raise ValueError("r probably larger than image dimensions")
 
+def grid_list_overlap(image, r):
+    """ Returns a list of square coordinates representing a grid over image with overlapping
+        Every square has length and height equals to r
+    """
+    height, width, _ = image.shape
+    # assertions that guarantee the square grid contains all pixels
+    assert r > 0, "Parameter r must be larger than zero"
+    if (height/r).is_integer() and (width/r).is_integer():
+        glist = []
+        for toplefty in range(0, 3*height, r):
+            for topleftx in range(0, 3*width, r):
+                glist.append((int(topleftx/3), int(toplefty/3), r))
+        return glist
+    else:
+        new_height = int(r*numpy.floor(height/r))
+        new_width = int(r*numpy.floor(width/r))
+        if new_height > 0 and new_width > 0:
+            y_edge = int((height - new_height)/2)
+            x_edge = int((width - new_width)/2)
+            glist = []
+            for toplefty in range(y_edge, (y_edge+3*new_height), r):
+                for topleftx in range(x_edge, (x_edge+3*new_width), r):
+                    glist.append((int(topleftx/3), int(toplefty/3), r))
+            return glist
+        else:
+            raise ValueError("r probably larger than image dimensions")
+
 def draw_grid(image, grid, marks=None):
     """ Draws grid over image, optionally marking some squares
     """
@@ -59,10 +86,12 @@ def draw_grid(image, grid, marks=None):
         tlx, tly, r = square[0], square[1], square[2]
         topleft = (tlx, tly)
         bottomright = (tlx+r, tly+r)
-        cv2.rectangle(image, topleft, bottomright, (0, 0, 0), 1)
         if marks:
-            if (i%(width/r), numpy.floor(i/(width/r))) in marks:
+            if (i%(width/r), int(i/(width/r))) in marks:
                 cv2.rectangle(image, topleft, bottomright, (255, 0, 0), -1)
+        cv2.rectangle(image, topleft, bottomright, (0, 0, 0), 1)
+        if i == 1:
+            cv2.rectangle(image, topleft, bottomright, (0, 0, 0), 2)
     return image
 
 def R_matrix(image, grid):
@@ -83,6 +112,30 @@ def R_matrix(image, grid):
             rmatrix[i][j] = R
             k += 1
     return rmatrix
+
+def R_matrix_overlap(image, grid):
+    """ Returns a matrix of regions from image, according to grid
+    """
+    k = 0
+    height, width, _ = image.shape
+    r = grid[k][2]
+    new_height = int(r*numpy.floor(height/r))
+    new_width = int(r*numpy.floor(width/r))
+    if new_height > 0 and new_width > 0:
+        y_edge = int((height - new_height)/2)
+        x_edge = int((width - new_width)/2)
+        rows = int(len(list(range(y_edge, (y_edge+3*new_height), r))))
+        cols = int(len(list(range(x_edge, (x_edge+3*new_width), r))))
+        rmatrix = [None]*rows
+        for i in range(rows):
+            rmatrix[i] = [None]*cols
+            for j in range(cols):
+                square = grid[k]
+                tlx, tly, r = square[0], square[1], square[2]
+                R = image[tly:tly+r, tlx:tlx+r]
+                rmatrix[i][j] = R
+                k += 1
+        return rmatrix
 
 def traversability(regions, tf, parallel=True, view=False):
     """ Assigns traversal difficulty estimates to every region
@@ -138,10 +191,10 @@ def draw_path(image, path_indexes, grid, color=(0,255,0), found=False):
         for k in range(len(centers)-1):
             r0, c0 = centers[k]
             r1, c1 = centers[k+1]
-            cv2.line(image_copy, (c0, r0), (c1, r1), color, 10)
+            cv2.line(image_copy, (c0, r0), (c1, r1), color, 5)
         r0, c0 = int(numpy.mean([center[0] for center in centers[-5:]])), int(numpy.mean([center[1] for center in centers[-5:]]))
         r1, c1 = centers[-1]
-        cv2.arrowedLine(image_copy, (c0, r0), (c1, r1), color, 10, 2, 0, 1)
+        cv2.arrowedLine(image_copy, (c0, r0), (c1, r1), color, 5, 2, 0, 1)
     return image_copy
 
 def tf_random(R, view=False):
@@ -173,10 +226,10 @@ def haralick(image):
     h_mean = h.mean(axis=0)
     return h_mean.reshape((1, h_mean.shape[0]))
 
-with open('model.json', 'r') as json_file:
-    model_json = json_file.read()
-    model = keras.models.model_from_json(model_json)
-model.load_weights("model.h5")
+# with open('model.json', 'r') as json_file:
+#     model_json = json_file.read()
+#     model = keras.models.model_from_json(model_json)
+# model.load_weights("model.h5")
 
 def tf_nn(R, view=False):
     """ Returns a traversability value based on a neural network
@@ -308,7 +361,7 @@ def show_grid(image, grid):
 class TraversabilityEstimator():
     """
     """
-    def __init__(self, tf=tf_grayhist, r=6, binary=False, threshold=127):
+    def __init__(self, tf=tf_grayhist, r=6, binary=False, threshold=127, overlap=False):
         """ Traversability estimator constructor
             Sets all initial estimator parameters
         """
@@ -316,13 +369,18 @@ class TraversabilityEstimator():
         self.r = r
         self.binary = binary
         self.threshold = threshold
+        self.overlap = overlap
 
     def get_traversability_matrix(self, image, normalize=True):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         image = cv2.bilateralFilter(image, 15, 75, 75)
-        grid = grid_list(image, self.r)
-        regions = R_matrix(image, grid)
+        if not self.overlap:
+            grid = grid_list(image, self.r)
+            regions = R_matrix(image, grid)
+        else:
+            grid = grid_list_overlap(image, self.r)
+            regions = R_matrix_overlap(image, grid)
         traversability_matrix = traversability(regions, self.tf, parallel=False)
         if self.binary:
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
@@ -335,15 +393,20 @@ class TraversabilityEstimator():
     def get_traversability_image(self, image, normalize=True):
         """ Returns a traversal difficulty image based on estimator parameters
         """
-        grid = grid_list(image, self.r)
+        if not self.overlap: grid = grid_list(image, self.r)
+        else: grid = grid_list_overlap(image, self.r)
         traversability_matrix = self.get_traversability_matrix(image, normalize=normalize)
         return traversability_image(image, grid, traversability_matrix)
 
     def get_ground_truth(self, imagelabel, matrix=False):
         """ Returns the ground truth based on a labeled binary image
         """
-        grid = grid_list(imagelabel, self.r)
-        regions = R_matrix(imagelabel, grid)
+        if not self.overlap:
+            grid = grid_list(imagelabel, self.r)
+            regions = R_matrix(imagel, grid)
+        else:
+            grid = grid_list_overlap(imagelabel, self.r)
+            regions = R_matrix_overlap(imagelabel, grid)
         traversability_matrix = traversability(regions, reference)
         if matrix:
             return traversability_matrix

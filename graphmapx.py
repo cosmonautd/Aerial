@@ -57,9 +57,56 @@ def get_keypoints(image, grid):
         x = int(keypoint.pt[0])
         y = int(keypoint.pt[1])
         size = int(keypoint.size)
-        for i, (tlx, tly,sqsize) in enumerate(grid):
+        for i, (tlx, tly, sqsize) in enumerate(grid):
             if tlx <= x and x < tlx + sqsize:
                 if tly <= y and y < tly + sqsize:
+                    indexes.append(i)
+
+    return indexes
+
+def get_keypoints_overlap(image, grid):
+    """
+    """
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Set up the SimpleBlobdetector with default parameters.
+    params = cv2.SimpleBlobDetector_Params()
+
+    # Change thresholds
+    params.minThreshold = 0
+    params.maxThreshold = 256
+
+    # Filter by Area.
+    params.filterByArea = True
+    params.minArea = 20
+
+    # Filter by Circularity
+    params.filterByCircularity = True
+    params.minCircularity = 0.1
+
+    # Filter by Convexity
+    params.filterByConvexity = True
+    params.minConvexity = 0.5
+
+    # Filter by Inertia
+    params.filterByInertia =True
+    params.minInertiaRatio = 0.5
+
+    detector = cv2.SimpleBlobDetector_create(params)
+
+    # Detect blobs.
+    reversemask=255-image
+    keypoints = detector.detect(reversemask)
+
+    indexes = list()
+
+    for keypoint in keypoints:
+        x = int(keypoint.pt[0])
+        y = int(keypoint.pt[1])
+        size = int(keypoint.size)
+        for i, (tlx, tly, sqsize) in enumerate(grid):
+            if tlx <= x and x < tlx + sqsize/3:
+                if tly <= y and y < tly + sqsize/3:
                     indexes.append(i)
 
     return indexes
