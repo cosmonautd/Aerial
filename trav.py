@@ -381,7 +381,7 @@ class TraversabilityEstimator():
         else:
             grid = grid_list_overlap(image, self.r)
             regions = R_matrix_overlap(image, grid)
-        traversability_matrix = traversability(regions, self.tf, parallel=False)
+        traversability_matrix = traversability(regions, self.tf, parallel=True)
         if self.binary:
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
         if normalize:
