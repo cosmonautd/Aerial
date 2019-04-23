@@ -131,7 +131,7 @@ def compute_path_all_keypoints_overlap(r=6, c=0.2, f=trav.tf_grayhist, image_pat
     image = trav.load_image(os.path.join('image', image_path))
     t_matrix = tdigenerator.get_traversability_matrix(image)
 
-    keypoints_image = trav.load_image(os.path.join('keypoints-negative', image_path))
+    keypoints_image = trav.load_image(os.path.join('keypoints-positive', image_path))
     grid = trav.grid_list_overlap(image, r)
     keypoints = graphmapx.get_keypoints_overlap(keypoints_image, grid)
 

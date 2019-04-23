@@ -403,7 +403,7 @@ class TraversabilityEstimator():
         """
         if not self.overlap:
             grid = grid_list(imagelabel, self.r)
-            regions = R_matrix(imagel, grid)
+            regions = R_matrix(imagelabel, grid)
         else:
             grid = grid_list_overlap(imagelabel, self.r)
             regions = R_matrix_overlap(imagelabel, grid)
