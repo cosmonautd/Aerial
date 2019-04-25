@@ -64,7 +64,7 @@ def get_keypoints(image, grid):
 
     return indexes
 
-def get_keypoints_overlap(image, grid):
+def get_keypoints_overlap(image, grid, ov=3):
     """
     """
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -105,8 +105,8 @@ def get_keypoints_overlap(image, grid):
         y = int(keypoint.pt[1])
         size = int(keypoint.size)
         for i, (tlx, tly, sqsize) in enumerate(grid):
-            if tlx <= x and x < tlx + sqsize/3:
-                if tly <= y and y < tly + sqsize/3:
+            if tlx <= x and x < tlx + sqsize/ov:
+                if tly <= y and y < tly + sqsize/ov:
                     indexes.append(i)
 
     return indexes
@@ -193,6 +193,103 @@ class RouteEstimator:
                     edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
             if i+1 < tmatrix.shape[0] and j+1 < tmatrix.shape[1]:
                 u = coord2(bottomright, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+
+        G.add_edges_from(edges)
+
+        del edges
+
+        return G
+    
+    def tm2graph_overlap(self, tmatrix):
+
+        G = networkx.DiGraph()
+
+        for i, row in enumerate(tmatrix):
+            for j, element in enumerate(row):
+                index = coord2((i,j), tmatrix.shape[1])
+                G.add_node( index,
+                            pos=[j,i],
+                            inv_traversability=float('inf') if tmatrix[i][j] == 0 else (100*(1/tmatrix[i][j]))**2,
+                            cut=True if tmatrix[i][j] < self.c else False
+                )
+
+        edges = list()
+
+        for v in [vv for vv in G.nodes() if not G.nodes[vv]['cut']]:
+
+            (i, j) = G.nodes[v]['pos'][1], G.nodes[v]['pos'][0]
+
+            top, bottom, left, right = (i-1, j), (i+1, j), (i, j-1), (i, j+1)
+            if i-1 > -1:
+                u = coord2(top, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i+1 < tmatrix.shape[0]:
+                u = coord2(bottom, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if j-1 > -1:
+                u = coord2(left, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if j+1 < tmatrix.shape[1]:
+                u = coord2(right, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+
+            topleft, topright, bottomleft, bottomright = (i-1, j-1), (i-1, j+1), (i+1, j-1), (i+1, j+1)
+            if i-1 > -1 and j-1 > -1:
+                u = coord2(topleft, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i-1 > -1 and j+1 < tmatrix.shape[1]:
+                u = coord2(topright, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i+1 < tmatrix.shape[0] and j-1 > -1:
+                u = coord2(bottomleft, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i+1 < tmatrix.shape[0] and j+1 < tmatrix.shape[1]:
+                u = coord2(bottomright, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+
+            top2, bottom2, left2, right2 = (i-2, j), (i+2, j), (i, j-2), (i, j+2)
+            if i-2 > -1:
+                u = coord2(top2, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i+2 < tmatrix.shape[0]:
+                u = coord2(bottom2, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if j-2 > -1:
+                u = coord2(left2, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if j+2 < tmatrix.shape[1]:
+                u = coord2(right2, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            
+            topleft2, topright2, bottomleft2, bottomright2 = (i-2, j-2), (i-2, j+2), (i+2, j-2), (i+2, j+2)
+            if i-2 > -1 and j-2 > -1:
+                u = coord2(topleft2, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i-2 > -1 and j+2 < tmatrix.shape[1]:
+                u = coord2(topright2, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i+2 < tmatrix.shape[0] and j-2 > -1:
+                u = coord2(bottomleft2, tmatrix.shape[1])
+                if not G.nodes[u]['cut']:
+                    edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
+            if i+2 < tmatrix.shape[0] and j+2 < tmatrix.shape[1]:
+                u = coord2(bottomright2, tmatrix.shape[1])
                 if not G.nodes[u]['cut']:
                     edges.append((v, u, {'weight' : G.nodes[v]['inv_traversability'] + G.nodes[u]['inv_traversability']}))
 

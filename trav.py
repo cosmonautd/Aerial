@@ -51,7 +51,7 @@ def grid_list(image, r):
         else:
             raise ValueError("r probably larger than image dimensions")
 
-def grid_list_overlap(image, r):
+def grid_list_overlap(image, r, ov=3):
     """ Returns a list of square coordinates representing a grid over image with overlapping
         Every square has length and height equals to r
     """
@@ -60,9 +60,9 @@ def grid_list_overlap(image, r):
     assert r > 0, "Parameter r must be larger than zero"
     if (height/r).is_integer() and (width/r).is_integer():
         glist = []
-        for toplefty in range(0, 3*height, r):
-            for topleftx in range(0, 3*width, r):
-                glist.append((int(topleftx/3), int(toplefty/3), r))
+        for toplefty in range(0, ov*height, r):
+            for topleftx in range(0, ov*width, r):
+                glist.append((int(topleftx/ov), int(toplefty/ov), r))
         return glist
     else:
         new_height = int(r*numpy.floor(height/r))
@@ -71,9 +71,9 @@ def grid_list_overlap(image, r):
             y_edge = int((height - new_height)/2)
             x_edge = int((width - new_width)/2)
             glist = []
-            for toplefty in range(y_edge, (y_edge+3*new_height), r):
-                for topleftx in range(x_edge, (x_edge+3*new_width), r):
-                    glist.append((int(topleftx/3), int(toplefty/3), r))
+            for toplefty in range(y_edge, (y_edge+ov*new_height), r):
+                for topleftx in range(x_edge, (x_edge+ov*new_width), r):
+                    glist.append((int(topleftx/ov), int(toplefty/ov), r))
             return glist
         else:
             raise ValueError("r probably larger than image dimensions")
@@ -113,7 +113,7 @@ def R_matrix(image, grid):
             k += 1
     return rmatrix
 
-def R_matrix_overlap(image, grid):
+def R_matrix_overlap(image, grid, ov=3):
     """ Returns a matrix of regions from image, according to grid
     """
     k = 0
@@ -124,8 +124,8 @@ def R_matrix_overlap(image, grid):
     if new_height > 0 and new_width > 0:
         y_edge = int((height - new_height)/2)
         x_edge = int((width - new_width)/2)
-        rows = int(len(list(range(y_edge, (y_edge+3*new_height), r))))
-        cols = int(len(list(range(x_edge, (x_edge+3*new_width), r))))
+        rows = int(len(list(range(y_edge, (y_edge+ov*new_height), r))))
+        cols = int(len(list(range(x_edge, (x_edge+ov*new_width), r))))
         rmatrix = [None]*rows
         for i in range(rows):
             rmatrix[i] = [None]*cols
@@ -361,7 +361,7 @@ def show_grid(image, grid):
 class TraversabilityEstimator():
     """
     """
-    def __init__(self, tf=tf_grayhist, r=6, binary=False, threshold=127, overlap=False):
+    def __init__(self, tf=tf_grayhist, r=6, binary=False, threshold=127, overlap=False, ov=3):
         """ Traversability estimator constructor
             Sets all initial estimator parameters
         """
@@ -370,8 +370,9 @@ class TraversabilityEstimator():
         self.binary = binary
         self.threshold = threshold
         self.overlap = overlap
+        self.ov = ov
 
-    def get_traversability_matrix(self, image, normalize=True):
+    def get_traversability_matrix(self, image, normalize=False):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         image = cv2.bilateralFilter(image, 15, 75, 75)
@@ -379,8 +380,8 @@ class TraversabilityEstimator():
             grid = grid_list(image, self.r)
             regions = R_matrix(image, grid)
         else:
-            grid = grid_list_overlap(image, self.r)
-            regions = R_matrix_overlap(image, grid)
+            grid = grid_list_overlap(image, self.r, ov=self.ov)
+            regions = R_matrix_overlap(image, grid, ov=self.ov)
         traversability_matrix = traversability(regions, self.tf, parallel=True)
         if self.binary:
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
@@ -403,8 +404,8 @@ class TraversabilityEstimator():
                     grid = grid_list(image, r)
                     regions = R_matrix(image, grid)
                 else:
-                    grid = grid_list_overlap(image, r)
-                    regions = R_matrix_overlap(image, grid)
+                    grid = grid_list_overlap(image, r, ov=self.ov)
+                    regions = R_matrix_overlap(image, grid, ov=self.ov)
                 if traversability_matrix is None:
                     traversability_matrix = traversability(regions, self.tf, parallel=True)
                 else:
@@ -436,8 +437,8 @@ class TraversabilityEstimator():
             grid = grid_list(imagelabel, self.r)
             regions = R_matrix(imagelabel, grid)
         else:
-            grid = grid_list_overlap(imagelabel, self.r)
-            regions = R_matrix_overlap(imagelabel, grid)
+            grid = grid_list_overlap(imagelabel, self.r, ov=self.ov)
+            regions = R_matrix_overlap(imagelabel, grid, ov=self.ov)
         traversability_matrix = traversability(regions, reference)
         if matrix:
             return traversability_matrix

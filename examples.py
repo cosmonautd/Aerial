@@ -98,18 +98,19 @@ def compute_path_random_keypoints_overlap():
     r = 6
     c = 0.2
     f = trav.tf_grayhist
+    ov = 2
 
-    tdigenerator = trav.TraversabilityEstimator(tf=f, r=r, overlap=True)
+    tdigenerator = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
 
     image = trav.load_image('image/aerial04.jpg')
-    t_matrix = tdigenerator.get_traversability_matrix_multiscale(image)
+    t_matrix = tdigenerator.get_traversability_matrix(image)
 
     keypoints_image = trav.load_image('keypoints-positive/aerial04.jpg')
-    grid = trav.grid_list_overlap(image, r)
-    keypoints = graphmapx.get_keypoints(keypoints_image, grid)
+    grid = trav.grid_list_overlap(image, r, ov=ov)
+    keypoints = graphmapx.get_keypoints(keypoints_image, grid, ov=ov)
 
     router = graphmapx.RouteEstimator(c=c)
-    G = router.tm2graph(t_matrix)
+    G = router.tm2graph_overlap(t_matrix)
 
     [source, target] = [v for v in random.sample(keypoints, 2)]
 
@@ -120,23 +121,25 @@ def compute_path_random_keypoints_overlap():
     path_image = trav.draw_path(image, path_indexes, grid, found=found)
     trav.show_image([path_image])
 
-def compute_path_all_keypoints_overlap(r=6, c=0.2, f=trav.tf_grayhist, image_path='aerial01.jpg'):
+def compute_path_all_keypoints_overlap(r=6, c=0.3, f=trav.tf_grayhist, image_path='aerial01.jpg'):
     """
     """
     import os
     import itertools
 
-    tdigenerator = trav.TraversabilityEstimator(tf=f, r=r, overlap=True)
+    ov = 2
+
+    tdigenerator = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
 
     image = trav.load_image(os.path.join('image', image_path))
     t_matrix = tdigenerator.get_traversability_matrix(image)
 
     keypoints_image = trav.load_image(os.path.join('keypoints-positive', image_path))
-    grid = trav.grid_list_overlap(image, r)
-    keypoints = graphmapx.get_keypoints_overlap(keypoints_image, grid)
+    grid = trav.grid_list_overlap(image, r, ov=ov)
+    keypoints = graphmapx.get_keypoints_overlap(keypoints_image, grid, ov=ov)
 
     router = graphmapx.RouteEstimator(c=c)
-    G = router.tm2graph(t_matrix)
+    G = router.tm2graph_overlap(t_matrix)
 
     output_path = 'output/paths-%s-%d-0%d-%s' % (f.__name__, r, 10*c, image_path.split('.')[0])
     if not os.path.exists(output_path):
@@ -150,4 +153,5 @@ def compute_path_all_keypoints_overlap(r=6, c=0.2, f=trav.tf_grayhist, image_pat
         path_image = trav.draw_path(image, path_indexes, grid, found=found)
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
-compute_path_random_keypoints_overlap()
+for i in range(1, 9):
+    compute_path_all_keypoints_overlap(image_path='aerial%02d.jpg' % (i))
