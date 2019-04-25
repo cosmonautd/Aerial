@@ -579,7 +579,7 @@ def heatmaps_plot():
 
     output_path = 'output/'
 
-    with open('output/data-overlap-multiscale.json') as datafile:
+    with open('output/data-overlap.json') as datafile:
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
@@ -839,5 +839,5 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=6, c=0.4):
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment_overlap()
-# heatmaps_plot()
+# main_experiment_overlap()
+heatmaps_plot()
