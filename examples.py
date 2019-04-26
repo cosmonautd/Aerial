@@ -121,7 +121,7 @@ def compute_path_random_keypoints_overlap():
     path_image = trav.draw_path(image, path_indexes, grid, found=found)
     trav.show_image([path_image])
 
-def compute_path_all_keypoints_overlap(r=6, c=0.3, f=trav.tf_grayhist, image_path='aerial01.jpg'):
+def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_path='aerial01.jpg'):
     """
     """
     import os
@@ -154,4 +154,4 @@ def compute_path_all_keypoints_overlap(r=6, c=0.3, f=trav.tf_grayhist, image_pat
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
 for i in range(1, 9):
-    compute_path_all_keypoints_overlap(image_path='aerial%02d.jpg' % (i))
+    compute_path_all_keypoints_overlap(f=trav.tf_nn, image_path='aerial%02d.jpg' % (i))

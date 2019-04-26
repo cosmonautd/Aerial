@@ -25,8 +25,7 @@ d = X.shape[1]
 # Neste exemplo, a classe Dense representa camadas totalmente conectadas
 model = keras.models.Sequential([
         keras.layers.Dense(50, activation='sigmoid', input_shape=(d,)),
-        keras.layers.Dense(100, activation='sigmoid'),
-        keras.layers.Dense(50, activation='sigmoid'),
+        keras.layers.Dense(75, activation='sigmoid'),
         keras.layers.Dense(1, activation='sigmoid')
 ])
 
@@ -34,7 +33,7 @@ model = keras.models.Sequential([
 # Definição do algoritmo de otimização e da função de perda
 model.compile(optimizer='adam', loss='mean_squared_error')
 
-early_stopping = keras.callbacks.EarlyStopping(monitor='val_acc', patience=4)
+early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=4)
 
 # Treinamento
 # Executa o algoritmo de otimização, ajustando os pesos das conexões
@@ -42,8 +41,7 @@ early_stopping = keras.callbacks.EarlyStopping(monitor='val_acc', patience=4)
 # a função de perda como forma de verificar o quão corretas são suas
 # predições durante o treinamento. Realiza 10 passagens pelo conjunto
 # de treinamento. Utiliza 20% dos conjuntos X e Y como validação.
-history = model.fit(X, Y, epochs=100, validation_split=0.2,
-                    callbacks=[early_stopping])
+history = model.fit(X, Y, epochs=100, validation_split=0.2, callbacks=[early_stopping])
 
 # Visualização da evolução da perda sobre os conjuntos de 
 # treinamento e validação

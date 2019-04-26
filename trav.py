@@ -8,8 +8,8 @@ import multiprocessing
 import cv2
 import numpy
 import scipy
-# import keras
-# import mahotas
+import keras
+import mahotas
 import matplotlib
 
 from matplotlib import pyplot
@@ -226,18 +226,17 @@ def haralick(image):
     h_mean = h.mean(axis=0)
     return h_mean.reshape((1, h_mean.shape[0]))
 
-# with open('model.json', 'r') as json_file:
-#     model_json = json_file.read()
-#     model = keras.models.model_from_json(model_json)
-# model.load_weights("model.h5")
+with open('model.json', 'r') as json_file:
+    model_json = json_file.read()
+    model = keras.models.model_from_json(model_json)
+model.load_weights("model.h5")
 
 def tf_nn(R, view=False):
     """ Returns a traversability value based on a neural network
     """
     R = cv2.cvtColor(R, cv2.COLOR_BGR2GRAY)
     x = haralick(R)
-    y = model.predict(x)
-    t = numpy.argmax(y)
+    t = model.predict(x)[0][0]
     return t
 
 def tf_rgbhist(R, view=False):
@@ -372,7 +371,7 @@ class TraversabilityEstimator():
         self.overlap = overlap
         self.ov = ov
 
-    def get_traversability_matrix(self, image, normalize=False):
+    def get_traversability_matrix(self, image, normalize=True):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         image = cv2.bilateralFilter(image, 15, 75, 75)
@@ -382,7 +381,7 @@ class TraversabilityEstimator():
         else:
             grid = grid_list_overlap(image, self.r, ov=self.ov)
             regions = R_matrix_overlap(image, grid, ov=self.ov)
-        traversability_matrix = traversability(regions, self.tf, parallel=True)
+        traversability_matrix = traversability(regions, self.tf, parallel=False)
         if self.binary:
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
         if normalize:

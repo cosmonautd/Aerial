@@ -21,7 +21,7 @@ def haralick(image):
     h_mean = h.mean(axis=0)
     return h_mean
 
-r = 6
+r = 10
 lbp_radius = int(numpy.log2(r))
 lbp_points = 8*lbp_radius
 
@@ -37,10 +37,10 @@ for id_ in images:
 
     image = trav.load_image(image_path)
     ground_truth = trav.load_image(ground_truth_path)
-    grid = trav.grid_list(image, r)
+    grid = trav.grid_list_overlap(image, r, ov=2)
 
-    im_regions = trav.R_matrix(image, grid)
-    gt_regions = trav.R_matrix(ground_truth, grid)
+    im_regions = trav.R_matrix_overlap(image, grid, ov=2)
+    gt_regions = trav.R_matrix_overlap(ground_truth, grid, ov=2)
 
     td_rows = len(im_regions)
     td_columns = len(im_regions[0])

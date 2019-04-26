@@ -567,6 +567,158 @@ def main_experiment_overlap_multiscale():
         with open(os.path.join(output_path, output_file), 'w') as datafile:
             json.dump(data, datafile, indent=4)
 
+def main_experiment_overlap_nn():
+    """
+    """
+    import os
+    import time
+    import json
+    # import tqdm
+    import numpy
+    import itertools
+
+    dataset_path = 'image/'
+    ground_truth_path = 'ground-truth/'
+    positive_keypoints_path = 'keypoints-positive/'
+    negative_keypoints_path = 'keypoints-negative/'
+    output_path = 'output/'
+    output_file = 'data-overlap-nn.json'
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    f_set = [trav.tf_nn]
+    r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+    ov = 2
+
+    dataset = list()
+    for (_, _, filenames) in os.walk(ground_truth_path):
+        dataset.extend(filenames)
+        break
+
+    selected = list(set(dataset).intersection(images)) if len(images) > 0 else dataset
+    selected.sort()
+
+    if os.path.exists(os.path.join(output_path, output_file)):
+        with open(os.path.join(output_path, output_file)) as datafile:
+            data = json.load(datafile)
+    else:
+        data = list()
+
+    # for i in tqdm.trange(len(selected), desc="            Input image "):
+    for i in range(len(selected)):
+
+        image_path = selected[i]
+        image = trav.load_image(os.path.join(dataset_path, image_path))
+        ground_truth = trav.load_image(os.path.join(ground_truth_path, image_path))
+        positive_keypoints = trav.load_image(os.path.join(positive_keypoints_path, image_path))
+        negative_keypoints = trav.load_image(os.path.join(negative_keypoints_path, image_path))
+
+        # for j in tqdm.trange(len(f_set), desc="Traversability function "):
+        for j in range(len(f_set)):
+
+            f = f_set[j]
+
+            # for k in tqdm.trange(len(r_set), desc="            Region size "):
+            for k in range(len(r_set)):
+
+                r = r_set[k]
+
+                penalty = (r*(1/ov))*(0.2/6)
+
+                mapper = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
+
+                start_matrix_time = time.time()
+                t_matrix = mapper.get_traversability_matrix(image)
+                matrix_time = time.time() - start_matrix_time
+
+                gt_matrix = mapper.get_ground_truth(ground_truth, matrix=True)
+
+                grid = trav.grid_list_overlap(image, r, ov=ov)
+
+                # for ii in tqdm.trange(len(c_set), desc="          Cut threshold "):
+                for ii in range(len(c_set)):
+
+                    c = c_set[ii]
+
+                    print("Processing: %s, tf: %s, r=%d, c=%.1f" % (image_path, f.__name__, r, c))
+
+                    router = graphmapx.RouteEstimator(c=c)
+
+                    start_graph_time = time.time()
+                    if f == trav.reference:
+                        G = router.tm2graph_overlap(gt_matrix)
+                    else:
+                        G = router.tm2graph_overlap(t_matrix)
+                    graph_time = time.time() - start_graph_time
+
+                    keypoints = graphmapx.get_keypoints_overlap(positive_keypoints, grid, ov=ov)
+                    combinations = list(itertools.combinations(keypoints, 2))
+
+                    # for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
+                    for counter in range(len(combinations)):
+
+                        (s, t) = combinations[counter]
+
+                        score = 1.0
+
+                        start_route_time = time.time()
+                        path, found = router.route(G, s, t)
+                        route_time = time.time() - start_route_time
+
+                        path_region_coordinates = [trav.coord(int(v), gt_matrix.shape[1]) for v in path]
+                        for row, column in path_region_coordinates:
+                            if gt_matrix[row][column] < 0.20:
+                                score = numpy.maximum(0, score - penalty)
+
+                        results = dict()
+                        results['image'] = image_path
+                        results['traversability_function'] = f.__name__
+                        results['region_size'] = r
+                        results['cut_threshold'] = c
+                        results['path_existence'] = True
+                        results['matrix_build_time'] = matrix_time
+                        results['graph_build_time'] = graph_time
+                        results['path_build_time'] = route_time
+                        results['path_found'] = found
+                        results['path_score'] = score if found else 0.0
+                        results['path_regions'] = path_region_coordinates
+
+                        data.append(results)
+
+                    keypoints = graphmapx.get_keypoints_overlap(negative_keypoints, grid, ov=ov)
+                    combinations = list(itertools.combinations(keypoints, 2))
+
+                    # for counter in tqdm.trange(len(combinations), desc="         Negative paths "):
+                    for counter in range(len(combinations)):
+
+                        (s, t) = combinations[counter]
+
+                        start_route_time = time.time()
+                        path, found = router.route(G, s, t)
+                        route_time = time.time() - start_route_time
+
+                        results = dict()
+                        results['image'] = image_path
+                        results['traversability_function'] = f.__name__
+                        results['region_size'] = r
+                        results['cut_threshold'] = c
+                        results['matrix_build_time'] = matrix_time
+                        results['graph_build_time'] = graph_time
+                        results['path_build_time'] = route_time
+                        results['path_existence'] = False
+                        results['path_found'] = found
+                        results['path_score'] = 1.0 if not found else 0.0
+                        results['path_regions'] = path_region_coordinates
+
+                        data.append(results)
+
+        with open(os.path.join(output_path, output_file), 'w') as datafile:
+            json.dump(data, datafile, indent=4)
+
 def heatmaps_plot():
     """
     """
@@ -807,7 +959,7 @@ def execution_time_plot_alternative():
         fig.savefig(os.path.join(output_path, "%s.pdf" % var), dpi=300, bbox_inches='tight')
         plt.close(fig)
 
-def average_time_for_param_combination(f=trav.tf_grayhist, r=6, c=0.4):
+def average_time_for_param_combination(f=trav.tf_grayhist, r=8, c=0.4):
     """
     """
     import json
@@ -839,5 +991,4 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=6, c=0.4):
 
     print("Evaluated samples:", len(matrix_time))
 
-# main_experiment_overlap()
-heatmaps_plot()
+main_experiment_overlap_nn()
