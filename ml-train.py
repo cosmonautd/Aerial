@@ -33,7 +33,7 @@ model = keras.models.Sequential([
 # Definição do algoritmo de otimização e da função de perda
 model.compile(optimizer='adam', loss='mean_squared_error')
 
-early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=4)
+early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=8)
 
 # Treinamento
 # Executa o algoritmo de otimização, ajustando os pesos das conexões
@@ -52,6 +52,7 @@ plt.title('Perda do modelo de cálculo de atravessabilidade')
 plt.ylabel('Perda')
 plt.xlabel('Época')
 plt.legend(['Treinamento', 'Validação'], loc='upper right')
+plt.show()
 
 # Salva a arquitetura da rede em um arquivo JSON
 model_json = model.to_json()

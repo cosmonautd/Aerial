@@ -103,3 +103,5 @@ output
 oldmain.py
 
 *.csv
+*.h5
+*.json
