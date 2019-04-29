@@ -8,8 +8,8 @@ import multiprocessing
 import cv2
 import numpy
 import scipy
-import keras
-import mahotas
+# import keras
+# import mahotas
 import matplotlib
 
 from matplotlib import pyplot
@@ -29,6 +29,33 @@ def grid_list(image, r):
         Every square has length and height equals to r
     """
     height, width, _ = image.shape
+    # assertions that guarantee the square grid contains all pixels
+    assert r > 0, "Parameter r must be larger than zero"
+    if (height/r).is_integer() and (width/r).is_integer():
+        glist = []
+        for toplefty in range(0, height, r):
+            for topleftx in range(0, width, r):
+                glist.append((topleftx, toplefty, r))
+        return glist
+    else:
+        new_height = int(r*numpy.floor(height/r))
+        new_width = int(r*numpy.floor(width/r))
+        if new_height > 0 and new_width > 0:
+            y_edge = int((height - new_height)/2)
+            x_edge = int((width - new_width)/2)
+            glist = []
+            for toplefty in range(y_edge, y_edge+new_height, r):
+                for topleftx in range(x_edge, x_edge+new_width, r):
+                    glist.append((topleftx, toplefty, r))
+            return glist
+        else:
+            raise ValueError("r probably larger than image dimensions")
+
+def grid_list2(image, r):
+    """ Returns a list of square coordinates representing a grid over image
+        Every square has length and height equals to r
+    """
+    height, width = image.shape
     # assertions that guarantee the square grid contains all pixels
     assert r > 0, "Parameter r must be larger than zero"
     if (height/r).is_integer() and (width/r).is_integer():
@@ -99,6 +126,25 @@ def R_matrix(image, grid):
     """
     k = 0
     height, width, _ = image.shape
+    r = grid[k][2]
+    rows = int(height/r)
+    cols = int(width/r)
+    rmatrix = [None]*rows
+    for i in range(rows):
+        rmatrix[i] = [None]*cols
+        for j in range(cols):
+            square = grid[k]
+            tlx, tly, r = square[0], square[1], square[2]
+            R = image[tly:tly+r, tlx:tlx+r]
+            rmatrix[i][j] = R
+            k += 1
+    return rmatrix
+
+def R_matrix2(image, grid):
+    """ Returns a matrix of regions from image, according to grid
+    """
+    k = 0
+    height, width = image.shape
     r = grid[k][2]
     rows = int(height/r)
     cols = int(width/r)
@@ -221,23 +267,23 @@ def tf_grayhist(R, view=False):
         pyplot.show()
     return diff
 
-def haralick(image):
-    h = mahotas.features.haralick(image)
-    h_mean = h.mean(axis=0)
-    return h_mean.reshape((1, h_mean.shape[0]))
+# def haralick(image):
+#     h = mahotas.features.haralick(image)
+#     h_mean = h.mean(axis=0)
+#     return h_mean.reshape((1, h_mean.shape[0]))
 
-with open('model.json', 'r') as json_file:
-    model_json = json_file.read()
-    model = keras.models.model_from_json(model_json)
-model.load_weights("model.h5")
+# with open('model.json', 'r') as json_file:
+#     model_json = json_file.read()
+#     model = keras.models.model_from_json(model_json)
+# model.load_weights("model.h5")
 
-def tf_nn(R, view=False):
-    """ Returns a traversability value based on a neural network
-    """
-    R = cv2.cvtColor(R, cv2.COLOR_BGR2GRAY)
-    x = haralick(R)
-    t = model.predict(x)[0][0]
-    return t
+# def tf_nn(R, view=False):
+#     """ Returns a traversability value based on a neural network
+#     """
+#     R = cv2.cvtColor(R, cv2.COLOR_BGR2GRAY)
+#     x = haralick(R)
+#     t = model.predict(x)[0][0]
+#     return t
 
 def tf_rgbhist(R, view=False):
     """ Returns a traversability value based on RGB histogram dispersion
@@ -304,7 +350,14 @@ def reference(R, view=False):
     """ Returns a difficulty value based on white pixel density (for labels)
     """
     R = cv2.cvtColor(R, cv2.COLOR_BGR2GRAY)
-    diff = numpy.mean(R.flatten())
+    r_ = int(len(R)/2)
+    sub_R_grid_list = grid_list2(R, r_)
+    sub_R_list = R_matrix2(R, sub_R_grid_list)
+    sub_R_list_trav = list()
+    for i in range(len(sub_R_list)):
+        for j in range(len(sub_R_list[0])):
+            sub_R_list_trav.append(numpy.mean(sub_R_list[i][j]))
+    diff = numpy.min(sub_R_list_trav)
     if view:
         fig, (ax0, ax1) = pyplot.subplots(nrows=1, ncols=2, figsize=(8, 4))
         ax0.imshow(R, cmap='gray', interpolation='bicubic')
@@ -381,7 +434,7 @@ class TraversabilityEstimator():
         else:
             grid = grid_list_overlap(image, self.r, ov=self.ov)
             regions = R_matrix_overlap(image, grid, ov=self.ov)
-        traversability_matrix = traversability(regions, self.tf, parallel=False)
+        traversability_matrix = traversability(regions, self.tf, parallel=True)
         if self.binary:
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
         if normalize:
@@ -425,7 +478,7 @@ class TraversabilityEstimator():
         """ Returns a traversal difficulty image based on estimator parameters
         """
         if not self.overlap: grid = grid_list(image, self.r)
-        else: grid = grid_list_overlap(image, self.r)
+        else: grid = grid_list_overlap(image, self.r, ov=self.ov)
         traversability_matrix = self.get_traversability_matrix(image, normalize=normalize)
         return traversability_image(image, grid, traversability_matrix)
 
