@@ -123,6 +123,7 @@ def main_experiment():
     # import tqdm
     import numpy
     import itertools
+    import scipy.interpolate
 
     dataset_path = 'image/'
     ground_truth_path = 'ground-truth/'
@@ -172,8 +173,6 @@ def main_experiment():
 
                 r = r_set[k]
 
-                penalty = r*(0.2/6)
-
                 mapper = trav.TraversabilityEstimator(tf=f, r=r)
 
                 start_matrix_time = time.time()
@@ -191,7 +190,7 @@ def main_experiment():
 
                     print("Processing: %s, tf: %s, r=%d, c=%.1f" % (image_path, f.__name__, r, c))
 
-                    router = graphmapx.RouteEstimator(c=c)
+                    router = graphmapx.RouteEstimator(r=r, c=c, grid=grid)
 
                     start_graph_time = time.time()
                     if f == trav.reference:
@@ -208,16 +207,11 @@ def main_experiment():
 
                         (s, t) = combinations[counter]
 
-                        score = 1.0
-
                         start_route_time = time.time()
                         path, found = router.route(G, s, t)
                         route_time = time.time() - start_route_time
 
-                        path_region_coordinates = [trav.coord(int(v), gt_matrix.shape[1]) for v in path]
-                        for row, column in path_region_coordinates:
-                            if gt_matrix[row][column] < 0.20:
-                                score = numpy.maximum(0, score - penalty)
+                        score = trav.score(path, ground_truth)
 
                         results = dict()
                         results['image'] = image_path
@@ -230,7 +224,7 @@ def main_experiment():
                         results['path_build_time'] = route_time
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
-                        results['path_regions'] = path_region_coordinates
+                        results['path_regions'] = path
 
                         data.append(results)
 
@@ -257,7 +251,7 @@ def main_experiment():
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
-                        results['path_regions'] = path_region_coordinates
+                        results['path_regions'] = path
 
                         data.append(results)
 
@@ -324,8 +318,6 @@ def main_experiment_overlap():
 
                 r = r_set[k]
 
-                penalty = (r*(1/ov))*(0.2/6)
-
                 mapper = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
 
                 start_matrix_time = time.time()
@@ -343,7 +335,7 @@ def main_experiment_overlap():
 
                     print("Processing: %s, tf: %s, r=%d, c=%.1f" % (image_path, f.__name__, r, c))
 
-                    router = graphmapx.RouteEstimator(c=c)
+                    router = graphmapx.RouteEstimator(r=r, c=c, grid=grid)
 
                     start_graph_time = time.time()
                     if f == trav.reference:
@@ -360,16 +352,11 @@ def main_experiment_overlap():
 
                         (s, t) = combinations[counter]
 
-                        score = 1.0
-
                         start_route_time = time.time()
                         path, found = router.route(G, s, t)
                         route_time = time.time() - start_route_time
 
-                        path_region_coordinates = [trav.coord(int(v), gt_matrix.shape[1]) for v in path]
-                        for row, column in path_region_coordinates:
-                            if gt_matrix[row][column] < 0.20:
-                                score = numpy.maximum(0, score - penalty)
+                        score = trav.score(path, ground_truth)
 
                         results = dict()
                         results['image'] = image_path
@@ -382,7 +369,7 @@ def main_experiment_overlap():
                         results['path_build_time'] = route_time
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
-                        results['path_regions'] = path_region_coordinates
+                        results['path_regions'] = path
 
                         data.append(results)
 
@@ -409,7 +396,7 @@ def main_experiment_overlap():
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
-                        results['path_regions'] = path_region_coordinates
+                        results['path_regions'] = path
 
                         data.append(results)
 
@@ -475,8 +462,6 @@ def main_experiment_overlap_multiscale():
 
                 r = r_set[k]
 
-                penalty = (r*(1/ov))*(0.2/6)
-
                 mapper = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
 
                 start_matrix_time = time.time()
@@ -494,7 +479,7 @@ def main_experiment_overlap_multiscale():
 
                     print("Processing: %s, tf: %s, r=%d, c=%.1f" % (image_path, f.__name__, r, c))
 
-                    router = graphmapx.RouteEstimator(c=c)
+                    router = graphmapx.RouteEstimator(r=r, c=c, grid=grid)
 
                     start_graph_time = time.time()
                     if f == trav.reference:
@@ -511,16 +496,11 @@ def main_experiment_overlap_multiscale():
 
                         (s, t) = combinations[counter]
 
-                        score = 1.0
-
                         start_route_time = time.time()
                         path, found = router.route(G, s, t)
                         route_time = time.time() - start_route_time
 
-                        path_region_coordinates = [trav.coord(int(v), gt_matrix.shape[1]) for v in path]
-                        for row, column in path_region_coordinates:
-                            if gt_matrix[row][column] < 0.20:
-                                score = numpy.maximum(0, score - penalty)
+                        score = trav.score(path, ground_truth)
 
                         results = dict()
                         results['image'] = image_path
@@ -533,7 +513,7 @@ def main_experiment_overlap_multiscale():
                         results['path_build_time'] = route_time
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
-                        results['path_regions'] = path_region_coordinates
+                        results['path_regions'] = path
 
                         data.append(results)
 
@@ -560,7 +540,7 @@ def main_experiment_overlap_multiscale():
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
-                        results['path_regions'] = path_region_coordinates
+                        results['path_regions'] = path
 
                         data.append(results)
 
@@ -627,8 +607,6 @@ def main_experiment_overlap_nn():
 
                 r = r_set[k]
 
-                penalty = (r*(1/ov))*(0.2/6)
-
                 mapper = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
 
                 start_matrix_time = time.time()
@@ -646,7 +624,7 @@ def main_experiment_overlap_nn():
 
                     print("Processing: %s, tf: %s, r=%d, c=%.1f" % (image_path, f.__name__, r, c))
 
-                    router = graphmapx.RouteEstimator(c=c)
+                    router = graphmapx.RouteEstimator(r=r, c=c, grid=grid)
 
                     start_graph_time = time.time()
                     if f == trav.reference:
@@ -663,16 +641,11 @@ def main_experiment_overlap_nn():
 
                         (s, t) = combinations[counter]
 
-                        score = 1.0
-
                         start_route_time = time.time()
                         path, found = router.route(G, s, t)
                         route_time = time.time() - start_route_time
 
-                        path_region_coordinates = [trav.coord(int(v), gt_matrix.shape[1]) for v in path]
-                        for row, column in path_region_coordinates:
-                            if gt_matrix[row][column] < 0.20:
-                                score = numpy.maximum(0, score - penalty)
+                        score = trav.score(path, ground_truth)
 
                         results = dict()
                         results['image'] = image_path
@@ -991,4 +964,4 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=8, c=0.4):
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment_overlap_nn()
+main_experiment()

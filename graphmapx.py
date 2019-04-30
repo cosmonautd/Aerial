@@ -11,6 +11,7 @@ import cv2
 import numpy
 import matplotlib
 import networkx
+import scipy.interpolate
 
 def coord2(position, columns):
     """ Converts two-dimensional indexes to one-dimension coordinate
@@ -135,11 +136,55 @@ def get_keypoints_overlap(image, grid, ov=3):
 #     draw.graph_draw(G, pos=G.vp.pos, output_size=(1200, 1200), vertex_color=[0,0,0,1], vertex_fill_color=G.vp.vfcolor,\
 #                     edge_color=G.ep.ecolor, edge_pen_width=G.ep.ewidth, output=filename, edge_marker_size=4)
 
+# Ramer-Douglas-Peucker from https://stackoverflow.com/questions/2573997/reduce-number-of-points-in-line
+
+def _vec2d_dist(p1, p2):
+    return (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
+
+def _vec2d_sub(p1, p2):
+    return (p1[0]-p2[0], p1[1]-p2[1])
+
+def _vec2d_mult(p1, p2):
+    return p1[0]*p2[0] + p1[1]*p2[1]
+
+def ramerdouglas(line, dist):
+    """Does Ramer-Douglas-Peucker simplification of a curve with 'dist' threshold.
+
+    'line' is a list-of-tuples, where each tuple is a 2D coordinate
+
+    Usage is like so:
+
+    >>> myline = [(0.0, 0.0), (1.0, 2.0), (2.0, 1.0)]
+    >>> simplified = ramerdouglas(myline, dist = 1.0)
+    """
+
+    if len(line) < 3:
+        return line
+
+    (begin, end) = (line[0], line[-1]) if line[0] != line[-1] else (line[0], line[-2])
+
+    distSq = []
+    for curr in line[1:-1]:
+        tmp = (
+            _vec2d_dist(begin, curr) - _vec2d_mult(_vec2d_sub(end, begin),
+            _vec2d_sub(curr, begin)) ** 2 / _vec2d_dist(begin, end))
+        distSq.append(tmp)
+
+    maxdist = max(distSq)
+    if maxdist < dist ** 2:
+        return [begin, end]
+
+    pos = distSq.index(maxdist)
+    return (ramerdouglas(line[:pos + 2], dist) + 
+            ramerdouglas(line[pos + 1:], dist)[1:])
+
 class RouteEstimator:
     """
     """
-    def __init__(self, c=0.7):
+    def __init__(self, r, c, grid):
+        self.r = r
         self.c = c
+        self.grid = grid
 
     def tm2graph(self, tmatrix):
 
@@ -310,7 +355,7 @@ class RouteEstimator:
     #     except networkx.exception.NetworkXNoPath:
     #         path = [source, target]
     #         found = False
-    #     return path, found
+    #     return path, found    
 
     def route(self, G, source, target):
         def dist(a, b):
@@ -319,8 +364,37 @@ class RouteEstimator:
             return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
         try:
             path = networkx.astar_path(G, source, target, dist, 'weight')
+            centers = list()
+            for k in path:
+                tly, tlx, size = self.grid[k]
+                centers.append((int(tlx+(size/2)), int(tly+(size/2))))
+            # Ramer-Douglas-Peucker from https://stackoverflow.com/questions/2573997/reduce-number-of-points-in-line
+            centers = ramerdouglas(centers, self.r*2)
+            # Linear interpolation from https://stackoverflow.com/questions/52014197/how-to-interpolate-a-2d-curve-in-python
+            X = numpy.array(centers)
+            alpha = numpy.linspace(0, 1, 75)
+            distance = numpy.cumsum(numpy.sqrt(numpy.sum(numpy.diff(X, axis=0)**2, axis=1)))
+            distance = numpy.insert(distance, 0, 0)/distance[-1]
+            interpolator =  scipy.interpolate.interp1d(distance, X, kind='slinear', axis=0)
+            curve = interpolator(alpha)
+            curve = numpy.round(curve).astype(int)
+            # Spline smoothing from https://stackoverflow.com/questions/52014197/how-to-interpolate-a-2d-curve-in-python
+            X = numpy.array(curve)
+            distance = numpy.cumsum(numpy.sqrt(numpy.sum(numpy.diff(X, axis=0)**2, axis=1)))
+            distance = numpy.insert(distance, 0, 0)/distance[-1]
+            splines = [scipy.interpolate.UnivariateSpline(distance, coords, k=2) for coords in X.T]
+            points_fitted = numpy.vstack( spl(alpha) for spl in splines ).T
+            points_fitted = numpy.round(points_fitted).astype(int)
+            centers = points_fitted
+            # Returning pixel coordinates
+            path = centers
             found = True
         except networkx.exception.NetworkXNoPath:
             path = [source, target]
+            centers = list()
+            for k in path:
+                tly, tlx, size = self.grid[k]
+                centers.append((int(tlx+(size/2)), int(tly+(size/2))))
+            path = centers
             found = False
         return path, found

@@ -19,6 +19,8 @@ from skimage import exposure
 from skimage.morphology import dilation, square
 from skimage.measure import compare_mse, compare_nrmse, compare_psnr, compare_ssim
 
+import scipy.interpolate
+
 def load_image(path):
     """ Loads image from path, converts to RGB
     """
@@ -223,24 +225,31 @@ def traversability_image(image, grid, traversability_matrix):
         t_image[tly:tly+R.shape[0], tlx:tlx+R.shape[1]] = R
     return t_image
 
-def draw_path(image, path_indexes, grid, color=(0,255,0), found=False):
+def score(path, ground_truth):
+    score_ = 1.0
+    penalty = 0.05
+    t = list()
+    for px in path:
+        t.append(numpy.mean(ground_truth[px[0], px[1]])/255)
+    for i, t in enumerate(t):
+        if t < 0.5: score_ = numpy.maximum(0, score_ - penalty)
+    return score_
+
+def draw_path(image, path, color=(0,255,0), found=False):
     image_copy = image.copy()
     if len(image_copy.shape) < 3:
         image_copy = cv2.cvtColor(image_copy, cv2.COLOR_GRAY2RGB)
-    centers = []
-    for k in path_indexes:
-        tly, tlx, size = grid[k]
-        centers.append((int(tlx+(size/2)), int(tly+(size/2))))
+    centers = [(p[0], p[1]) for p in path]
     cv2.circle(image_copy, centers[0][::-1], 6, color, -1)
-    cv2.circle(image_copy, centers[-1][::-1], 6, color, -1)
+    cv2.circle(image_copy, centers[-1][::-1], 12, color, -1)
     if found:
         for k in range(len(centers)-1):
             r0, c0 = centers[k]
             r1, c1 = centers[k+1]
             cv2.line(image_copy, (c0, r0), (c1, r1), color, 5)
-        r0, c0 = int(numpy.mean([center[0] for center in centers[-5:]])), int(numpy.mean([center[1] for center in centers[-5:]]))
-        r1, c1 = centers[-1]
-        cv2.arrowedLine(image_copy, (c0, r0), (c1, r1), color, 5, 2, 0, 1)
+        # r0, c0 = int(numpy.mean([center[0] for center in centers[-2:]])), int(numpy.mean([center[1] for center in centers[-2:]]))
+        # r1, c1 = centers[-1]
+        # cv2.arrowedLine(image_copy, (c0, r0), (c1, r1), color, 5, 2, 0, 1)
     return image_copy
 
 def tf_random(R, view=False):
