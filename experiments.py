@@ -224,7 +224,7 @@ def main_experiment():
                         results['path_build_time'] = route_time
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
@@ -251,7 +251,7 @@ def main_experiment():
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
@@ -369,7 +369,7 @@ def main_experiment_overlap():
                         results['path_build_time'] = route_time
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
@@ -396,7 +396,7 @@ def main_experiment_overlap():
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
@@ -513,7 +513,7 @@ def main_experiment_overlap_multiscale():
                         results['path_build_time'] = route_time
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
@@ -540,7 +540,7 @@ def main_experiment_overlap_multiscale():
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
@@ -658,7 +658,7 @@ def main_experiment_overlap_nn():
                         results['path_build_time'] = route_time
                         results['path_found'] = found
                         results['path_score'] = score if found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
@@ -685,7 +685,7 @@ def main_experiment_overlap_nn():
                         results['path_existence'] = False
                         results['path_found'] = found
                         results['path_score'] = 1.0 if not found else 0.0
-                        results['path_regions'] = [(p[0], p[1]) for p in path]
+                        results['path_regions'] = [(int(p[0]), int(p[1])) for p in path]
 
                         data.append(results)
 
