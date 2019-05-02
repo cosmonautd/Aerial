@@ -389,7 +389,7 @@ class RouteEstimator:
             # Returning pixel coordinates
             path = centers
             found = True
-        except networkx.exception.NetworkXNoPath:
+        except (networkx.exception.NetworkXNoPath, ValueError):
             path = [source, target]
             centers = list()
             for k in path:
