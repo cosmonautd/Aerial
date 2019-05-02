@@ -692,7 +692,7 @@ def main_experiment_overlap_nn():
         with open(os.path.join(output_path, output_file), 'w') as datafile:
             json.dump(data, datafile, indent=4)
 
-def heatmaps_plot():
+def heatmaps_plot(datapath):
     """
     """
     import os
@@ -704,7 +704,7 @@ def heatmaps_plot():
 
     output_path = 'output/'
 
-    with open('output/data-overlap.json') as datafile:
+    with open(datapath) as datafile:
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
