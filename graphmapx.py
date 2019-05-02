@@ -386,6 +386,8 @@ class RouteEstimator:
             points_fitted = numpy.vstack( spl(alpha) for spl in splines ).T
             points_fitted = numpy.round(points_fitted).astype(int)
             centers = points_fitted
+            # TODO: FIX WORKAROUND FOR IMAGES 1000x1000
+            centers = numpy.clip(centers, 0, 1000)
             # Returning pixel coordinates
             path = centers
             found = True
