@@ -964,4 +964,5 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=8, c=0.4):
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment()
+main_experiment_overlap()
+heatmaps_plot('output/data-overlap.json')
