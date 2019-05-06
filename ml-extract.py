@@ -25,7 +25,7 @@ r = 10
 lbp_radius = int(numpy.log2(r))
 lbp_points = 8*lbp_radius
 
-images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
 
 X = list()
 Y = list()

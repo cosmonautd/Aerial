@@ -386,10 +386,12 @@ class RouteEstimator:
             points_fitted = numpy.vstack( spl(alpha) for spl in splines ).T
             points_fitted = numpy.round(points_fitted).astype(int)
             centers = points_fitted
+            # TODO: FIX WORKAROUND FOR IMAGES 1000x1000
+            centers = numpy.clip(centers, 0, 999)
             # Returning pixel coordinates
             path = centers
             found = True
-        except networkx.exception.NetworkXNoPath:
+        except (networkx.exception.NetworkXNoPath, ValueError):
             path = [source, target]
             centers = list()
             for k in path:

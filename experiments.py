@@ -135,7 +135,7 @@ def main_experiment():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -278,7 +278,7 @@ def main_experiment_overlap():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -423,7 +423,7 @@ def main_experiment_overlap_multiscale():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -567,7 +567,7 @@ def main_experiment_overlap_nn():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_nn]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -707,7 +707,7 @@ def heatmaps_plot(datapath):
     with open(datapath) as datafile:
         data = json.load(datafile)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -823,7 +823,7 @@ def execution_time_plot():
     with open('output/data.json') as datafile:
         data = json.load(datafile)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist, trav.tf_rgbhist, trav.tf_superpixels]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -890,7 +890,7 @@ def execution_time_plot_alternative():
     with open('output/data.json') as datafile:
         data = json.load(datafile)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -943,7 +943,7 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=8, c=0.4):
     
     print("Total samples:", len(data))
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
 
     matrix_time = list()
     graph_time = list()
@@ -964,4 +964,5 @@ def average_time_for_param_combination(f=trav.tf_grayhist, r=8, c=0.4):
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment()
+main_experiment_overlap()
+heatmaps_plot('output/data-overlap.json')
