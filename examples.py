@@ -122,6 +122,7 @@ def compute_path_random_keypoints_overlap():
     """
     """
     import random
+    import cv2
 
     r = 6
     c = 0.2
@@ -166,6 +167,7 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
     """
     import os
     import itertools
+    import cv2
 
     ov = 2
 
@@ -205,4 +207,4 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
 
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
-compute_path_all_keypoints()
+compute_path_all_keypoints_overlap()
