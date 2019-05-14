@@ -56,7 +56,7 @@ def compute_path_random_keypoints():
 
     [source, target] = [v for v in random.sample(keypoints, 2)]
 
-    path, found = router.route(G, source, target)
+    path, found = router.route(G, source, target, t_matrix)
     # graphmap.draw_graph(G, 'output/path-graph.pdf', path) # only graph-tool
 
     score = trav.score(path, ground_truth)
@@ -101,7 +101,7 @@ def compute_path_all_keypoints(r=6, c=0.4, f=trav.tf_grayhist, image_path='aeria
 
     for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
 
-        path, found = router.route(G, s, t)
+        path, found = router.route(G, s, t, t_matrix)
 
         score = trav.score(path, ground_truth)
 
@@ -144,7 +144,7 @@ def compute_path_random_keypoints_overlap():
 
     [source, target] = [v for v in random.sample(keypoints, 2)]
 
-    path, found = router.route(G, source, target)
+    path, found = router.route(G, source, target, t_matrix)
     # graphmap.draw_graph(G, 'output/path-graph.pdf', path) # only graph-tool
 
     score = trav.score(path, ground_truth)
@@ -190,7 +190,7 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
 
     for counter, (s, t) in enumerate(itertools.combinations(keypoints, 2)):
 
-        path, found = router.route(G, s, t)
+        path, found = router.route(G, s, t, t_matrix)
 
         score = trav.score(path, ground_truth)
 

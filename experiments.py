@@ -208,7 +208,7 @@ def main_experiment():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         score = trav.score(path, ground_truth)
@@ -237,7 +237,7 @@ def main_experiment():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         results = dict()
@@ -353,7 +353,7 @@ def main_experiment_overlap():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         score = trav.score(path, ground_truth)
@@ -382,7 +382,7 @@ def main_experiment_overlap():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         results = dict()
@@ -497,7 +497,7 @@ def main_experiment_overlap_multiscale():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         score = trav.score(path, ground_truth)
@@ -526,7 +526,7 @@ def main_experiment_overlap_multiscale():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         results = dict()
@@ -642,7 +642,7 @@ def main_experiment_overlap_nn():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         score = trav.score(path, ground_truth)
@@ -671,7 +671,7 @@ def main_experiment_overlap_nn():
                         (s, t) = combinations[counter]
 
                         start_route_time = time.time()
-                        path, found = router.route(G, s, t)
+                        path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
                         results = dict()

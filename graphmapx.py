@@ -357,11 +357,20 @@ class RouteEstimator:
     #         found = False
     #     return path, found    
 
-    def route(self, G, source, target):
+    def route(self, G, source, target, tmatrix):
         def dist(a, b):
             (y1, x1) = G.nodes[a]['pos'][1], G.nodes[a]['pos'][0]
             (y2, x2) = G.nodes[b]['pos'][1], G.nodes[b]['pos'][0]
             return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+        def dist2(a, b):
+            (y1, x1) = G.nodes[a]['pos'][1], G.nodes[a]['pos'][0]
+            (y2, x2) = G.nodes[b]['pos'][1], G.nodes[b]['pos'][0]
+            xs, xe, ys, ye = 0, 0, 0, 0
+            if x1 < x2: xs, xe = x1, x2
+            else: xs, xe = x2, x1
+            if y1 < y2: ys, ye = y1, y2
+            else: ys, ye = y2, y1
+            return numpy.mean(tmatrix[ys:ye, xs:xe])
         try:
             path = networkx.astar_path(G, source, target, dist, 'weight')
             centers = list()
