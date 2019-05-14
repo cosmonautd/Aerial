@@ -874,7 +874,7 @@ def execution_time_plot():
         fig.savefig(os.path.join(output_path, "%s.pdf" % var), dpi=300, bbox_inches='tight')
         plt.close(fig)
 
-def execution_time_plot_alternative():
+def execution_time_plot_alternative(datapath):
     """
     """
     import os
@@ -887,7 +887,7 @@ def execution_time_plot_alternative():
 
     output_path = 'output/'
 
-    with open('output/data.json') as datafile:
+    with open(datapath) as datafile:
         data = json.load(datafile)
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
@@ -932,13 +932,13 @@ def execution_time_plot_alternative():
         fig.savefig(os.path.join(output_path, "%s.pdf" % var), dpi=300, bbox_inches='tight')
         plt.close(fig)
 
-def average_time_for_param_combination(f=trav.tf_grayhist, r=8, c=0.4):
+def average_time_for_param_combination(datapath, f=trav.tf_grayhist, r=8, c=0.4):
     """
     """
     import json
     import numpy
 
-    with open('output/data.json') as datafile:
+    with open(datapath) as datafile:
         data = json.load(datafile)
     
     print("Total samples:", len(data))
