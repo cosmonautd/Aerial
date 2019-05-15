@@ -456,11 +456,11 @@ class TraversabilityEstimator():
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         image = cv2.bilateralFilter(image, 15, 75, 75)
-        r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+        r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24][::-1]
         traversability_matrix = None
 
         for r in r_set:
-            if r >= self.r:
+            if r <= self.r:
                 if not self.overlap:
                     grid = grid_list(image, r)
                     regions = R_matrix(image, grid)
@@ -472,7 +472,7 @@ class TraversabilityEstimator():
                 else:
                     multiscale = traversability(regions, self.tf, parallel=True)
                     multiscale = cv2.resize(multiscale, traversability_matrix.shape)
-                    traversability_matrix += (1/r)*multiscale
+                    traversability_matrix += r*multiscale
         traversability_matrix = traversability_matrix/numpy.amax(traversability_matrix)
 
         if self.binary:
