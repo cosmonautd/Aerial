@@ -1076,6 +1076,92 @@ def execution_time_plot_alternative(datapath):
         fig.savefig(os.path.join(output_path, "%s.pdf" % var), dpi=300, bbox_inches='tight')
         plt.close(fig)
 
+def execution_time_plot_alternative_combined(datapath1, datapath2):
+    """
+    """
+    import os
+    import json
+    import numpy
+    import seaborn
+    import matplotlib.pyplot as plt
+
+    seaborn.set_style("darkgrid")
+
+    output_path = 'output/'
+
+    with open(datapath1) as datafile:
+        data1 = json.load(datafile)
+    
+    with open(datapath2) as datafile:
+        data2 = json.load(datafile)
+
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
+    f_set = [trav.tf_grayhist]
+    r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
+    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    
+    variables = ['matrix_build_time', 'graph_build_time', 'path_build_time']
+    
+    for var in variables + ['total_time']:
+
+        info_time = dict()
+        for c in c_set:
+            info_time[str(c)] = dict()
+            for r in r_set:
+                info_time[str(c)][str(r)] = list()
+
+        for sample in data1:
+            if sample['image'] in images \
+                and sample['region_size'] in r_set and sample['cut_threshold'] in c_set \
+                and sample['traversability_function'] in [ft.__name__ for ft in f_set]:
+                if var in variables:
+                    info_time[str(sample['cut_threshold'])][str(sample['region_size'])].append(sample[var])
+                elif var == 'total_time':
+                    info_time[str(sample['cut_threshold'])][str(sample['region_size'])].append(sum([sample[v] for v in variables]))
+
+        fig, (ax0) = plt.subplots(ncols=1)
+        for c in c_set:
+            x = numpy.array(r_set)
+            y = numpy.array([numpy.mean(info_time[str(c)][str(element)]) for element in x])
+            yerr_up = numpy.array([-y[i]+numpy.mean([info_time[str(c)][str(element)][j] for j in range(len(info_time[str(c)][str(element)])) if info_time[str(c)][str(element)][j] >= y[i]]) for i, element in enumerate(x)])
+            yerr_down = numpy.array([y[i]-numpy.mean([info_time[str(c)][str(element)][j] for j in range(len(info_time[str(c)][str(element)])) if info_time[str(c)][str(element)][j] < y[i]]) for i, element in enumerate(x)])
+            ax0.errorbar(x, y, capsize=0, fmt='--o', markevery=range(len(x)), label="c = "+str(c))
+        
+
+        info_time = dict()
+        for c in c_set:
+            info_time[str(c)] = dict()
+            for r in r_set:
+                info_time[str(c)][str(r)] = list()
+
+        for sample in data2:
+            if sample['image'] in images \
+                and sample['region_size'] in r_set and sample['cut_threshold'] in c_set \
+                and sample['traversability_function'] in [ft.__name__ for ft in f_set]:
+                if var in variables:
+                    info_time[str(sample['cut_threshold'])][str(sample['region_size'])].append(sample[var])
+                elif var == 'total_time':
+                    info_time[str(sample['cut_threshold'])][str(sample['region_size'])].append(sum([sample[v] for v in variables]))
+
+        # fig, (ax0) = plt.subplots(ncols=1)
+        for c in c_set:
+            x = numpy.array(r_set)
+            y = numpy.array([numpy.mean(info_time[str(c)][str(element)]) for element in x])
+            yerr_up = numpy.array([-y[i]+numpy.mean([info_time[str(c)][str(element)][j] for j in range(len(info_time[str(c)][str(element)])) if info_time[str(c)][str(element)][j] >= y[i]]) for i, element in enumerate(x)])
+            yerr_down = numpy.array([y[i]-numpy.mean([info_time[str(c)][str(element)][j] for j in range(len(info_time[str(c)][str(element)])) if info_time[str(c)][str(element)][j] < y[i]]) for i, element in enumerate(x)])
+            ax0.errorbar(x, y, capsize=0, fmt='--X', markevery=range(len(x)), label="c = "+str(c))
+        
+
+        ax0.legend(loc='upper right', title='     No overlap            Overlap       ', ncol=2)
+        ax0.set_xlabel("Region size")
+        ax0.tick_params(axis='x', which='minor', bottom='off')
+        ax0.set_xticks(r_set)
+        ax0.set_xticklabels(["%dx%d" % (r,r) for r in r_set])
+        ax0.set_ylabel("Time (s)")
+        fig.tight_layout()
+        fig.savefig(os.path.join(output_path, "%s.pdf" % var), dpi=300, bbox_inches='tight')
+        plt.close(fig)
+
 def average_time_for_param_combination(datapath, f=trav.tf_grayhist, r=8, c=0.4):
     """
     """
