@@ -1194,6 +1194,6 @@ def average_time_for_param_combination(datapath, f=trav.tf_grayhist, r=8, c=0.4)
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment_multiscale()
-heatmaps_plot('output/data-multiscale.json')
-execution_time_plot_alternative('output/data-multiscale.json')
+main_experiment_overlap()
+heatmaps_plot('output/data-overlap.json')
+execution_time_plot_alternative('output/data-overlap.json')

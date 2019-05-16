@@ -207,4 +207,4 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
 
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
-compute_path_all_keypoints_overlap()
+for i in range(8): compute_path_all_keypoints(image_path='aerial%02d.jpg' % (i+1), r=10, c=0.3)
