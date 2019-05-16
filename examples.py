@@ -59,7 +59,7 @@ def compute_path_random_keypoints():
     path, found = router.route(G, source, target, t_matrix)
     # graphmap.draw_graph(G, 'output/path-graph.pdf', path) # only graph-tool
 
-    score = trav.score(path, ground_truth)
+    score = trav.score(path, ground_truth, r)
 
     font                   = cv2.FONT_HERSHEY_SIMPLEX
     topLeftCornerOfText    = (10, 40)
@@ -103,7 +103,7 @@ def compute_path_all_keypoints(r=6, c=0.4, f=trav.tf_grayhist, image_path='aeria
 
         path, found = router.route(G, s, t, t_matrix)
 
-        score = trav.score(path, ground_truth)
+        score = trav.score(path, ground_truth, r)
 
         font                   = cv2.FONT_HERSHEY_SIMPLEX
         topLeftCornerOfText    = (10, 40)
@@ -147,7 +147,7 @@ def compute_path_random_keypoints_overlap():
     path, found = router.route(G, source, target, t_matrix)
     # graphmap.draw_graph(G, 'output/path-graph.pdf', path) # only graph-tool
 
-    score = trav.score(path, ground_truth)
+    score = trav.score(path, ground_truth, r)
 
     font                   = cv2.FONT_HERSHEY_SIMPLEX
     topLeftCornerOfText    = (10, 40)
@@ -192,7 +192,7 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
 
         path, found = router.route(G, s, t, t_matrix)
 
-        score = trav.score(path, ground_truth)
+        score = trav.score(path, ground_truth, r)
 
         font                   = cv2.FONT_HERSHEY_SIMPLEX
         topLeftCornerOfText    = (10, 40)

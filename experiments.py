@@ -211,7 +211,7 @@ def main_experiment():
                         path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
-                        score = trav.score(path, ground_truth)
+                        score = trav.score(path, ground_truth, r)
 
                         results = dict()
                         results['image'] = image_path
@@ -356,7 +356,7 @@ def main_experiment_overlap():
                         path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
-                        score = trav.score(path, ground_truth)
+                        score = trav.score(path, ground_truth, r)
 
                         results = dict()
                         results['image'] = image_path
@@ -500,7 +500,7 @@ def main_experiment_multiscale():
                         path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
-                        score = trav.score(path, ground_truth)
+                        score = trav.score(path, ground_truth, r)
 
                         results = dict()
                         results['image'] = image_path
@@ -644,7 +644,7 @@ def main_experiment_overlap_multiscale():
                         path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
-                        score = trav.score(path, ground_truth)
+                        score = trav.score(path, ground_truth, r)
 
                         results = dict()
                         results['image'] = image_path
@@ -789,7 +789,7 @@ def main_experiment_overlap_nn():
                         path, found = router.route(G, s, t, t_matrix)
                         route_time = time.time() - start_route_time
 
-                        score = trav.score(path, ground_truth)
+                        score = trav.score(path, ground_truth, r)
 
                         results = dict()
                         results['image'] = image_path
@@ -1194,6 +1194,10 @@ def average_time_for_param_combination(datapath, f=trav.tf_grayhist, r=8, c=0.4)
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment_overlap()
-heatmaps_plot('output/data-overlap.json')
-execution_time_plot_alternative('output/data-overlap.json')
+main_experiment()
+heatmaps_plot('output/data.json')
+execution_time_plot_alternative('output/data.json')
+
+# main_experiment_overlap()
+# heatmaps_plot('output/data-overlap.json')
+# execution_time_plot_alternative('output/data-overlap.json')

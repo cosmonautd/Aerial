@@ -225,14 +225,27 @@ def traversability_image(image, grid, traversability_matrix):
         t_image[tly:tly+R.shape[0], tlx:tlx+R.shape[1]] = R
     return t_image
 
-def score(path, ground_truth):
+def score(path, ground_truth, r):
     score_ = 1.0
-    penalty = 0.05
-    t = list()
+    penalty = 2.5
+    T = list()
     for px in path:
-        t.append(numpy.mean(ground_truth[px[0], px[1]])/255)
-    for i, t in enumerate(t):
-        if t < 0.5: score_ = numpy.maximum(0, score_ - penalty)
+        # t.append(numpy.mean(ground_truth[px[0], px[1]])/255)
+        h, w, _ = ground_truth.shape
+        a = max(0, px[0]-int(r/2))
+        b = min(h-1, px[0]+int(r/2))
+        c = max(0, px[1]-int(r/2))
+        d = min(w-1, px[1]+int(r/2))
+        t = ground_truth[a:b, c:d]
+        t = t.mean(axis=2)/255
+        T.append(numpy.min(t))
+    len_path = 0
+    for i, t in enumerate(T):
+        if i < len(T) - 1 and i > 0:
+            len_path += numpy.linalg.norm(numpy.array(path[i-1]) - numpy.array(path[i+1]))
+    for i, t in enumerate(T):
+        if i < len(T) - 1 and i > 0:
+            if t < 0.7: score_ = numpy.maximum(0, score_ - penalty*(1-t)*numpy.linalg.norm(numpy.array(path[i-1]) - numpy.array(path[i+1]))/(len_path))
     return score_
 
 def draw_path(image, path, color=(0,255,0), found=False):
