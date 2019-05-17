@@ -381,7 +381,7 @@ class RouteEstimator:
             centers = ramerdouglas(centers, self.r*2)
             # Linear interpolation from https://stackoverflow.com/questions/52014197/how-to-interpolate-a-2d-curve-in-python
             X = numpy.array(centers)
-            alpha = numpy.linspace(0, 1, 75)
+            alpha = numpy.linspace(0, 1, len(path))
             distance = numpy.cumsum(numpy.sqrt(numpy.sum(numpy.diff(X, axis=0)**2, axis=1)))
             distance = numpy.insert(distance, 0, 0)/distance[-1]
             interpolator =  scipy.interpolate.interp1d(distance, X, kind='slinear', axis=0)

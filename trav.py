@@ -12,6 +12,8 @@ import scipy
 # import mahotas
 import matplotlib
 
+numpy.set_printoptions(formatter={'float': lambda x: '%5.2f' % x})
+
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
@@ -227,7 +229,7 @@ def traversability_image(image, grid, traversability_matrix):
 
 def score(path, ground_truth, r):
     score_ = 1.0
-    penalty = 2.5
+    penalty = 0.03
     T = list()
     for px in path:
         # t.append(numpy.mean(ground_truth[px[0], px[1]])/255)
@@ -238,14 +240,11 @@ def score(path, ground_truth, r):
         d = min(w-1, px[1]+int(r/2))
         t = ground_truth[a:b, c:d]
         t = t.mean(axis=2)/255
-        T.append(numpy.min(t))
-    len_path = 0
+        t = cv2.erode(t, numpy.ones((int(r/2), int(r/2)), numpy.uint8), iterations=1)
+        T.append(numpy.mean(t))
     for i, t in enumerate(T):
         if i < len(T) - 1 and i > 0:
-            len_path += numpy.linalg.norm(numpy.array(path[i-1]) - numpy.array(path[i+1]))
-    for i, t in enumerate(T):
-        if i < len(T) - 1 and i > 0:
-            if t < 0.7: score_ = numpy.maximum(0, score_ - penalty*(1-t)*numpy.linalg.norm(numpy.array(path[i-1]) - numpy.array(path[i+1]))/(len_path))
+            if t < 0.5: score_ = numpy.maximum(0, score_ - penalty*(1-t))
     return score_
 
 def draw_path(image, path, color=(0,255,0), found=False):
