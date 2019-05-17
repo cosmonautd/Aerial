@@ -19,16 +19,16 @@ def compute_traversability_image():
     g_image = trav.draw_grid(image, grid)
     trav.show_image([t_image, g_image])
 
-def compare_with_ground_truth():
+def compare_with_ground_truth(image_path, r):
     """
     """
-    mapper = trav.TraversabilityEstimator(r=6)
-    image = trav.load_image('image/aerial01.jpg')
-    ground_truth = trav.load_image('ground-truth/aerial01.jpg')
+    mapper = trav.TraversabilityEstimator(r=r)
+    image = trav.load_image('image/'+image_path)
+    ground_truth = trav.load_image('ground-truth/'+image_path)
     t_image = mapper.get_traversability_image(image)
     t_ground_truth = mapper.get_ground_truth(ground_truth)
     print("Correlation:", mapper.error(t_image, t_ground_truth, 'corr'))
-    trav.show_image([t_image, t_ground_truth])
+    trav.show_image([image, t_image])
 
 def compute_path_random_keypoints():
     """
@@ -207,4 +207,6 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
 
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
+# for i in range(8): compare_with_ground_truth(image_path='aerial%02d.jpg' % (i+1), r=10)
+# for i in range(8): compute_path_all_keypoints(image_path='aerial%02d.jpg' % (i+1), r=10, c=0.3)
 for i in range(8): compute_path_all_keypoints_overlap(image_path='aerial%02d.jpg' % (i+1), r=10, c=0.4)

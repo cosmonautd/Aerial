@@ -378,7 +378,7 @@ class RouteEstimator:
                 tly, tlx, size = self.grid[k]
                 centers.append((int(tlx+(size/2)), int(tly+(size/2))))
             # Ramer-Douglas-Peucker from https://stackoverflow.com/questions/2573997/reduce-number-of-points-in-line
-            centers = ramerdouglas(centers, self.r*2)
+            centers = ramerdouglas(centers, self.r*1.5)
             # Linear interpolation from https://stackoverflow.com/questions/52014197/how-to-interpolate-a-2d-curve-in-python
             X = numpy.array(centers)
             alpha = numpy.linspace(0, 1, len(path))

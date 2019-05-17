@@ -1194,10 +1194,14 @@ def average_time_for_param_combination(datapath, f=trav.tf_grayhist, r=8, c=0.4)
 
     print("Evaluated samples:", len(matrix_time))
 
-main_experiment()
-heatmaps_plot('output/data.json')
-execution_time_plot_alternative('output/data.json')
+# main_experiment()
+# heatmaps_plot('output/data.json')
+# execution_time_plot_alternative('output/data.json')
 
 # main_experiment_overlap()
 # heatmaps_plot('output/data-overlap.json')
 # execution_time_plot_alternative('output/data-overlap.json')
+
+# execution_time_plot_alternative_combined('output/no-overlap/data.json', 'output/overlap/data-overlap.json')
+
+average_time_for_param_combination('output/overlap/data-overlap.json', r=10, c=0.4)
