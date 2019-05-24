@@ -8,8 +8,6 @@ import multiprocessing
 import cv2
 import numpy
 import scipy
-# import keras
-# import mahotas
 import matplotlib
 
 numpy.set_printoptions(formatter={'float': lambda x: '%5.2f' % x})
@@ -287,24 +285,6 @@ def tf_grayhist(R, view=False):
         fig.tight_layout()
         pyplot.show()
     return diff
-
-# def haralick(image):
-#     h = mahotas.features.haralick(image)
-#     h_mean = h.mean(axis=0)
-#     return h_mean.reshape((1, h_mean.shape[0]))
-
-# with open('model.json', 'r') as json_file:
-#     model_json = json_file.read()
-#     model = keras.models.model_from_json(model_json)
-# model.load_weights("model.h5")
-
-# def tf_nn(R, view=False):
-#     """ Returns a traversability value based on a neural network
-#     """
-#     R = cv2.cvtColor(R, cv2.COLOR_BGR2GRAY)
-#     x = haralick(R)
-#     t = model.predict(x)[0][0]
-#     return t
 
 def tf_rgbhist(R, view=False):
     """ Returns a traversability value based on RGB histogram dispersion
