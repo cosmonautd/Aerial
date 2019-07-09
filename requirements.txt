@@ -1,0 +1,7 @@
+numpy
+scipy
+matplotlib
+seaborn
+scikit-image
+opencv-python
+networkx

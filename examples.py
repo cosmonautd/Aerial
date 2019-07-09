@@ -4,30 +4,29 @@ import graphmapx
 def compute_traversability_matrix():
     """
     """
-    image = trav.load_image('image/aerial01.jpg')
-    mapper = trav.TraversabilityEstimator(r=6)
+    image = trav.load_image('dataset/images/aerial01.jpg')
+    mapper = trav.TraversabilityEstimator(r=10)
     matrix = mapper.get_traversability_matrix(image)
     print(matrix)
 
 def compute_traversability_image():
     """
     """
-    image = trav.load_image('image/aerial01.jpg')
-    mapper = trav.TraversabilityEstimator(r=6)
+    image = trav.load_image('dataset/images/aerial01.jpg')
+    mapper = trav.TraversabilityEstimator(r=10)
     t_image = mapper.get_traversability_image(image)
-    grid = trav.grid_list_overlap(image, 6)
-    g_image = trav.draw_grid(image, grid)
-    trav.show_image([t_image, g_image])
+    trav.show_image([image, t_image])
 
-def compare_with_ground_truth(image_path, r):
+def compare_with_ground_truth(image_path='aerial01.jpg', r=10):
     """
     """
     import cv2
     mapper = trav.TraversabilityEstimator(r=r)
-    image = trav.load_image('image/'+image_path)
-    ground_truth = trav.load_image('ground-truth/'+image_path)
+    image = trav.load_image('dataset/images/'+image_path)
+    h, w, d = image.shape
+    ground_truth = trav.load_image('dataset/labels/'+image_path)
     t_image = mapper.get_traversability_matrix(image)
-    t_ground_truth = cv2.resize(cv2.cvtColor(ground_truth, cv2.COLOR_BGR2GRAY), (125,125))/255
+    t_ground_truth = cv2.resize(cv2.cvtColor(ground_truth, cv2.COLOR_BGR2GRAY), (h//r, w//r))/255
     print("MSE: %.4f" % (((t_image - t_ground_truth)**2).mean(axis=None)))
     trav.show_image([image, t_ground_truth, t_image])
 
@@ -38,17 +37,17 @@ def compute_path_random_keypoints():
     import numpy
     import cv2
 
-    r = 6
+    r = 10
     c = 0.4
     f = trav.tf_grayhist
 
     tdigenerator = trav.TraversabilityEstimator(tf=f, r=r)
 
-    image = trav.load_image('image/aerial01.jpg')
+    image = trav.load_image('dataset/images/aerial01.jpg')
     t_matrix = tdigenerator.get_traversability_matrix(image)
-    ground_truth = trav.load_image('ground-truth/aerial01.jpg')
+    ground_truth = trav.load_image('dataset/labels/aerial01.jpg')
 
-    keypoints_image = trav.load_image('keypoints-positive/aerial01.jpg')
+    keypoints_image = trav.load_image('dataset/keypoints-reachable/aerial01.jpg')
     grid = trav.grid_list(image, r)
     keypoints = graphmapx.get_keypoints(keypoints_image, grid)
 
@@ -75,7 +74,7 @@ def compute_path_random_keypoints():
 
     trav.show_image([path_image])
 
-def compute_path_all_keypoints(r=6, c=0.4, f=trav.tf_grayhist, image_path='aerial01.jpg'):
+def compute_path_all_keypoints(r=10, c=0.4, f=trav.tf_grayhist, image_path='aerial01.jpg'):
     """
     """
     import os
@@ -85,11 +84,11 @@ def compute_path_all_keypoints(r=6, c=0.4, f=trav.tf_grayhist, image_path='aeria
 
     tdigenerator = trav.TraversabilityEstimator(tf=f, r=r)
 
-    image = trav.load_image(os.path.join('image', image_path))
+    image = trav.load_image(os.path.join('dataset/images', image_path))
     t_matrix = tdigenerator.get_traversability_matrix(image)
-    ground_truth = trav.load_image(os.path.join('ground-truth', image_path))
+    ground_truth = trav.load_image(os.path.join('dataset/labels', image_path))
 
-    keypoints_image = trav.load_image(os.path.join('keypoints-positive', image_path))
+    keypoints_image = trav.load_image(os.path.join('dataset/keypoints-reachable', image_path))
     grid = trav.grid_list(image, r)
     keypoints = graphmapx.get_keypoints(keypoints_image, grid)
 
@@ -125,20 +124,20 @@ def compute_path_random_keypoints_overlap():
     import random
     import cv2
 
-    r = 6
-    c = 0.2
+    r = 10
+    c = 0.4
     f = trav.tf_grayhist
     ov = 2
 
     tdigenerator = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
 
-    image = trav.load_image('image/aerial01.jpg')
+    image = trav.load_image('dataset/images/aerial01.jpg')
     t_matrix = tdigenerator.get_traversability_matrix(image)
-    ground_truth = trav.load_image('ground-truth/aerial01.jpg')
+    ground_truth = trav.load_image('dataset/labels/aerial01.jpg')
 
-    keypoints_image = trav.load_image('keypoints-positive/aerial01.jpg')
+    keypoints_image = trav.load_image('dataset/keypoints-reachable/aerial01.jpg')
     grid = trav.grid_list_overlap(image, r, ov=ov)
-    keypoints = graphmapx.get_keypoints(keypoints_image, grid, ov=ov)
+    keypoints = graphmapx.get_keypoints_overlap(keypoints_image, grid, ov=ov)
 
     router = graphmapx.RouteEstimator(r=r, c=c, grid=grid)
     G = router.tm2graph_overlap(t_matrix)
@@ -163,7 +162,7 @@ def compute_path_random_keypoints_overlap():
 
     trav.show_image([path_image])
 
-def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_path='aerial01.jpg'):
+def compute_path_all_keypoints_overlap(r=10, c=0.4, f=trav.tf_grayhist, image_path='aerial01.jpg'):
     """
     """
     import os
@@ -174,11 +173,11 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
 
     tdigenerator = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
 
-    image = trav.load_image(os.path.join('image', image_path))
+    image = trav.load_image(os.path.join('dataset/images', image_path))
     t_matrix = tdigenerator.get_traversability_matrix(image)
-    ground_truth = trav.load_image(os.path.join('ground-truth', image_path))
+    ground_truth = trav.load_image(os.path.join('dataset/labels', image_path))
 
-    keypoints_image = trav.load_image(os.path.join('keypoints-positive', image_path))
+    keypoints_image = trav.load_image(os.path.join('dataset/keypoints-reachable', image_path))
     grid = trav.grid_list_overlap(image, r, ov=ov)
     keypoints = graphmapx.get_keypoints_overlap(keypoints_image, grid, ov=ov)
 
@@ -207,5 +206,3 @@ def compute_path_all_keypoints_overlap(r=8, c=0.4, f=trav.tf_grayhist, image_pat
                     topLeftCornerOfText, font, fontScale, fontColor, lineType)
 
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
-
-for i in range(8): compare_with_ground_truth(image_path='aerial%02d.jpg' % (i+1), r=8)

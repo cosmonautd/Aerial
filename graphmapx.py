@@ -392,7 +392,7 @@ class RouteEstimator:
             distance = numpy.cumsum(numpy.sqrt(numpy.sum(numpy.diff(X, axis=0)**2, axis=1)))
             distance = numpy.insert(distance, 0, 0)/distance[-1]
             splines = [scipy.interpolate.UnivariateSpline(distance, coords, k=2) for coords in X.T]
-            points_fitted = numpy.vstack( spl(alpha) for spl in splines ).T
+            points_fitted = numpy.vstack( list(spl(alpha) for spl in splines) ).T
             points_fitted = numpy.round(points_fitted).astype(int)
             centers = points_fitted
             # TODO: FIX WORKAROUND FOR IMAGES 1000x1000

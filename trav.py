@@ -371,6 +371,8 @@ def reference(R, view=False):
         pyplot.show()
     return diff
 
+os.environ["QT_LOGGING_RULES"] = "qt5ct.debug=false"
+
 def show_image(images):
     """ Displays images on screen
     """
