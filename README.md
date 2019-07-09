@@ -21,11 +21,13 @@ Following is a brief description of its contents.
 - keypoints-reachable: marked points of interest to use as source and target points;
 - keypoints-unreachable: marked points to test whether a path planning approach is able to identify infeasible paths.
 
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/1.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/2.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/3.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/4.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/5.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/6.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/7.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/image/samples/8.jpg)
+### **Path Planning Samples**
+
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/1.jpg)
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/2.jpg)
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/3.jpg)
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/4.jpg)
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/5.jpg)
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/6.jpg)
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/7.jpg)
+![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/8.jpg)
