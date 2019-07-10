@@ -65,10 +65,11 @@ def get_keypoints(image, grid):
 
     return indexes
 
-def get_keypoints_overlap(image, grid, ov=3):
+def get_keypoints_overlap(image, grid, overlap=0.5):
     """
     """
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    ov = int(1/overlap)
 
     # Set up the SimpleBlobdetector with default parameters.
     params = cv2.SimpleBlobDetector_Params()

@@ -80,11 +80,12 @@ def grid_list2(image, r):
         else:
             raise ValueError("r probably larger than image dimensions")
 
-def grid_list_overlap(image, r, ov=3):
+def grid_list_overlap(image, r, overlap=0.5):
     """ Returns a list of square coordinates representing a grid over image with overlapping
         Every square has length and height equals to r
     """
     height, width, _ = image.shape
+    ov = int(1/overlap)
     # assertions that guarantee the square grid contains all pixels
     assert r > 0, "Parameter r must be larger than zero"
     if (height/r).is_integer() and (width/r).is_integer():
@@ -161,11 +162,12 @@ def R_matrix2(image, grid):
             k += 1
     return rmatrix
 
-def R_matrix_overlap(image, grid, ov=3):
+def R_matrix_overlap(image, grid, overlap=0.5):
     """ Returns a matrix of regions from image, according to grid
     """
     k = 0
     height, width, _ = image.shape
+    ov = int(1/overlap)
     r = grid[k][2]
     new_height = int(r*numpy.floor(height/r))
     new_width = int(r*numpy.floor(width/r))
@@ -416,7 +418,7 @@ def show_grid(image, grid):
 class TraversabilityEstimator():
     """
     """
-    def __init__(self, tf=tf_grayhist, r=6, binary=False, threshold=127, overlap=False, ov=3):
+    def __init__(self, tf=tf_grayhist, r=6, binary=False, threshold=127, use_overlap=False, overlap=0.5):
         """ Traversability estimator constructor
             Sets all initial estimator parameters
         """
@@ -424,19 +426,19 @@ class TraversabilityEstimator():
         self.r = r
         self.binary = binary
         self.threshold = threshold
+        self.use_overlap = use_overlap
         self.overlap = overlap
-        self.ov = ov
 
     def get_traversability_matrix(self, image, normalize=True):
         """ Returns a difficulty matrix for image based on estimator parameters
         """
         image = cv2.bilateralFilter(image, 15, 75, 75)
-        if not self.overlap:
+        if not self.use_overlap:
             grid = grid_list(image, self.r)
             regions = R_matrix(image, grid)
         else:
-            grid = grid_list_overlap(image, self.r, ov=self.ov)
-            regions = R_matrix_overlap(image, grid, ov=self.ov)
+            grid = grid_list_overlap(image, self.r, overlap=self.overlap)
+            regions = R_matrix_overlap(image, grid, overlap=self.overlap)
         traversability_matrix = traversability(regions, self.tf, parallel=True)
         if self.binary:
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
@@ -455,12 +457,12 @@ class TraversabilityEstimator():
 
         for r in r_set:
             if r <= self.r:
-                if not self.overlap:
+                if not self.use_overlap:
                     grid = grid_list(image, r)
                     regions = R_matrix(image, grid)
                 else:
-                    grid = grid_list_overlap(image, r, ov=self.ov)
-                    regions = R_matrix_overlap(image, grid, ov=self.ov)
+                    grid = grid_list_overlap(image, r, overlap=self.overlap)
+                    regions = R_matrix_overlap(image, grid, overlap=self.overlap)
                 if traversability_matrix is None:
                     traversability_matrix = traversability(regions, self.tf, parallel=True)
                 else:
@@ -480,20 +482,20 @@ class TraversabilityEstimator():
     def get_traversability_image(self, image, normalize=True):
         """ Returns a traversal difficulty image based on estimator parameters
         """
-        if not self.overlap: grid = grid_list(image, self.r)
-        else: grid = grid_list_overlap(image, self.r, ov=self.ov)
+        if not self.use_overlap: grid = grid_list(image, self.r)
+        else: grid = grid_list_overlap(image, self.r, overlap=self.overlap)
         traversability_matrix = self.get_traversability_matrix(image, normalize=normalize)
         return traversability_image(image, grid, traversability_matrix)
 
     def get_ground_truth(self, imagelabel, matrix=False):
         """ Returns the ground truth based on a labeled binary image
         """
-        if not self.overlap:
+        if not self.use_overlap:
             grid = grid_list(imagelabel, self.r)
             regions = R_matrix(imagelabel, grid)
         else:
-            grid = grid_list_overlap(imagelabel, self.r, ov=self.ov)
-            regions = R_matrix_overlap(imagelabel, grid, ov=self.ov)
+            grid = grid_list_overlap(imagelabel, self.r, overlap=self.overlap)
+            regions = R_matrix_overlap(imagelabel, grid, overlap=self.overlap)
         traversability_matrix = traversability(regions, reference)
         if matrix:
             return traversability_matrix
