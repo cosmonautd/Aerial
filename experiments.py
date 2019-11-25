@@ -283,7 +283,7 @@ def main_experiment_overlap():
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
-    ov = 2
+    ov = 0.5
 
     dataset = list()
     for (_, _, filenames) in os.walk(ground_truth_path):
@@ -318,7 +318,7 @@ def main_experiment_overlap():
 
                 r = r_set[k]
 
-                mapper = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
+                mapper = trav.TraversabilityEstimator(tf=f, r=r, use_overlap=True, overlap=ov)
 
                 start_matrix_time = time.time()
                 t_matrix = mapper.get_traversability_matrix(image)
@@ -326,7 +326,7 @@ def main_experiment_overlap():
 
                 gt_matrix = mapper.get_ground_truth(ground_truth, matrix=True)
 
-                grid = trav.grid_list_overlap(image, r, ov=ov)
+                grid = trav.grid_list_overlap(image, r, overlap=ov)
 
                 # for ii in tqdm.trange(len(c_set), desc="          Cut threshold "):
                 for ii in range(len(c_set)):
@@ -344,7 +344,7 @@ def main_experiment_overlap():
                         G = router.tm2graph_overlap(t_matrix)
                     graph_time = time.time() - start_graph_time
 
-                    keypoints = graphmapx.get_keypoints_overlap(positive_keypoints, grid, ov=ov)
+                    keypoints = graphmapx.get_keypoints_overlap(positive_keypoints, grid, overlap=ov)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     # for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
@@ -373,7 +373,7 @@ def main_experiment_overlap():
 
                         data.append(results)
 
-                    keypoints = graphmapx.get_keypoints_overlap(negative_keypoints, grid, ov=ov)
+                    keypoints = graphmapx.get_keypoints_overlap(negative_keypoints, grid, overlap=ov)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     # for counter in tqdm.trange(len(combinations), desc="         Negative paths "):
@@ -571,7 +571,7 @@ def main_experiment_overlap_multiscale():
     f_set = [trav.tf_grayhist]
     r_set = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]
     c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    ov = 2
+    ov = 0.5
 
     dataset = list()
     for (_, _, filenames) in os.walk(ground_truth_path):
@@ -606,7 +606,7 @@ def main_experiment_overlap_multiscale():
 
                 r = r_set[k]
 
-                mapper = trav.TraversabilityEstimator(tf=f, r=r, overlap=True, ov=ov)
+                mapper = trav.TraversabilityEstimator(tf=f, r=r, use_overlap=True, overlap=ov)
 
                 start_matrix_time = time.time()
                 t_matrix = mapper.get_traversability_matrix_multiscale(image)
@@ -614,7 +614,7 @@ def main_experiment_overlap_multiscale():
 
                 gt_matrix = mapper.get_ground_truth(ground_truth, matrix=True)
 
-                grid = trav.grid_list_overlap(image, r, ov=ov)
+                grid = trav.grid_list_overlap(image, r, overlap=ov)
 
                 # for ii in tqdm.trange(len(c_set), desc="          Cut threshold "):
                 for ii in range(len(c_set)):
@@ -632,7 +632,7 @@ def main_experiment_overlap_multiscale():
                         G = router.tm2graph_overlap(t_matrix)
                     graph_time = time.time() - start_graph_time
 
-                    keypoints = graphmapx.get_keypoints_overlap(positive_keypoints, grid, ov=ov)
+                    keypoints = graphmapx.get_keypoints_overlap(positive_keypoints, grid, overlap=ov)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     # for counter in tqdm.trange(len(combinations), desc="         Positive paths "):
@@ -661,7 +661,7 @@ def main_experiment_overlap_multiscale():
 
                         data.append(results)
 
-                    keypoints = graphmapx.get_keypoints_overlap(negative_keypoints, grid, ov=ov)
+                    keypoints = graphmapx.get_keypoints_overlap(negative_keypoints, grid, overlap=ov)
                     combinations = list(itertools.combinations(keypoints, 2))
 
                     # for counter in tqdm.trange(len(combinations), desc="         Negative paths "):
@@ -728,7 +728,7 @@ def heatmaps_plot(datapath):
 
     heatmatrix /= counter
 
-    f1 = plt.figure(1)
+    f1 = plt.figure()
     df1 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df1, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
     plt.xlabel("c")
@@ -752,7 +752,7 @@ def heatmaps_plot(datapath):
 
     heatmatrix /= counter
 
-    f2 = plt.figure(2)
+    f2 = plt.figure()
     df2 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df2, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
     plt.xlabel("c")
@@ -776,7 +776,7 @@ def heatmaps_plot(datapath):
 
     heatmatrix /= counter
 
-    f3 = plt.figure(3)
+    f3 = plt.figure()
     df3 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df3, vmin=0, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
     plt.xlabel("c")
@@ -799,7 +799,7 @@ def heatmaps_plot(datapath):
 
     heatmatrix /= counter
 
-    f4 = plt.figure(4)
+    f4 = plt.figure()
     df4 = pandas.DataFrame(heatmatrix, index=r_set, columns=c_set)
     seaborn.heatmap(df4, vmin=0.5, vmax=1, cmap='RdYlGn', annot=True, fmt=".2f")
     plt.xlabel("c")
