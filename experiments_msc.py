@@ -22,10 +22,10 @@ def main_experiment():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [8]
-    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    c_set = [0.3, 0.4]
 
     dataset = list()
     for (_, _, filenames) in os.walk(ground_truth_path):
@@ -165,10 +165,10 @@ def main_experiment_overlap():
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [8]
-    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    c_set = [0.3, 0.4]
 
     ov = 0.5
 
@@ -305,10 +305,10 @@ def heatmaps_plot(datapath):
     with open(datapath) as datafile:
         data = json.load(datafile)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [8]
-    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    c_set = [0.3, 0.4]
 
     # Average path quality plot
 
@@ -421,10 +421,10 @@ def execution_time_plot(datapath):
     with open(datapath) as datafile:
         data = json.load(datafile)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [8]
-    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    c_set = [0.3, 0.4]
     
     variables = ['matrix_build_time', 'graph_build_time', 'path_build_time']
     
@@ -482,10 +482,10 @@ def execution_time_plot_combined(datapath1, datapath2):
     with open(datapath2) as datafile:
         data2 = json.load(datafile)
 
-    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
+    images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7,8]]
     f_set = [trav.tf_grayhist]
     r_set = [8]
-    c_set = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    c_set = [0.3, 0.4]
     
     variables = ['matrix_build_time', 'graph_build_time', 'path_build_time']
     
@@ -558,6 +558,7 @@ def average_time_for_param_combination(datapath, f=trav.tf_grayhist, r=8, c=0.4)
     with open(datapath) as datafile:
         data = json.load(datafile)
     
+    print('r: %d, c: %0.1f' % (r, c))
     print("Total samples:", len(data))
 
     images = ['aerial%02d.jpg' % i for i in [1,2,3,4,5,6,7]]
@@ -585,10 +586,13 @@ def average_time_for_param_combination(datapath, f=trav.tf_grayhist, r=8, c=0.4)
 # heatmaps_plot('output_msc/data.json')
 # execution_time_plot('output_msc/data.json')
 
-# main_experiment_overlap()
-# heatmaps_plot('output_msc/data-overlap.json')
-# execution_time_plot('output_msc/data-overlap.json')
+main_experiment_overlap()
+heatmaps_plot('output_msc/data-overlap.json')
+execution_time_plot('output_msc/data-overlap.json')
 
 # execution_time_plot_combined('output_msc/data.json', 'output_msc/data-overlap.json')
 
+# average_time_for_param_combination('output_msc/data.json', r=8, c=0.3)
+# average_time_for_param_combination('output_msc/data.json', r=8, c=0.4)
+average_time_for_param_combination('output_msc/data-overlap.json', r=8, c=0.3)
 average_time_for_param_combination('output_msc/data-overlap.json', r=8, c=0.4)
