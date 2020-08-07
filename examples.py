@@ -27,7 +27,7 @@ def compare_with_ground_truth(image_path='aerial01.jpg', r=10):
     ground_truth = trav.load_image('dataset/labels/'+image_path)
     t_image = mapper.get_traversability_matrix(image)
     t_ground_truth = cv2.resize(cv2.cvtColor(ground_truth, cv2.COLOR_BGR2GRAY), (h//r, w//r))/255
-    print("MSE: %.4f" % (((t_image - t_ground_truth)**2).mean(axis=None)))
+    print("MSE: %.3f" % (((t_image - t_ground_truth)**2).mean(axis=None)))
     trav.show_image([image, t_ground_truth, t_image])
 
 def compute_path_random_keypoints(image_path='dataset/images/aerial01.jpg', 
@@ -147,10 +147,11 @@ def compute_path_all_keypoints(image_path='dataset/images/aerial01.jpg',
 
 for i in range(8):
     i += 1
+    compare_with_ground_truth(image_path='aerial%02d.jpg' % (i), r=8)
     compute_path_all_keypoints(image_path='dataset/images/aerial%02d.jpg' % (i),
                                label_path='dataset/labels/aerial%02d.jpg' % (i),
                                keypoints_path='dataset/keypoints-reachable/aerial%02d.jpg' % (i),
-                               f=trav.tf_grayhist, r=10, c=0.4)
+                               f=trav.tf_grayhist, r=8, c=0.4)
 
 compute_path_all_keypoints(image_path='fieldtest/aerial-ufc.jpg',
                            label_path=None,

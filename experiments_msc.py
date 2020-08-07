@@ -202,9 +202,15 @@ def get_results(datapath, f=trav.tf_grayhist, r=8, c=0.4):
                         elif sample['path_existence'] and not sample['path_found']:
                             false_negative += 1
     
+    matrix_time = numpy.array(matrix_time)
+    graph_time = numpy.array(graph_time)
+    route_time = numpy.array(route_time)
+
     print("Avg matrix build time: %.3f (+/- %.3f)" % (numpy.mean(matrix_time), numpy.std(matrix_time)))
     print("Avg graph build time: %.3f (+/- %.3f)" % (numpy.mean(graph_time), numpy.std(graph_time)))
+    print("Avg mapping time: %.3f (+/- %.3f)" % (numpy.mean(matrix_time + graph_time), numpy.std(matrix_time + graph_time)))
     print("Avg route build time: %.3f (+/- %.3f)" % (numpy.mean(route_time), numpy.std(route_time)))
+    print("Avg total time: %.3f (+/- %.3f)" % (numpy.mean(matrix_time + graph_time + route_time), numpy.std(matrix_time + graph_time + route_time)))
 
     print("Avg path length: %d" % int(numpy.round(numpy.mean(lengths))))
     print("Avg path quality: %.3f (+/- %.3f)" % (numpy.mean(score), numpy.std(score)))
