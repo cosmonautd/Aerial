@@ -23,11 +23,12 @@ Following is a brief description of its contents.
 
 ### **Path Planning Samples**
 
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/1.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/2.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/3.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/4.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/5.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/6.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/7.jpg)
-![alt text](https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/8.jpg)
+<img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/1.jpg" alt="Sample 1" width="350"/> <img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/2.jpg" alt="Sample 2" width="350"/>
+
+<img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/3.jpg" alt="Sample 3" width="350"/> <img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/4.jpg" alt="Sample 4" width="350"/>
+
+<img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/5.jpg" alt="Sample 5" width="350"/> <img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/5.jpg" alt="Sample 5" width="350"/>
+
+<img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/6.jpg" alt="Sample 6" width="350"/> <img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/6.jpg" alt="Sample 6" width="350"/>
+
+<img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/7.jpg" alt="Sample 7" width="350"/> <img src="https://raw.githubusercontent.com/cosmonautd/Aerial/master/samples/8.jpg" alt="Sample 8" width="350"/>
