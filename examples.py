@@ -145,6 +145,20 @@ def compute_path_all_keypoints(image_path='dataset/images/aerial01.jpg',
 
         trav.save_image(os.path.join(output_path, 'path-%d.jpg' % (counter+1)), [path_image])
 
+def draw_traversability_graph():
+    """
+    """
+    import graphmap
+    r = 6
+    c = 0.4
+    image = trav.load_image('dataset/images/aerial01.jpg')
+    mapper = trav.TraversabilityEstimator(r=r)
+    matrix = mapper.get_traversability_matrix(image)
+    grid = trav.grid_list(image, r=r)
+    router = graphmap.RouteEstimator(c=c)
+    G = router.tm2graph(matrix)
+    graphmap.draw_graph(G)
+
 for i in range(8):
     i += 1
     compare_with_ground_truth(image_path='aerial%02d.jpg' % (i), r=8)
