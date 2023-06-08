@@ -31,7 +31,7 @@ def main_experiment_overlap():
     images = ['aerial%02d.jpg' % (i+1) for i in range(args.use)]
     f_set = [trav.tf_grayhist]
     r_set = [8]
-    c_set = [0.3, 0.4]
+    c_set = [0.4]
 
     ov = 0.5
 

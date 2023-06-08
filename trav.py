@@ -7,17 +7,15 @@ import multiprocessing
 
 import cv2
 import numpy
-import scipy
 import matplotlib
+matplotlib.use('tkagg')
 
 numpy.set_printoptions(formatter={'float': lambda x: '%5.2f' % x})
 
 from matplotlib import pyplot
 from skimage.segmentation import slic
 from skimage.util import img_as_float
-from skimage import exposure
-from skimage.morphology import dilation, square
-from skimage.measure import compare_mse, compare_nrmse, compare_psnr, compare_ssim
+from skimage.metrics import mean_squared_error, normalized_root_mse, peak_signal_noise_ratio, structural_similarity
 
 import scipy.interpolate
 
@@ -444,7 +442,7 @@ class TraversabilityEstimator():
             _, traversability_matrix = cv2.threshold(traversability_matrix, self.threshold, 255, cv2.THRESH_BINARY)
         if normalize:
             clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(3,3))
-            traversability_matrix = numpy.array(clahe.apply((255*traversability_matrix).astype(numpy.uint8)), dtype=float)/255
+            traversability_matrix = numpy.array(clahe.apply((255*traversability_matrix).astype(numpy.uint8)), dtype=float)
             # traversability_matrix = scipy.ndimage.filters.convolve(traversability_matrix, numpy.full((3, 3), 1.0/9))
         return traversability_matrix
     
@@ -518,19 +516,19 @@ class TraversabilityEstimator():
         elif function == 'rmse':
             """ Root mean square error
             """
-            return numpy.sqrt(compare_mse(ground_truth, traversability_image))
+            return numpy.sqrt(mean_squared_error(ground_truth, traversability_image))
         elif function == 'nrmse':
             """ Normalized root mean square error
             """
-            return compare_nrmse(ground_truth, traversability_image, norm_type='mean')
+            return normalized_root_mse(ground_truth, traversability_image, norm_type='mean')
         elif function == 'psnr':
             """ Peak signal to noise ratio
             """
-            return compare_psnr(ground_truth, traversability_image)
+            return peak_signal_noise_ratio(ground_truth, traversability_image)
         elif function == 'ssim':
             """ Structural similarity index
             """
-            return compare_ssim(ground_truth, traversability_image)
+            return structural_similarity(ground_truth, traversability_image)
         elif function == 'nmae':
             """ Normalized mean absolute error
             """
